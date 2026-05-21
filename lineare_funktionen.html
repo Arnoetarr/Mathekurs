@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lineare Funktionen – Üben mit Lösungen</title>
+<style>
+  :root{
+    --bg:#f4f1ea;
+    --paper:#ffffff;
+    --ink:#23201b;
+    --muted:#6b6459;
+    --line:#d8d2c4;
+    --accent:#1f6f54;       /* tiefes Grün */
+    --accent-soft:#e3efe9;
+    --info:#34526e;          /* gedämpftes Blau für Anleitungen */
+    --info-soft:#e6edf3;
+    --star:#c9a13b;          /* gold */
+    --star-off:#cfc8b8;
+    --sol:#b4452f;           /* rostrot für Lösungen */
+    --sol-soft:#f5e7e2;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:"Segoe UI",system-ui,-apple-system,sans-serif;
+    font-size:17px;
+    line-height:1.65;
+  }
+  .wrap{max-width:840px;margin:0 auto;padding:32px 22px 80px}
+
+  header.top{
+    text-align:center;
+    padding:34px 20px 30px;
+    border-bottom:3px solid var(--ink);
+    margin-bottom:14px;
+  }
+  header.top h1{
+    font-size:2rem;margin:0 0 6px;letter-spacing:.3px;
+  }
+  header.top p{margin:0;color:var(--muted);font-size:1.02rem}
+
+  /* ---- Inhaltsverzeichnis ---- */
+  nav.toc{
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:18px 22px;
+    margin:22px 0 30px;
+  }
+  nav.toc h2{font-size:1.05rem;margin:0 0 10px;text-transform:uppercase;
+    letter-spacing:1.5px;color:var(--muted)}
+  nav.toc ol{margin:0;padding-left:1.3em;columns:2;gap:30px}
+  nav.toc li{margin:5px 0;break-inside:avoid}
+  nav.toc a{color:var(--accent);text-decoration:none;font-weight:600}
+  nav.toc a:hover{text-decoration:underline}
+
+  /* ---- Station ---- */
+  section.station{
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:26px 26px 30px;
+    margin:0 0 30px;
+    scroll-margin-top:14px;
+  }
+  .station-num{
+    display:inline-block;
+    background:var(--accent);color:#fff;
+    font-size:.82rem;font-weight:700;letter-spacing:1.5px;
+    padding:4px 12px;border-radius:20px;text-transform:uppercase;
+  }
+  section.station h2{font-size:1.45rem;margin:12px 0 4px}
+  .competence{
+    color:var(--muted);font-style:italic;margin:0 0 18px;
+    border-left:3px solid var(--accent);padding-left:12px;
+  }
+
+  /* ---- INFO / Merkkasten ---- */
+  .guide{
+    background:var(--info-soft);
+    border:1px solid #c4d2de;
+    border-left:5px solid var(--info);
+    border-radius:8px;
+    padding:16px 20px;
+    margin:0 0 24px;
+  }
+  .guide h3{
+    margin:0 0 8px;font-size:1rem;color:var(--info);
+    text-transform:uppercase;letter-spacing:1px;
+    display:flex;align-items:center;gap:8px;
+  }
+  .guide h3::before{content:"📘";font-size:1.1rem}
+  .guide p{margin:8px 0}
+  .guide ul{margin:8px 0;padding-left:1.3em}
+  .guide li{margin:4px 0}
+  .formula{
+    font-family:"Cambria Math","Latin Modern Math",Georgia,serif;
+    background:#fff;border:1px solid #c4d2de;border-radius:5px;
+    padding:2px 8px;display:inline-block;font-style:italic;
+  }
+
+  /* ---- Schwierigkeitsstufe ---- */
+  .level{margin:24px 0 0;padding-top:20px;border-top:1px dashed var(--line)}
+  .level:first-of-type{border-top:none;padding-top:4px}
+  .stars{font-size:1.15rem;letter-spacing:3px;margin-bottom:4px}
+  .stars .on{color:var(--star)}
+  .stars .off{color:var(--star-off)}
+  .level-label{
+    font-size:.100rem;letter-spacing:2px;color:var(--muted);
+    text-transform:uppercase;font-weight:700;
+  }
+  ol.tasks{margin:10px 0 0;padding-left:1.5em}
+  ol.tasks li{margin:12px 0;padding-left:4px}
+
+  table.vt{border-collapse:collapse;margin:8px 0}
+  table.vt td{border:1px solid var(--ink);padding:4px 14px;text-align:center}
+  table.vt tr:first-child td{background:#efece3;font-style:italic}
+
+  svg.graph{display:block;margin:10px 0;background:#fff;
+    border:1px solid var(--line);border-radius:6px}
+
+  /* ---- Lösung ---- */
+  details.sol{
+    margin:10px 0 0;
+    background:var(--sol-soft);
+    border:1px solid #e3c5bb;
+    border-radius:7px;
+    overflow:hidden;
+  }
+  details.sol summary{
+    cursor:pointer;
+    padding:9px 16px;
+    font-weight:700;color:var(--sol);
+    font-size:.92rem;letter-spacing:.5px;
+    list-style:none;
+    display:flex;align-items:center;gap:8px;
+    user-select:none;
+  }
+  details.sol summary::-webkit-details-marker{display:none}
+  details.sol summary::before{content:"▸";transition:transform .15s}
+  details.sol[open] summary::before{transform:rotate(90deg)}
+  details.sol .sol-body{
+    padding:4px 18px 16px;
+    border-top:1px solid #e3c5bb;
+    font-size:.97rem;
+  }
+  details.sol .sol-body p{margin:8px 0}
+  .sol-body .step{color:var(--muted)}
+
+  .controls{
+    text-align:center;margin:6px 0 28px;
+  }
+  .controls button{
+    background:var(--paper);border:1px solid var(--accent);
+    color:var(--accent);font:inherit;font-size:.9rem;font-weight:600;
+    padding:8px 18px;border-radius:20px;cursor:pointer;margin:0 5px;
+  }
+  .controls button:hover{background:var(--accent);color:#fff}
+
+  footer{
+    text-align:center;color:var(--muted);font-size:.85rem;
+    margin-top:50px;padding-top:20px;border-top:1px solid var(--line);
+  }
+  @media print{
+    body{background:#fff;font-size:12pt}
+    .controls,nav.toc{display:none}
+    details.sol{break-inside:avoid}
+    details.sol[open] .sol-body{display:block}
+    section.station{break-inside:avoid;border:none;padding:0;margin-bottom:24px}
+  }
+  @media (max-width:560px){
+    nav.toc ol{columns:1}
+    body{font-size:16px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <h1>Lineare Funktionen</h1>
+</header>
+
+<p style="text-align:center;color:var(--muted);margin:6px 0 0">
+  An jeder Station findest du einen kleinen <strong>Infotext</strong>, so kannst du dein Wissen nochmal auffrischen. 
+  <br>Wenn du einen Teil nochmal üben willst, bearbeite die
+  Aufgaben am besten von <span style="color:var(--star)">★</span> nach  <span style="color:var(--star)">★★★</span>. 
+  <br>Klappe die Lösung erst zur Kontrolle auf.
+</p>
+
+<div class="controls">
+  <button onclick="document.querySelectorAll('details.sol').forEach(d=>d.open=true)">Alle Lösungen zeigen</button>
+  <button onclick="document.querySelectorAll('details.sol').forEach(d=>d.open=false)">Alle Lösungen verbergen</button>
+</div>
+
+<nav class="toc">
+  <h2>Stationen</h2>
+  <ol>
+    <li><a href="#s1">Was ist eine Zuordnung?</a></li>
+    <li><a href="#s2">Graphen zeichnen</a></li>
+    <li><a href="#s3">m und n bestimmen</a></li>
+    <li><a href="#s4">Funktionsgleichung aufstellen</a></li>
+    <li><a href="#s5">Nullstellen bestimmen</a></li>
+    <li><a href="#s6">Anwendung im Sachzusammenhang</a></li>
+  </ol>
+</nav>
+
+<!-- ================= STATION 1 ================= -->
+<section class="station" id="s1">
+  <span class="station-num">Station 1</span>
+  <h2>Was ist eine Zuordnung?</h2>
+  <p class="competence">Ich kann eine Zuordnung erkennen und in verschiedenen Formen darstellen.</p>
+
+  <div class="guide">
+    <h3>INFO</h3>
+    <p>Bei einer <strong>Zuordnung</strong> gehört zu jedem Wert einer Größe
+    ein bestimmter Wert einer anderen Größe, z.&nbsp;B.
+    <em>Anzahl&nbsp;→&nbsp;Preis</em>.</p>
+    <p>Eine Zuordnung heißt <strong>eindeutig</strong>, wenn jedem Ausgangswert
+    <em>genau ein</em> Wert zegeordnet wird. Nur eindeutige Zuordnungen nennt man später
+    <strong>Funktionen</strong>.</p>
+    <p>Man kann eine Zuordnung auf vier Arten darstellen:</p>
+    <ul>
+      <li><strong>Text/Vorschrift:</strong> „Jedem Heft werden 2&nbsp;€ zugeordnet" bzw. <span class="formula">x → 2·x</span></li>
+      <li><strong>Wertetabelle:</strong> Ausgangswerte oben, zugeordnete Werte unten</li>
+      <li><strong>Pfeildiagramm:</strong> Pfeil von jedem x zum zugehörigen y: <span class="formula">x → y</span></li>
+      <li><strong>Graph:</strong> Punkte im Koordinatensystem: <span class="formula">(x|y)</span></li>
+    </ul>
+  </div>
+
+  <!-- Stufe 1 -->
+  <div class="level">
+    <div class="stars"><span class="on">★</span><span class="off">★★</span></div>
+    <span class="level-label">Grundlagen</span>
+    <ol class="tasks">
+      <li>Eine Tafel Schokolade kostet 1,20&nbsp;€. Erstelle die Wertetabelle für 1, 2, 3 und 4 Tafeln.
+        <details class="sol"><summary>Lösung</summary><div class="sol-body">
+          <table class="vt">
+            <tr><td>Anzahl</td><td>1</td><td>2</td><td>3</td><td>4</td></tr>
+            <tr><td>Preis (€)</td><td>1,20</td><td>2,40</td><td>3,60</td><td>4,80</td></tr>
+          </table>
+          <p class="step">Jeder Wert = Anzahl · 1,20&nbsp;€.</p>
+        </div></details>
+      </li>
+      <li>Zuordnungsvorschrift: Jedem Heft werden 2&nbsp;€ zugeordnet. Welcher Preis gehört zu 5 Heften?
+        <details class="sol"><summary>Lösung</summary><div class="sol-body">
+          <p>5 · 2&nbsp;€ = <strong>10&nbsp;€</strong>.</p>
+        </div></details>
+      </li>
+      <li>Welche Größe wird welcher zugeordnet?
+        <br>(a) Für 4 Gäste benötigt man 2 Pizzen, für 10 Gäste 5.
+        <br>(b) In 30 Minuten hat das Auto 60 km zurückgelegt.
+        <details class="sol"><summary>Lösung</summary><div class="sol-body">
+          <p>(a) Der <em>Anzahl der Gäste</em> wird die <em>Anzahl der Pizzen</em> zugeordnet.</p>
+          <p>(b) Der <em>gefahrenen Zeit</em> wird der <em>zurückgelegte Weg</em> zugeordnet.</p>
+        </div></details>
+      </li>
+    </ol>
+  </div>
+
+  <!-- Stufe 2 -->
+  <div class="level">
+    <div class="stars"><span class="on">★★</span><span class="off">★</span></div>
+    <span class="level-label">Vertiefung</span>
+    <ol class="tasks">
+      <li>Beschreibe die Zuordnung der Tabelle in Worten und als Vorschrift x → ?
+        <table class="vt">
+          <tr><td>x</td><td>1</td><td>2</td><td>3</td><td>4</td></tr>
+          <tr><td>y</td><td>4</td><td>8</td><td>12</td><td>16</td></tr>
+        </table>
+        <details class="sol"><summary>Lösung</summary><div class="sol-body">
+          <p>Jedem x wird das Vierfache zugeordnet. Vorschrift: <span class="formula">x → 4·x</span></p>
+        </div></details>
+      </li>
+      <li>Zeichne ein Pfeildiagramm für die Zuordnung x → x + 3 mit x = 1, 2, 3.
+        <details class="sol"><summary>Lösung</summary><div class="sol-body">
+          <p>1 → 4, &nbsp; 2 → 5, &nbsp; 3 → 6. (Pfeil von jeder linken Zahl zur Summe x+3.)</p>
+        </div></details>
+      </li>
+      <li>Ist die Zuordnung eindeutig? Begründe: „Jedem Schüler wird sein Geburtsmonat zugeordnet."
+        <details class="sol"><summary>Lösung</summary><div class="sol-body">
+          <p><strong>Ja, eindeutig.</strong> Jeder Schüler hat genau einen Geburtsmonat – zu jedem Ausgangswert gehört also genau ein Wert.</p>
+        </div></details>
+      </li>
+    </ol>
+  </div>
+
+  <!-- Stufe 3 -->
+  <div class="level">
+    <div class="stars"><span class="on">★★★</span></div>
+    <span class="level-label">Knobeln</span>
+    <ol class="tasks">
+      <li>Erkläre, warum die Zuordnung „Geburtsmonat → Schüler der Klasse" <em>nicht</em> eindeutig ist, die Umkehrung aber schon.
+        <details class="sol"><summary>Lösung</summary><div class="sol-body">
+          <p>Einem Monat können <em>mehrere</em> Schüler zugeordnet sein (mehrere haben im selben Monat Geburtstag) → nicht eindeutig. Umgekehrt hat jeder Schüler nur <em>einen</em> Geburtsmonat → eindeutig.</p>
+        </div></details>
+      </li>
+      <li>Ein Taxi verlangt 3&nbsp;€ Grundpreis und 2&nbsp;€ je Kilometer. Stelle die Zuordnung „Strecke → Preis" als Vorschrift und als Wertetabelle (0, 1, 2, 3&nbsp;km) dar.
+        <details class="sol"><summary>Lösung</summary><div class="sol-body">
+          <p>Vorschrift: <span class="formula">x → 2·x + 3</span></p>
+          <table class="vt">
+            <tr><td>km</td><td>0</td><td>1</td><td>2</td><td>3</td></tr>
+            <tr><td>€</td><td>3</td><td>5</td><td>7</td><td>9</td></tr>
+          </table>
+        </div></details>
+      </li>
+      <li>Erfinde selbst eine eindeutige Zuordnung aus deinem Alltag und stelle sie in zwei verschiedenen Formen dar.
+        <details class="sol"><summary>Lösungsidee</summary><div class="sol-body">
+          <p>Beispiel: „Anzahl Brötchen → Preis bei 0,40&nbsp;€/Stück". Vorschrift <span class="formula">x → 0,40·x</span> und passende Wertetabelle. (Viele richtige Lösungen möglich.)</p>
+        </div></details>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<!-- ================= STATION 2 ================= -->
+<section class="station" id="s2">
+  <span class="station-num">Station 2</span>
+  <h2>Graphen zeichnen</h2>
+  <p class="competence">Ich kann den Graphen einer linearen Funktion zeichnen.</p>
+
+  <div class="guide">
+    <h3>Info</h3>
+    <p>Eine lineare Funktion hat die Form <span class="formula">y = m·x + n</span>.
+    Ihr Graph ist immer eine <strong>Gerade</strong>.</p>
+    <p><strong>Variante A – mit Wertetabelle:</strong> Setze einige x-Werte ein,
+    berechne y, zeichne die Punkte und verbinde sie mit einer Geraden.</p>
+    <p><strong>Variante B – mit y-Achsenabschnitt und Steigung:</strong></p>
+    <ul>
+      <li>Trage zuerst <span class="formula">n</span> auf der y-Achse ein (Schnittpunkt mit der y-Achse).</li>
+      <li>Von dort aus das <strong>Steigungsdreieck</strong>: 1 nach rechts, dann
+      <span class="formula">m</span> nach oben (m&nbsp;&gt;&nbsp;0) bzw. nach unten (m&nbsp;&lt;&nbsp;0).</li>
+      <li>Bei <span class="formula">m = 3/2</span>: 2 nach rechts, 3 nach oben.</li>
+    </ul>
+  </div>
+
+  <div class="level">
+    <div class="stars"><span class="on">★</span><span class="off">★★</span></div>
+    <span class="level-label">Grundlagen</span>
+    <ol class="tasks">
+      <li>Zeichne y = 2x mithilfe einer Wertetabelle (x = −2, −1, 0, 1, 2).
+        <details class="sol"><summary>Lösung</summary><div class="sol-body">
+          <table class="vt">
+            <tr><td>x</td><td>−2</td><td>−1</td><td>0</td><td>1</td><td>2</td></tr>
+            <tr><td>y</td><td>−4</td><td>−2</td><td>0</td><td>2</td><td>4</td></tr>
+          </table>
+          <p class="step">Gerade durch den Ursprung, steigt steil (pro 1 nach rechts 2 nach oben).</p>
+        </div></details>
+      </li>
+      <li>Zeichne y = x + 1 mithilfe einer Wertetabelle.
+        <details class="sol"><summary>Lösung</summary><div class="sol-body">
+          <table class="vt">
+            <tr><td>x</td><td>−1</td><td>0</td><td>1</td><td>2</td></tr>
+            <tr><td>y</td><td>0</td><td>1</td><td>2</td><td>3</td></tr>
+          </table>
+          <p class="step">Schnittpunkt mit y-Achse bei 1, Steigung 1.</p>
+        </div></details>
+      </li>
+      <li>Zeichne y = −x mithilfe einer Wertetabelle.
+        <details class="sol"><summary>Lösung</summary><div class="sol-body">
+          <table class="vt">
+            <tr><td>x</td><td>−2</td><td>0</td><td>2</td></tr>
+            <tr><td>y</td><td>2</td><td>0</td><td>−2</td></tr>
+          </table>
+          <p class="step">Fallende Gerade durch den Ursprung.</p>
+        </div></details>
+      </li>
+    </ol>
+  </div>
+
+  <div class="level">
+    <div class="stars"><span class="on">★★</span><span class="off">★</span></div>
+    <span class="level-label">Vertiefung</span>
+    <ol class="tasks">
+      <li>Zeichne y = x + 2 und y = −½x + 3 in ein Koordinatensystem und lies den Schnittpunkt ab.
+        <details class="sol"><summary>Lösung</summary><div class="sol-body">
+          <p>Gleichsetzen: x + 2 = −½x + 3 → 1,5x = 1 → x = ⅔. Eingesetzt: y = ⅔ + 2 = 2⅔.</p>
+          <p>Schnittpunkt ≈ <strong>(0,67 | 2,67)</strong>.</p>
+        </div></details>
+      </li>
+      <li>Zeichne y = −2x + 4 nur mit y-Achsenabschnitt und Steigungsdreieck.
+        <details class="sol"><summary>Lösung</summary><div class="sol-body">
+          <p>n = 4 auf der y-Achse. Steigung −2: 1 nach rechts, 2 nach unten. Gerade durchziehen.</p>
+        </div></details>
+      </li>
+      <li>Zeichne y = ½x − 1 nur mit y-Achsenabschnitt und Steigungsdreieck.
+        <details class="sol"><summary>Lösung</summary><div class="sol-body">
+          <p>n = −1 auf der y-Achse. Steigung ½: 2 nach rechts, 1 nach oben.</p>
+        </div></details>
+      </li>
+    </ol>
+  </div>
+
+  <div class="level">
+    <div class="stars"><span class="on">★★★</span></div>
+    <span class="level-label">Knobeln</span>
+    <ol class="tasks">
+      <li>Zeichne y = −3/2·x + 4 ohne Wertetabelle. Beschreibe in einem Satz dein Vorgehen.
+        <details class="sol"><summary>Lösung</summary><div class="sol-body">
+          <p>n = 4 eintragen, dann Steigungsdreieck: 2 nach rechts, 3 nach unten – Gerade durchziehen.</p>
+        </div></details>
+      </li>
+      <li>Zeichne y = x, y = −x + 4 und die x-Achse in ein Koordinatensystem. Welche Figur schließen die drei Geraden ein?
+        <details class="sol"><summary>Lösung</summary><div class="sol-body">
+          <p>Schnittpunkt der beiden Geraden: x = −x+4 → x = 2, y = 2. Mit der x-Achse entsteht ein <strong>Dreieck</strong> mit den Ecken (0|0), (4|0) und (2|2).</p>
+        </div></details>
+      </li>
+      <li>Zeichne eine Gerade mit m = 0 und n = 2. Begründe, warum eine „senkrechte Gerade" bei x = 3 keine Funktion ist.
+        <details class="sol"><summary>Lösung</summary><div class="sol-body">
+          <p>m = 0: waagerechte Gerade durch y = 2 (y = 2 für jedes x).</p>
+          <p>Bei x = 3 (senkrecht) gehören zu <em>einem</em> x-Wert unendlich viele y-Werte → nicht eindeutig → keine Funktion.</p>
+        </div></details>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<!-- ================= STATION 3 ================= -->
+<section class="station" id="s3">
+  <span class="station-num">Station 3</span>
+  <h2>m und n bestimmen</h2>
+  <p class="competence">Ich kann m und n aus Punkten oder Graph bestimmen.</p>
+
+  <div class="guide">
+    <h3>INFO</h3>
+    <p><strong>n (y-Achsenabschnitt)</strong> ablesen: Schau, wo die Gerade die
+    <em>y-Achse</em> schneidet. Dieser y-Wert ist <span class="formula">n</span>.</p>
+    <p><strong>m (Steigung)</strong> ablesen mit dem Steigungsdreieck:
+    Gehe von einem Punkt der Geraden <em>1 Kästchen nach rechts</em> und zähle,
+    wie viele Kästchen die Gerade nach oben (oder unten) geht.
+    <span class="formula">m = Δy / Δx. </span>Dabei steht <span class="formula">Δ</span>für die Änderung der Werte (Bsp: der erste y-Werte ist 3 und der zweite y-Wert ist 5, dann ist Δ<=2)
+    <ul>
+      <li>Gerade steigt → m positiv; Gerade fällt → m negativ.</li>
+      <li>Aus zwei Punkten: <span class="formula">m = (y₂ − y₁) : (x₂ − x₁)</span>,
+      dann einen Punkt in y = m·x + n einsetzen, um n zu finden.</li>
+    </ul>
+  </div>
+
+  <div class="level">
+    <div class="stars"><span class="on">★</span><span class="off">★★</span></div>
+    <span class="level-label">Grundlagen</span>
+    <ol class="tasks">
+      <li>Lies m und n aus dem Graphen ab. Stelle anschließend die Funktionsgleichung auf.
+        <svg class="graph" width="240" height="240" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
+          <defs><marker id="a1" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#23201b"/></marker></defs>
+          <g stroke="#e2ddcf" stroke-width="1">
+            <line x1="40" y1="20" x2="40" y2="220"/><line x1="76" y1="20" x2="76" y2="220"/><line x1="112" y1="20" x2="112" y2="220"/><line x1="148" y1="20" x2="148" y2="220"/><line x1="184" y1="20" x2="184" y2="220"/><line x1="220" y1="20" x2="220" y2="220"/>
+            <line x1="20" y1="40" x2="225" y2="40"/><line x1="20" y1="76" x2="225" y2="76"/><line x1="20" y1="112" x2="225" y2="112"/><line x1="20" y1="148" x2="225" y2="148"/><line x1="20" y1="184" x2="225" y2="184"/>
+          </g>
+          <line x1="20" y1="184" x2="232" y2="184" stroke="#23201b" stroke-width="1.4" marker-end="url(#a1)"/>
+          <line x1="40" y1="232" x2="40" y2="14" stroke="#23201b" stroke-width="1.4" marker-end="url(#a1)"/>
+          <line x1="40" y1="148" x2="148" y2="40" stroke="#1f6f54" stroke-width="2.6"/>
+          <text x="226" y="198" font-size="11" font-style="italic">x</text>
+          <text x="28" y="22" font-size="11" font-style="italic">y</text>
+          <text x="74" y="198" font-size="10">1</text><text x="110" y="198" font-size="10">2</text><text x="146" y="198" font-size="10">3</text><text x="182" y="198" font-size="10">4</text><text x="216" y="198" font-size="10">5</text>
+          <text x="28" y="151" font-size="10">1</text><text x="28" y="115" font-size="10">2</text><text x="28" y="79" font-size="10">3</text><text x="28" y="43" font-size="10">4</text>
+        </svg>
+        <details class="sol"><summary>Lösung</summary><div class="sol-body">
+          <p>Schnittpunkt y-Achse bei 1 → <strong>n = 1</strong>. Pro 1 nach rechts 1 nach oben → <strong>m = 1</strong>. Gleichung: y = x + 1.</p>
+        </div></details>
+      </li>
+      <li>Lies Steigung m und y-Achsenabschnitt n aus dem Graphen ab. Stelle anschließend die
+Funktionsgleichung auf.
+<svg class="graph" width="240" height="240" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
+          <defs><marker id="a1" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#23201b"/></marker></defs>
+          <g stroke="#e2ddcf" stroke-width="1">
+            <line x1="40" y1="20" x2="40" y2="220"/><line x1="76" y1="20" x2="76" y2="220"/><line x1="112" y1="20" x2="112" y2="220"/><line x1="148" y1="20" x2="148" y2="220"/><line x1="184" y1="20" x2="184" y2="220"/><line x1="220" y1="20" x2="220" y2="220"/>
+            <line x1="20" y1="40" x2="225" y2="40"/><line x1="20" y1="76" x2="225" y2="76"/><line x1="20" y1="112" x2="225" y2="112"/><line x1="20" y1="148" x2="225" y2="148"/><line x1="20" y1="184" x2="225" y2="184"/>
+          </g>
+          <line x1="20" y1="184" x2="232" y2="184" stroke="#23201b" stroke-width="1.4" marker-end="url(#a1)"/>
+          <line x1="40" y1="232" x2="40" y2="14" stroke="#23201b" stroke-width="1.4" marker-end="url(#a1)"/>
+          <line x1="40" y1="40" x2="112" y2="184" stroke="#1f6f54" stroke-width="2.6"/>
+          <text x="226" y="198" font-size="11" font-style="italic">x</text>
+          <text x="28" y="22" font-size="11" font-style="italic">y</text>
+          <text x="74" y="198" font-size="10">1</text><text x="110" y="198" font-size="10">2</text><text x="146" y="198" font-size="10">3</text><text x="182" y="198" font-size="10">4</text><text x="216" y="198" font-size="10">5</text>
+          <text x="28" y="151" font-size="10">1</text><text x="28" y="115" font-size="10">2</text><text x="28" y="79" font-size="10">3</text><text x="28" y="43" font-size="10">4</text>
+        </svg>
+        <details class="sol"><summary>Lösung</summary><div class="sol-body">
+          <p><strong>n = 4</strong>, <strong>m = −2</strong>. Gleichung: y = −2x + 4.</p>
+        </div></details>
+      </li>
+      <li>Ein Steigungsdreieck hat Δy = 4 und Δx = 2. Bestimme die Steigung m.
+        <details class="sol"><summary>Lösung</summary><div class="sol-body">
+          <p>m = Δy / Δx = 4 / 2 = <strong>2</strong>.</p>
+        </div></details>
+      </li>
+    </ol>
+  </div>
+
+  <div class="level">
+    <div class="stars"><span class="on">★★</span><span class="off">★</span></div>
+    <span class="level-label">Vertiefung</span>
+    <ol class="tasks">
+      <li>Lies m und n aus dem Graphen ab (Tipp: m ist ein Bruch). Stelle anschließend die Funktionsgleichung auf.
+        <svg class="graph" width="270" height="210" viewBox="0 0 270 210" xmlns="http://www.w3.org/2000/svg">
+          <defs><marker id="a2" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#23201b"/></marker></defs>
+          <g stroke="#e2ddcf" stroke-width="1">
+            <line x1="60" y1="20" x2="60" y2="180"/><line x1="84" y1="20" x2="84" y2="180"/><line x1="108" y1="20" x2="108" y2="180"/><line x1="132" y1="20" x2="132" y2="180"/><line x1="156" y1="20" x2="156" y2="180"/><line x1="180" y1="20" x2="180" y2="180"/><line x1="204" y1="20" x2="204" y2="180"/><line x1="228" y1="20" x2="228" y2="180"/><line x1="252" y1="20" x2="252" y2="180"/>
+            <line x1="36" y1="44" x2="256" y2="44"/><line x1="36" y1="68" x2="256" y2="68"/><line x1="36" y1="92" x2="256" y2="92"/><line x1="36" y1="116" x2="256" y2="116"/><line x1="36" y1="140" x2="256" y2="140"/><line x1="36" y1="164" x2="256" y2="164"/>
+          </g>
+          <line x1="36" y1="140" x2="262" y2="140" stroke="#23201b" stroke-width="1.4" marker-end="url(#a2)"/>
+          <line x1="108" y1="190" x2="108" y2="14" stroke="#23201b" stroke-width="1.4" marker-end="url(#a2)"/>
+          <line x1="60" y1="140" x2="252" y2="44" stroke="#1f6f54" stroke-width="2.6"/>
+          <text x="256" y="154" font-size="11" font-style="italic">x</text>
+          <text x="96" y="24" font-size="11" font-style="italic">y</text>
+          <text x="130" y="154" font-size="10">1</text><text x="154" y="154" font-size="10">2</text><text x="178" y="154" font-size="10">3</text><text x="202" y="154" font-size="10">4</text><text x="226" y="154" font-size="10">5</text><text x="250" y="154" font-size="10">6</text>
+          <text x="96" y="120" font-size="10">1</text><text x="96" y="96" font-size="10">2</text><text x="96" y="72" font-size="10">3</text><text x="96" y="48" font-size="10">4</text>
+        </svg>
+        <details class="sol"><summary>Lösung</summary><div class="sol-body">
+          <p>Schnittpunkt y-Achse bei 1 → <strong>n = 1</strong>. Von dort 8 nach rechts und 4 nach oben → m = 4/8 = <strong>½</strong>. Gleichung: y = ½x + 1.</p>
+        </div></details>
+      </li>
+      <li>Eine Gerade verläuft durch (0|1) und (2|5). Bestimme m und n. Stelle anschließend die Funktionsgleichung auf.
+        <details class="sol"><summary>Lösung</summary><div class="sol-body">
+          <p>m = (5−1)/(2−0) = 4/2 = <strong>2</strong>. n = y bei x=0 = <strong>1</strong>. Gleichung: y = 2x + 1.</p>
+        </div></details>
+      </li>
+      <li>Eine Gerade verläuft durch (0|−3) und (4|−1). Bestimme m und n. Stelle anschließend die Funktionsgleichung auf.
+        <details class="sol"><summary>Lösung</summary><div class="sol-body">
+          <p>m = (−1−(−3))/(4−0) = 2/4 = <strong>½</strong>. n = <strong>−3</strong>. Gleichung: y = ½x − 3.</p>
+        </div></details>
+      </li>
+    </ol>
+  </div>
+
+  <div class="level">
+    <div class="stars"><span class="on">★★★</span></div>
+    <span class="level-label">Knobeln</span>
+    <ol class="tasks">
+      <li>Eine Gerade verläuft durch A(−1|5) und B(3|−3). Bestimme m und n rechnerisch.
+        <details class="sol"><summary>Lösung</summary><div class="sol-body">
+          <p>m = (−3−5)/(3−(−1)) = −8/4 = <strong>−2</strong>.</p>
+          <p>Einsetzen von A: 5 = −2·(−1) + n → 5 = 2 + n → n = <strong>3</strong>. Gleichung: y = −2x + 3.</p>
+        </div></details>
+      </li>
+      <li>Eine Gerade hat die Steigung m = −3 und geht durch P(2|7). Bestimme n.
+        <details class="sol"><summary>Lösung</summary><div class="sol-body">
+          <p>7 = −3·2 + n → 7 = −6 + n → n = <strong>13</strong>. Gleichung: y = −3x + 13.</p>
+        </div></details>
+      </li>
+      <li>Eine Gerade geht durch (1|4) und ist parallel zu y = 2x − 5. Bestimme n.
+        <details class="sol"><summary>Lösung</summary><div class="sol-body">
+          <p>Parallel → gleiches m = 2. Einsetzen: 4 = 2·1 + n → n = <strong>2</strong>. Gleichung: y = 2x + 2.</p>
+        </div></details>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<!-- ================= STATION 4 ================= -->
+<section class="station" id="s4">
+  <span class="station-num">Station 4</span>
+  <h2>Funktionsgleichung aufstellen</h2>
+  <p class="competence">Ich kann die Funktionsgleichung y = m·x + n aufstellen.</p>
+
+  <div class="guide">
+    <h3>INFO</h3>
+    <p>Die Gleichung lautet immer <span class="formula">y = m·x + n</span>.
+    Du brauchst nur <strong>m</strong> und <strong>n</strong>:</p>
+    <ul>
+      <li><strong>m und n bekannt</strong> → direkt einsetzen.</li>
+      <li><strong>Tabelle gegeben:</strong> n = y-Wert bei x = 0. m = Veränderung von y,
+      wenn x um 1 wächst.</li>
+      <li><strong>Zwei Punkte gegeben:</strong> erst m über
+      <span class="formula">(y₂−y₁)/(x₂−x₁)</span>, dann einen Punkt einsetzen und n ausrechnen.</li>
+      <li><strong>Parallel</strong> bedeutet: gleiches m.</li>
+    </ul>
+  </div>
+
+  <div class="level">
+    <div class="stars"><span class="on">★</span><span class="off">★★</span></div>
+    <span class="level-label">Grundlagen</span>
+    <ol class="tasks">
+      <li>Gib die Funktionsgleichung an: m = 3, n = −2.
+        <details class="sol"><summary>Lösung</summary><div class="sol-body"><p><strong>y = 3x − 2</strong></p></div></details>
+      </li>
+      <li>Gib die Funktionsgleichung an: m = −1, n = 5.
+        <details class="sol"><summary>Lösung</summary><div class="sol-body"><p><strong>y = −x + 5</strong></p></div></details>
+      </li>
+      <li>Gib die Funktionsgleichung an: m = ½, n = 0.
+        <details class="sol"><summary>Lösung</summary><div class="sol-body"><p><strong>y = ½x</strong></p></div></details>
+      </li>
+    </ol>
+  </div>
+
+  <div class="level">
+    <div class="stars"><span class="on">★★</span><span class="off">★</span></div>
+    <span class="level-label">Vertiefung</span>
+    <ol class="tasks">
+      <li>Stelle die Gleichung aus der Tabelle auf.
+        <table class="vt">
+          <tr><td>x</td><td>0</td><td>1</td><td>2</td><td>3</td></tr>
+          <tr><td>y</td><td>4</td><td>1</td><td>−2</td><td>−5</td></tr>
+        </table>
+        <details class="sol"><summary>Lösung</summary><div class="sol-body">
+          <p>n = 4 (y bei x=0). y fällt pro Schritt um 3 → m = −3. <strong>Gleichung: y = −3x + 4</strong>.</p>
+        </div></details>
+      </li>
+      <li>Stelle die Gleichung aus der Tabelle auf.
+        <table class="vt">
+          <tr><td>x</td><td>0</td><td>2</td><td>4</td></tr>
+          <tr><td>y</td><td>1</td><td>2</td><td>3</td></tr>
+        </table>
+        <details class="sol"><summary>Lösung</summary><div class="sol-body">
+          <p>n = 1. Von x=0 zu x=2 steigt y um 1 → m = 1/2. <strong>Gleichung: y = ½x + 1</strong>.</p>
+        </div></details>
+      </li>
+      <li>Eine Gerade geht durch (1|3) und (2|5). Stelle die Gleichung auf.
+        <details class="sol"><summary>Lösung</summary><div class="sol-body">
+          <p>m = (5−3)/(2−1) = 2. Einsetzen (1|3): 3 = 2·1 + n → n = 1. <strong>Gleichung: y = 2x + 1</strong>.</p>
+        </div></details>
+      </li>
+    </ol>
+  </div>
+
+  <div class="level">
+    <div class="stars"><span class="on">★★★</span></div>
+    <span class="level-label">Knobeln</span>
+    <ol class="tasks">
+      <li>Eine Gerade ist parallel zu y = −2x + 1 und geht durch P(2|−1). Bestimme die Gleichung.
+        <details class="sol"><summary>Lösung</summary><div class="sol-body">
+          <p>Parallel → m = −2. Einsetzen: −1 = −2·2 + n → −1 = −4 + n → n = 3. <strong>Gleichung: y = −2x + 3</strong>.</p>
+        </div></details>
+      </li>
+      <li>Eine Gerade geht durch A(−2|1) und B(2|9). Bestimme die Gleichung.
+        <details class="sol"><summary>Lösung</summary><div class="sol-body">
+          <p>m = (9−1)/(2−(−2)) = 8/4 = 2. Einsetzen B: 9 = 2·2 + n → n = 5. <strong>Gleichung: y = 2x + 5</strong>.</p>
+        </div></details>
+      </li>
+      <li>Eine Gerade hat die Nullstelle x = 4 und den y-Achsenabschnitt n = 2. Bestimme die Gleichung.
+        <details class="sol"><summary>Lösung</summary><div class="sol-body">
+          <p>n = 2, also Punkt (0|2). Nullstelle (4|0). m = (0−2)/(4−0) = −½. <strong>Gleichung: y = −½x + 2</strong>.</p>
+        </div></details>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<!-- ================= STATION 5 ================= -->
+<section class="station" id="s5">
+  <span class="station-num">Station 5</span>
+  <h2>Nullstellen bestimmen</h2>
+  <p class="competence">Ich kann die Nullstelle einer linearen Funktion bestimmen.</p>
+
+  <div class="guide">
+    <h3>INFO</h3>
+    <p>Die <strong>Nullstelle</strong> ist der x-Wert, bei dem der Funktionswert
+    <span class="formula">y = 0</span> ist. Anschaulich: der Punkt, an dem der
+    Graph die <strong>x-Achse schneidet</strong>.</p>
+    <p><strong>Bedeutung:</strong> Im Sachzusammenhang ist die Nullstelle oft ein
+    wichtiger Zeitpunkt – z.&nbsp;B. wann ein Tank <em>leer</em> ist oder ein
+    Guthaben <em>aufgebraucht</em> ist.</p>
+    <p><strong>So rechnest du:</strong> Setze y = 0 und löse nach x auf:</p>
+    <ul>
+      <li><span class="formula">0 = m·x + n</span></li>
+      <li>→ <span class="formula">m·x = −n</span></li>
+      <li>→ <span class="formula">x = −n / m</span></li>
+    </ul>
+  </div>
+
+  <div class="level">
+    <div class="stars"><span class="on">★</span><span class="off">★★</span></div>
+    <span class="level-label">Grundlagen</span>
+    <ol class="tasks">
+      <li>Lies die Nullstelle aus dem Graphen ab (dort, wo die Gerade die x-Achse schneidet).
+        <svg class="graph" width="260" height="210" viewBox="0 0 260 210" xmlns="http://www.w3.org/2000/svg">
+          <defs><marker id="a3" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#23201b"/></marker></defs>
+          <g stroke="#e2ddcf" stroke-width="1">
+            <line x1="48" y1="20" x2="48" y2="190"/><line x1="72" y1="20" x2="72" y2="190"/><line x1="96" y1="20" x2="96" y2="190"/><line x1="120" y1="20" x2="120" y2="190"/><line x1="144" y1="20" x2="144" y2="190"/><line x1="168" y1="20" x2="168" y2="190"/><line x1="192" y1="20" x2="192" y2="190"/><line x1="216" y1="20" x2="216" y2="190"/><line x1="240" y1="20" x2="240" y2="190"/>
+            <line x1="28" y1="44" x2="246" y2="44"/><line x1="28" y1="68" x2="246" y2="68"/><line x1="28" y1="92" x2="246" y2="92"/><line x1="28" y1="116" x2="246" y2="116"/><line x1="28" y1="164" x2="246" y2="164"/>
+          </g>
+          <line x1="28" y1="140" x2="252" y2="140" stroke="#23201b" stroke-width="1.4" marker-end="url(#a3)"/>
+          <line x1="96" y1="200" x2="96" y2="14" stroke="#23201b" stroke-width="1.4" marker-end="url(#a3)"/>
+          <line x1="120" y1="164" x2="240" y2="44" stroke="#1f6f54" stroke-width="2.6"/>
+          <text x="246" y="154" font-size="11" font-style="italic">x</text>
+          <text x="84" y="24" font-size="11" font-style="italic">y</text>
+          <text x="118" y="154" font-size="10">1</text><text x="142" y="154" font-size="10">2</text><text x="166" y="154" font-size="10">3</text><text x="190" y="154" font-size="10">4</text><text x="214" y="154" font-size="10">5</text>
+          <text x="84" y="120" font-size="10">1</text><text x="84" y="96" font-size="10">2</text><text x="84" y="72" font-size="10">3</text>
+        </svg>
+        <details class="sol"><summary>Lösung</summary><div class="sol-body">
+          <p>Die Gerade schneidet die x-Achse bei <strong>x = 2</strong>. Nullstelle: x = 2.</p>
+        </div></details>
+      </li>
+      <li>Bestimme die Nullstelle von y = x − 4.
+        <details class="sol"><summary>Lösung</summary><div class="sol-body">
+          <p>0 = x − 4 → <strong>x = 4</strong>.</p>
+        </div></details>
+      </li>
+      <li>Eine Gerade schneidet die x-Achse bei x = 3. Gib die Nullstelle an.
+        <details class="sol"><summary>Lösung</summary><div class="sol-body">
+          <p>Die Nullstelle ist <strong>x = 3</strong> (das ist genau der Schnittpunkt mit der x-Achse).</p>
+        </div></details>
+      </li>
+    </ol>
+  </div>
+
+  <div class="level">
+    <div class="stars"><span class="on">★★</span><span class="off">★</span></div>
+    <span class="level-label">Vertiefung</span>
+    <ol class="tasks">
+      <li>Bestimme die Nullstelle von y = 2x − 6 rechnerisch.
+        <details class="sol"><summary>Lösung</summary><div class="sol-body">
+          <p>0 = 2x − 6 → 2x = 6 → <strong>x = 3</strong>.</p>
+        </div></details>
+      </li>
+      <li>Bestimme die Nullstelle von y = −3x + 9 rechnerisch.
+        <details class="sol"><summary>Lösung</summary><div class="sol-body">
+          <p>0 = −3x + 9 → 3x = 9 → <strong>x = 3</strong>.</p>
+        </div></details>
+      </li>
+      <li>Bestimme die Nullstelle von y = ½x + 2 rechnerisch.
+        <details class="sol"><summary>Lösung</summary><div class="sol-body">
+          <p>0 = ½x + 2 → ½x = −2 → <strong>x = −4</strong>.</p>
+        </div></details>
+      </li>
+    </ol>
+  </div>
+
+  <div class="level">
+    <div class="stars"><span class="on">★★★</span></div>
+    <span class="level-label">Knobeln</span>
+    <ol class="tasks">
+      <li>Bestimme die Nullstelle von y = −¾x + 3 und überprüfe durch Einsetzen.
+        <details class="sol"><summary>Lösung</summary><div class="sol-body">
+          <p>0 = −¾x + 3 → ¾x = 3 → x = 4. Probe: −¾·4 + 3 = −3 + 3 = 0 ✓. <strong>x = 4</strong>.</p>
+        </div></details>
+      </li>
+      <li>Eine Gerade geht durch (0|4) und (2|0). Stelle die Gleichung auf und gib die Nullstelle an.
+        <details class="sol"><summary>Lösung</summary><div class="sol-body">
+          <p>n = 4. m = (0−4)/(2−0) = −2. Gleichung y = −2x + 4. Nullstelle: 0 = −2x+4 → <strong>x = 2</strong> (entspricht Punkt (2|0)).</p>
+        </div></details>
+      </li>
+      <li>Ein Tank enthält 600 Liter, pro Minute laufen 40 Liter aus. Stelle die Funktion auf und bestimme über die Nullstelle, wann der Tank leer ist.
+        <details class="sol"><summary>Lösung</summary><div class="sol-body">
+          <p>V(x) = 600 − 40x. Nullstelle: 0 = 600 − 40x → 40x = 600 → <strong>x = 15</strong>. Der Tank ist nach <strong>15 Minuten</strong> leer.</p>
+        </div></details>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<!-- ================= STATION 6 ================= -->
+<section class="station" id="s6">
+  <span class="station-num">Station 6</span>
+  <h2>Anwendung im Sachzusammenhang</h2>
+  <p class="competence">Ich kann lineare Funktionen im Sachzusammenhang anwenden.</p>
+
+  <div class="guide">
+    <h3>INFO</h3>
+    <p>Viele Alltagssituationen sind linear: ein <strong>fester Startwert</strong>
+    plus eine <strong>gleichmäßige Änderung</strong>.</p>
+    <ul>
+      <li><strong>n</strong> = Startwert (Grundgebühr, Anfangsmenge, Guthaben …)</li>
+      <li><strong>m</strong> = Änderung pro Schritt (Preis pro Minute, Liter pro Minute …).
+      Wird etwas <em>weniger</em>, ist m <em>negativ</em>.</li>
+      <li><strong>Vergleich zweier Tarife:</strong> beide Gleichungen
+      <em>gleichsetzen</em> und nach x auflösen – das ist der Punkt, an dem beide
+      gleich teuer sind.</li>
+    </ul>
+  </div>
+
+  <div class="level">
+    <div class="stars"><span class="on">★</span><span class="off">★★</span></div>
+    <span class="level-label">Grundlagen</span>
+    <ol class="tasks">
+      <li>Ein Handytarif kostet 5&nbsp;€ Grundgebühr und 0,10&nbsp;€ pro Minute. Gib K(x) an und berechne die Kosten für 30 Minuten.
+        <details class="sol"><summary>Lösung</summary><div class="sol-body">
+          <p>K(x) = 0,10·x + 5. K(30) = 0,10·30 + 5 = 3 + 5 = <strong>8&nbsp;€</strong>.</p>
+        </div></details>
+      </li>
+      <li>Ein Taxi kostet 3&nbsp;€ Grundpreis und 2&nbsp;€ pro Kilometer. Gib die Gleichung an und berechne den Preis für 5&nbsp;km.
+        <details class="sol"><summary>Lösung</summary><div class="sol-body">
+          <p>P(x) = 2x + 3. P(5) = 2·5 + 3 = <strong>13&nbsp;€</strong>.</p>
+        </div></details>
+      </li>
+      <li>Im Sparschwein sind 10&nbsp;€, pro Woche kommen 2&nbsp;€ dazu. Gib die Gleichung an und berechne den Stand nach 8 Wochen.
+        <details class="sol"><summary>Lösung</summary><div class="sol-body">
+          <p>S(x) = 2x + 10. S(8) = 2·8 + 10 = <strong>26&nbsp;€</strong>.</p>
+        </div></details>
+      </li>
+    </ol>
+  </div>
+
+  <div class="level">
+    <div class="stars"><span class="on">★★</span><span class="off">★</span></div>
+    <span class="level-label">Vertiefung</span>
+    <ol class="tasks">
+      <li>Vergleich von Handytarifen: <br>
+        Anbieter A: 10&nbsp;€ Grundgebühr, 0,05&nbsp;€/Min. <br>
+        Anbieter B: keine Grundgebühr, 0,15&nbsp;€/Min. <br>
+        Ab wie vielen Minuten ist A günstiger?
+        <details class="sol"><summary>Lösung</summary><div class="sol-body">
+          <p>A: 0,05x + 10. B: 0,15x. Gleichsetzen: 0,05x + 10 = 0,15x → 10 = 0,10x → x = 100.</p>
+          <p>Ab <strong>mehr als 100 Minuten</strong> ist Anbieter A günstiger.</p>
+        </div></details>
+      </li>
+      <li>Ein Wassertank enthält 1000 Liter, pro Minute laufen 20 Liter aus. Stelle die Gleichung auf und berechne, wann der Tank leer ist.
+        <details class="sol"><summary>Lösung</summary><div class="sol-body">
+          <p>V(x) = 1000 − 20x. 0 = 1000 − 20x → x = <strong>50 Minuten</strong>.</p>
+        </div></details>
+      </li>
+      <li>Eine Pflanze ist 8&nbsp;cm hoch und wächst 1,5&nbsp;cm pro Woche. Nach wie vielen Wochen ist sie 26&nbsp;cm hoch?
+        <details class="sol"><summary>Lösung</summary><div class="sol-body">
+          <p>H(x) = 1,5x + 8. 26 = 1,5x + 8 → 18 = 1,5x → x = <strong>12 Wochen</strong>.</p>
+        </div></details>
+      </li>
+    </ol>
+  </div>
+
+  <div class="level">
+    <div class="stars"><span class="on">★★★</span></div>
+    <span class="level-label">Knobeln</span>
+    <ol class="tasks">
+      <li>Kerze 1 ist 20&nbsp;cm lang und wird pro Stunde 2&nbsp;cm kürzer, Kerze 2 ist 15&nbsp;cm lang und wird pro Stunde 1,25&nbsp;cm kürzer. Wann sind beide gleich lang? Interpretiere das Ergebnis.
+        <details class="sol"><summary>Lösung</summary><div class="sol-body">
+          <p>K1(x) = 20 − 2x, &nbsp; K2(x) = 15 − 1,25x. Gleichsetzen: 20 − 2x = 15 − 1,25x → 5 = 0,75x → x = 6⅔ h ≈ <strong>6 h 40 min</strong>.</p>
+          <p>Länge dann: 20 − 2·6,67 ≈ 6,7&nbsp;cm. Danach ist Kerze 1 kürzer als Kerze 2.</p>
+        </div></details>
+      </li>
+      <li>Vergleiche die beiden Handytarife aus der ★★-Stufe vollständig: Gleichungen, Schnittpunkt rechnerisch, Empfehlung je nach Nutzungsdauer.
+        <details class="sol"><summary>Lösung</summary><div class="sol-body">
+          <p>A: 0,05x + 10, &nbsp; B: 0,15x. Schnittpunkt bei x = 100 min (Kosten je 15&nbsp;€).</p>
+          <p>Weniger als 100 min → B günstiger. Genau 100 min → gleich. Mehr als 100 min → A günstiger.</p>
+        </div></details>
+      </li>
+      <li>Denke dir einen realen Vorgang aus, der linear verläuft. Stelle die Gleichung auf, zeichne den Graphen und formuliere eine Frage dazu, die du selbst beantwortest.
+        <details class="sol"><summary>Lösungsidee</summary><div class="sol-body">
+          <p>Beispiel: „Ein Abo kostet 8&nbsp;€ Grundgebühr + 1&nbsp;€ pro Film." Gleichung K(x) = x + 8. Frage: Wie viel kosten 12 Filme? → K(12) = 20&nbsp;€. (Viele richtige Lösungen möglich.)</p>
+        </div></details>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<footer>
+  Lineare Funktionen · Übungsstationen mit Info und Lösungen
+</footer>
+
+</div>
+</body>
+</html>
