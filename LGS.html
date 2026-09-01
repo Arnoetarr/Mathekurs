@@ -51,9 +51,7 @@ h1{
 
 /* ---- Stationsübersicht (Kreise) ---- */
 .uebersicht{display:flex;flex-direction:column;align-items:flex-end;gap:7px}
-.uebersicht .beschriftung{
-  font-size:.72rem;font-weight:700;color:var(--tinte-zart);
-}
+.uebersicht .beschriftung{font-size:.72rem;font-weight:700;color:var(--tinte-zart)}
 .kreise{display:flex;gap:8px}
 .kreis{
   width:36px;height:36px;border-radius:50%;
@@ -87,7 +85,7 @@ h1{
   font:inherit;font-size:.9rem;
   background:none;border:none;cursor:pointer;
   color:var(--tinte-hell);
-  padding:15px 14px 13px;
+  padding:15px 13px 13px;
   display:flex;align-items:baseline;gap:7px;white-space:nowrap;
   border-bottom:2.5px solid transparent;
   transition:color .15s,border-color .15s;
@@ -153,6 +151,7 @@ main{padding-bottom:90px}
 .hinweiszeile{font-size:.9rem;color:var(--tinte-hell);margin:-8px 0 16px}
 .mathe{font-family:Georgia,"Times New Roman",serif;font-style:italic;font-size:1.08em}
 .mathe .zahl{font-style:normal}
+.gleichungszeile{font-size:1.22rem;margin:0 0 16px}
 
 /* ---- Wertetabelle ---- */
 table.wt{border-collapse:collapse;margin:4px 0 6px;font-size:.97rem}
@@ -191,6 +190,7 @@ input[type=text]{
   background:var(--papier);color:var(--tinte);text-align:center;
   transition:border-color .13s,box-shadow .13s;
 }
+input[type=text].breit{width:150px}
 input[type=text]:focus{
   outline:none;border-color:var(--tinte);
   box-shadow:0 0 0 3px rgba(19,47,76,.11);background:#fff;
@@ -211,6 +211,12 @@ input[type=text]:focus{
 .vorschau .gl{font-family:Georgia,serif;font-style:italic;font-size:1.15em;color:var(--tinte);margin-left:4px}
 .vorschau .gl .zahl{font-style:normal}
 .vorschau .gl .platzhalter{color:var(--tinte-zart)}
+.vorschau .urteil{font-weight:600}
+.vorschau .urteil.passt{color:var(--richtig)}
+.vorschau .urteil.passtnicht{color:var(--falsch)}
+.vorschau table.probe{border-collapse:collapse;margin-top:7px;font-size:.95rem}
+.vorschau table.probe td{padding:2px 14px 2px 0;color:var(--tinte)}
+.vorschau table.probe td.seite{color:var(--tinte-hell);font-size:.88rem}
 
 .rueck{margin-top:15px;font-size:.93rem;padding:11px 15px;border-radius:3px;display:none}
 .rueck.zeigen{display:block}
@@ -264,9 +270,12 @@ svg.kos .schuelerlinie{stroke:var(--tinte);stroke-width:2.2;stroke-dasharray:7 5
   .titelzeile{padding:24px 15px 16px;align-items:flex-start;gap:16px}
   .uebersicht{align-items:flex-start}
   h1{font-size:1.5rem}
-  .kreis{width:32px;height:32px;font-size:.8rem}
+  .kreis{width:31px;height:31px;font-size:.78rem}
+  .kreise{gap:6px}
   .aufgabe{padding:18px 16px}
+  .gleichungszeile{font-size:1.1rem}
   input[type=text]{width:78px}
+  input[type=text].breit{width:130px}
   table.wt th,table.wt td{padding:5px 8px;min-width:78px}
   table.wt input{width:66px}
 }
@@ -342,12 +351,17 @@ function vorschauTerm(av, bv, symA, symB){
   if(!isFinite(bv))  return '<span class="zahl">'+fmt(av)+"</span>x + "+pb;
   return zahlenAufrecht(term(av,bv));
 }
+// Eingegebenes Wort auf Kleinbuchstaben ohne Zwischenraum bringen
+function wortNormal(s){
+  return String(s).toLowerCase()
+    .replace(/\u00f6/g,"oe").replace(/\u00e4/g,"ae").replace(/\u00fc/g,"ue").replace(/\u00df/g,"ss")
+    .replace(/[^a-z]/g,"");
+}
 
 /* Farbverlauf für die Fortschrittskreise:
-   0 gelöst = grau, dann von Gelb (Farbton 45) nach Grün (Farbton 145). */
+   0 gelöst = grau, dann von Gelb nach Grün. Exponent > 1, damit Gelb länger hält. */
 function fortschrittsFarbe(anteil){
   if(anteil<=0) return {hg:"#EDF1F4", vg:"var(--tinte-zart)"};
-  // Exponent > 1: Gelb hält länger, Grün erst gegen Ende
   var lauf = Math.pow(anteil, 1.7);
   var ton = 42 + 103*lauf;
   var saettigung = 62 + 4*lauf;
@@ -406,11 +420,16 @@ function geradeDurch(p1,p2,klasse){
   return gerade(m, p1[1]-m*p1[0], klasse||"schuelerlinie");
 }
 
+/* ---------- Antwortwörter für Sonderfälle ---------- */
+var WORT_KEINE = ["keine","keineloesung","keineloesungen","keinx","nichts"];
+var WORT_ALLE  = ["alle","allezahlen","unendlich","unendlichviele","unendlichvieleloesungen","jede","jedezahl"];
+var WORT_KEINER= ["keiner","keinen","keinschnittpunkt","keinerschnittpunkt","keine"];
+
 /* ---------- Aufgaben ---------- */
 var STATIONEN=[
 {
   id:"werte", name:"Termwerte",
-  titel:"Station 1 – Termwerte einsetzen",
+  titel:"Termwerte einsetzen",
   info:"Fülle die Wertetabelle aus. Jede ausgefüllte Spalte ergibt ein Wertepaar, also auch einen Punkt, der auf der Funktions-Geraden liegt.",
   merksatz:'<span class="kopf">Merke</span><span class="mathe">f&#8202;(x)</span> ist nur ein anderer Name f\u00fcr <span class="mathe">y</span>. Wenn du also <span class="mathe">f&#8202;(4) = 11</span> berechnest, hast du das Wertepaar <span class="mathe">(x&#8202;|&#8202;y)=(4&#8202;|&#8202;11)</span> gefunden.',
   niveaus:{
@@ -436,7 +455,7 @@ var STATIONEN=[
 },
 {
   id:"klammern", name:"Klammern",
-  titel:"Station 2 – Klammern auflösen",
+  titel:"Klammern auflösen",
   info:"Vereinfache jeden Term zur Form ax + b. Unter den Feldern siehst du beim Tippen, welche Gleichung deine Eingabe gerade behauptet.",
   merksatz:'<span class="kopf">Merke</span>Der Faktor vor der Klammer wird mit <em>jedem</em> Summanden in der Klammer multipliziert \u2013 auch mit dem hinteren. Ein Minus vor der Klammer dreht alle Vorzeichen um.',
   niveaus:{
@@ -463,8 +482,41 @@ var STATIONEN=[
   }
 },
 {
+  id:"gleichungen", name:"Gleichungen",
+  titel:"Lineare Gleichungen lösen",
+  info:"Löse jede Gleichung nach x auf. Unter den Feldern läuft eine Probe mit: Sie rechnet beide Seiten mit deinem x aus, damit du selbst siehst, ob es aufgeht.",
+  merksatz:'<span class="kopf">Merke</span>Was du auf der einen Seite tust, musst du auch auf der anderen tun. Ziel ist, alle x auf eine Seite und alle Zahlen auf die andere zu bringen. Dieser Schritt ist der letzte im Einsetzungsverfahren \u2013 ohne ihn kommst du dort nicht ans Ergebnis.',
+  niveaus:{
+    grund:[
+      {typ:"gleichung", links:"2x + 3", rechts:"11", lm:2, ln:3, rm:0, rn:11, x:4},
+      {typ:"gleichung", links:"5x \u2212 7", rechts:"8", lm:5, ln:-7, rm:0, rn:8, x:3},
+      {typ:"gleichung", links:"4x", rechts:"\u221212", lm:4, ln:0, rm:0, rn:-12, x:-3,
+       tipp:"Nur ein Schritt n\u00f6tig: durch 4 teilen. Achte auf das Vorzeichen."},
+      {typ:"gleichung", links:"3x + 6", rechts:"0", lm:3, ln:6, rm:0, rn:0, x:-2,
+       tipp:"Erst \u22126 auf beiden Seiten, dann durch 3 teilen."}
+    ],
+    standard:[
+      {typ:"gleichung", links:"4x \u2212 5", rechts:"2x + 1", lm:4, ln:-5, rm:2, rn:1, x:3,
+       tipp:"Bringe zuerst alle x auf eine Seite: \u22122x auf beiden Seiten."},
+      {typ:"gleichung", links:"3(x \u2212 1)", rechts:"x + 7", lm:3, ln:-3, rm:1, rn:7, x:5,
+       tipp:"Erst die Klammer aufl\u00f6sen, dann sortieren."},
+      {typ:"gleichung", links:"6x + 2", rechts:"2x \u2212 10", lm:6, ln:2, rm:2, rn:-10, x:-3},
+      {typ:"gleichung", links:"5(x \u2212 2)", rechts:"3x + 4", lm:5, ln:-10, rm:3, rn:4, x:7}
+    ],
+    zusatz:[
+      {typ:"gleichung", links:"4x + 1", rechts:"2x + 6", lm:4, ln:1, rm:2, rn:6, x:2.5, sonderhinweis:true,
+       tipp:"2x = 5. Das Ergebnis ist keine ganze Zahl \u2013 das ist erlaubt."},
+      {typ:"gleichung", links:"5x + 2", rechts:"3x \u2212 3", lm:5, ln:2, rm:3, rn:-3, x:-2.5, sonderhinweis:true},
+      {typ:"gleichung", links:"3(2x \u2212 1)", rechts:"2(3x + 4)", lm:6, ln:-3, rm:6, rn:8, art:"keine", sonderhinweis:true,
+       tipp:"L\u00f6se beide Klammern auf und vergleiche die x-Anteile. Was passiert, wenn du sie abziehst?"},
+      {typ:"gleichung", links:"2(x + 3)", rechts:"2x + 6", lm:2, ln:6, rm:2, rn:6, art:"alle", sonderhinweis:true,
+       tipp:"L\u00f6se die Klammer auf und vergleiche beide Seiten Zeichen f\u00fcr Zeichen."}
+    ]
+  }
+},
+{
   id:"zeichnen", name:"Zeichnen",
-  titel:"Station 3 – Geraden zeichnen",
+  titel:"Geraden zeichnen",
   info:"Klicke zwei Gitterpunkte an, die auf der Geraden liegen. Die Gerade wird automatisch über das ganze Koordinatensystem verlängert.",
   merksatz:'<span class="kopf">Merke</span>Zwei Punkte legen eine Gerade eindeutig fest. Pr\u00fcfe jeden Punkt, indem du seinen x-Wert in die Gleichung einsetzt \u2013 kommt der y-Wert heraus, liegt er richtig.',
   niveaus:{
@@ -488,7 +540,7 @@ var STATIONEN=[
 },
 {
   id:"aufstellen", name:"Aufstellen",
-  titel:"Station 4 – Funktionsgleichung aufstellen",
+  titel:"Funktionsgleichung aufstellen",
   info:"Bestimme den Anstieg m und das absolute Glied n. Unter den Feldern wird deine Gleichung sofort angezeigt – lies sie noch einmal durch, bevor du prüfst.",
   merksatz:'<span class="kopf">Merke</span><span class="mathe">y = mx + n</span>. Der Anstieg <span class="mathe">m</span> sagt, wie steil die Gerade ist; das absolute Glied <span class="mathe">n</span> sagt, wo sie die y-Achse schneidet.',
   niveaus:{
@@ -517,7 +569,7 @@ var STATIONEN=[
 },
 {
   id:"schnitt", name:"Schnittpunkte",
-  titel:"Station 5 – Schnittpunkte ablesen",
+  titel:"Schnittpunkte ablesen",
   info:"Lies den Schnittpunkt beider Geraden ab. Mal wird er als Wertepaar verlangt, mal getrennt nach x und y – gemeint ist beide Male dasselbe.",
   merksatz:'<span class="kopf">Merke</span>Im Schnittpunkt stimmen <em>beide</em> Gleichungen gleichzeitig. Genau dieses eine Wertepaar <span class="mathe">(x&#8202;|&#8202;y)</span> ist sp\u00e4ter die L\u00f6sung eines linearen Gleichungssystems.',
   niveaus:{
@@ -552,7 +604,6 @@ function schluessel(sid,niv,i){ return sid+"|"+niv+"|"+i; }
 var ALLE=0;
 STATIONEN.forEach(function(s){ NIVEAUS.forEach(function(n){ ALLE += s.niveaus[n].length; }); });
 
-// Wie viele Aufgaben einer Station sind gelöst?
 function standDerStation(s){
   var ges=0, ok=0;
   NIVEAUS.forEach(function(n){
@@ -561,7 +612,7 @@ function standDerStation(s){
   return {ok:ok, ges:ges};
 }
 
-/* ---------- Kopfleiste: Tabs und Kreise ---------- */
+/* ---------- Kopfleiste ---------- */
 var nav=document.getElementById("nav");
 var kreise=document.getElementById("kreise");
 
@@ -571,7 +622,6 @@ function kreiseBauen(){
     var st=standDerStation(s);
     var anteil = st.ges ? st.ok/st.ges : 0;
     var farbe=fortschrittsFarbe(anteil);
-
     var b=document.createElement("button");
     b.type="button";
     b.className="kreis"+(i===aktivStation?" aktiv":"")+(anteil>=1?" komplett":"");
@@ -579,11 +629,10 @@ function kreiseBauen(){
     b.style.background=farbe.hg;
     b.style.color=farbe.vg;
     if(anteil>0) b.style.borderColor="transparent";
-    b.title="Station "+(i+1)+" – "+s.name+": "+st.ok+" von "+st.ges+" gelöst";
+    b.title="Station "+(i+1)+" \u2013 "+s.name+": "+st.ok+" von "+st.ges+" gel\u00f6st";
     b.setAttribute("aria-label", b.title);
     b.addEventListener("click", function(){
-      aktivStation=i; zeichnen();
-      window.scrollTo({top:0, behavior:"smooth"});
+      aktivStation=i; zeichnen(); window.scrollTo({top:0, behavior:"smooth"});
     });
     kreise.appendChild(b);
   });
@@ -599,8 +648,7 @@ function navBauen(){
     b.setAttribute("aria-selected", i===aktivStation?"true":"false");
     b.innerHTML=s.name+' <span class="zaehler">'+st.ok+"/"+st.ges+"</span>";
     b.addEventListener("click", function(){
-      aktivStation=i; zeichnen();
-      window.scrollTo({top:0, behavior:"smooth"});
+      aktivStation=i; zeichnen(); window.scrollTo({top:0, behavior:"smooth"});
     });
     nav.appendChild(b);
   });
@@ -613,7 +661,7 @@ function navBauen(){
 
 function zeichnen(){
   var s=STATIONEN[aktivStation];
-  document.getElementById("stationTitel").textContent=s.titel;
+  document.getElementById("stationTitel").textContent="Station "+(aktivStation+1)+" \u2013 "+s.titel;
   document.getElementById("stationInfo").textContent=s.info;
   document.getElementById("merksatz").innerHTML=s.merksatz;
 
@@ -657,7 +705,7 @@ function aufgabeBauen(sid,niv,i,a){
   if(a.typ==="werte"){
     koerper+='<p class="frage">Gegeben ist <span class="mathe">'+a.f+'</span>. F\u00fclle die Wertetabelle aus.</p>';
     bauart="tabelle";
-    a.eintraege.forEach(function(e,j){ felder.push({soll:e.y, id:k+"-"+j, x:e.x}); });
+    a.eintraege.forEach(function(e,j){ felder.push({soll:e.y, x:e.x}); });
     erfolg="Richtig. Du hast drei Wertepaare gefunden: "
       + a.eintraege.map(function(e){ return paar(e.x,e.y); }).join(", ")
       + ". Alle drei Punkte liegen auf derselben Geraden.";
@@ -666,15 +714,34 @@ function aufgabeBauen(sid,niv,i,a){
     koerper+='<p class="frage">Gegeben ist <span class="mathe">'+a.f+'</span>. Erg\u00e4nze das fehlende Wertepaar.</p>'
       +'<p class="hinweiszeile">Hier ist der y-Wert vorgegeben \u2013 gesucht ist der passende x-Wert.</p>';
     bauart="paar-x"; paarName="P"; festWert=a.ziel;
-    felder.push({soll:a.x, id:k+"-0"});
+    felder.push({soll:a.x});
     erfolg="Richtig. Das Wertepaar lautet "+paar(a.x,a.ziel)+". Diesmal war y gegeben und x gesucht \u2013 die Richtung, die du beim Einsetzungsverfahren oft brauchst.";
   }
   else if(a.typ==="koeff"){
     koerper+='<p class="frage">Vereinfache: <span class="mathe">'+a.t+'</span></p>'
       +'<p class="hinweiszeile">Ergebnis in der Form <span class="mathe">ax + b</span></p>';
-    felder.push({label:"a =", soll:a.a, id:k+"-0"});
-    felder.push({label:"b =", soll:a.b, id:k+"-1"});
+    felder.push({label:"a =", soll:a.a});
+    felder.push({label:"b =", soll:a.b});
     erfolg='Richtig. <span class="mathe">'+a.t+" = "+zahlenAufrecht(term(a.a,a.b))+"</span>";
+  }
+  else if(a.typ==="gleichung"){
+    koerper+='<p class="frage">L\u00f6se die Gleichung nach <span class="mathe">x</span> auf.</p>'
+      +'<p class="gleichungszeile mathe">'+a.links+" = "+a.rechts+"</p>";
+    if(a.sonderhinweis){
+      koerper+='<p class="hinweiszeile">Hat die Gleichung keine L\u00f6sung, schreibe <em>keine</em>. Ist jede Zahl eine L\u00f6sung, schreibe <em>alle</em>.</p>';
+    }
+    if(a.art==="keine"){
+      felder.push({label:"x =", woerter:WORT_KEINE, breit:true});
+      erfolg="Richtig. Beim Umformen f\u00e4llt x auf beiden Seiten weg und es bleibt eine falsche Aussage \u00fcbrig. Die Gleichung hat keine L\u00f6sung \u2013 sp\u00e4ter entspricht das zwei parallelen Geraden ohne Schnittpunkt.";
+    } else if(a.art==="alle"){
+      felder.push({label:"x =", woerter:WORT_ALLE, breit:true});
+      erfolg="Richtig. Beide Seiten sind derselbe Term, die Aussage stimmt f\u00fcr jede Zahl. Sp\u00e4ter entspricht das zwei Geraden, die genau aufeinanderliegen \u2013 unendlich viele L\u00f6sungen.";
+    } else {
+      felder.push({label:"x =", soll:a.x, breit:true});
+      erfolg="Richtig. F\u00fcr <span class=\"mathe\">x = <span class=\"zahl\">"+fmt(a.x)
+        +"</span></span> ergeben beide Seiten <span class=\"mathe\"><span class=\"zahl\">"
+        +fmt(a.lm*a.x+a.ln)+"</span></span>.";
+    }
   }
   else if(a.typ==="zeichnen"){
     koerper+='<p class="frage">Zeichne die Gerade <span class="mathe">y = '+term(a.m,a.n)+'</span>, indem du zwei passende Gitterpunkte anklickst.</p>'
@@ -691,8 +758,8 @@ function aufgabeBauen(sid,niv,i,a){
     } else {
       koerper+='<p class="frage">'+a.text+'</p>';
     }
-    felder.push({label:"m =", soll:a.m, id:k+"-0"});
-    felder.push({label:"n =", soll:a.n, id:k+"-1"});
+    felder.push({label:"m =", soll:a.m});
+    felder.push({label:"n =", soll:a.n});
   }
   else if(a.typ==="schnitt"){
     koerper+='<p class="frage">Lies den Schnittpunkt der beiden Geraden ab.</p>'
@@ -702,19 +769,19 @@ function aufgabeBauen(sid,niv,i,a){
       + kosRahmen().replace(/^<svg[^>]*>/,"") + gerade(a.g1[0],a.g1[1],"funktion") + gerade(a.g2[0],a.g2[1],"funktion-b") + '</svg>';
     if(a.keiner){
       koerper+='<p class="hinweiszeile">Gibt es keinen Schnittpunkt, schreibe in beide Felder das Wort <em>keiner</em>.</p>';
-      felder.push({label:"x =", soll:"keiner", id:k+"-0", wort:true});
-      felder.push({label:"y =", soll:"keiner", id:k+"-1", wort:true});
+      felder.push({label:"x =", woerter:WORT_KEINER});
+      felder.push({label:"y =", woerter:WORT_KEINER});
       erfolg="Richtig. Die Geraden sind parallel, sie haben denselben Anstieg. Ein Gleichungssystem aus diesen beiden Gleichungen h\u00e4tte keine L\u00f6sung.";
     } else if(a.paarform){
       koerper+='<p class="hinweiszeile">Gib den Schnittpunkt als Wertepaar an.</p>';
       bauart="paar"; paarName="S";
-      felder.push({soll:a.x, id:k+"-0"});
-      felder.push({soll:a.y, id:k+"-1"});
+      felder.push({soll:a.x});
+      felder.push({soll:a.y});
       erfolg="Richtig. S&#8202;"+paar(a.x,a.y)+" ist der einzige Punkt, der auf beiden Geraden liegt.";
     } else {
       koerper+='<p class="hinweiszeile">Gib die Koordinaten getrennt an.</p>';
-      felder.push({label:"x =", soll:a.x, id:k+"-0"});
-      felder.push({label:"y =", soll:a.y, id:k+"-1"});
+      felder.push({label:"x =", soll:a.x});
+      felder.push({label:"y =", soll:a.y});
       erfolg="Richtig. Als Wertepaar geschrieben: S&#8202;"+paar(a.x,a.y)+".";
     }
   }
@@ -782,7 +849,8 @@ function aufgabeBauen(sid,niv,i,a){
         lab.innerHTML=f.label;
         var inp=document.createElement("input");
         inp.type="text"; inp.autocomplete="off";
-        inp.inputMode = f.wort ? "text":"decimal";
+        if(f.breit) inp.className="breit";
+        inp.inputMode = f.woerter ? "text":"decimal";
         f.el = inp;
         w.appendChild(lab); w.appendChild(inp);
         reihe.appendChild(w);
@@ -794,6 +862,7 @@ function aufgabeBauen(sid,niv,i,a){
     reihe.appendChild(pb);
     box.appendChild(reihe);
 
+    /* ---- Live-Vorschau ---- */
     if((a.typ==="koeff" || a.typ==="aufstellen") && felder.length===2){
       var istKoeff = (a.typ==="koeff");
       var beschriftung = istKoeff ? "Deine L\u00f6sung behauptet:" : "Deine Gleichung:";
@@ -805,13 +874,36 @@ function aufgabeBauen(sid,niv,i,a){
       var vorschau=document.createElement("div");
       vorschau.className="vorschau";
       box.appendChild(vorschau);
-
       var aktualisiere=function(){
         vorschau.innerHTML = beschriftung + '<span class="gl">' + linkeSeite
           + vorschauTerm(zahl(feldA.value), zahl(feldB.value), symA, symB) + '</span>';
       };
       reihe.addEventListener("input", aktualisiere);
       aktualisiere();
+    }
+
+    /* ---- Live-Probe für Gleichungen ---- */
+    if(a.typ==="gleichung"){
+      var feldX = felder[0].el;
+      var probe=document.createElement("div");
+      probe.className="vorschau";
+      box.appendChild(probe);
+      var probeAktualisieren=function(){
+        var xv=zahl(feldX.value);
+        if(!isFinite(xv)){
+          probe.innerHTML='Probe: Sobald du eine Zahl f\u00fcr <span class="mathe">x</span> eintr\u00e4gst, werden hier beide Seiten ausgerechnet.';
+          return;
+        }
+        var L=a.lm*xv+a.ln, R=a.rm*xv+a.rn;
+        var passt=gleich(L,R);
+        probe.innerHTML='Probe f\u00fcr <span class="mathe">x = <span class="zahl">'+fmt(xv)+'</span></span>:'
+          +'<table class="probe"><tr><td class="seite">linke Seite</td><td class="mathe">'+a.links+' = <span class="zahl">'+fmt(L)+'</span></td></tr>'
+          +'<tr><td class="seite">rechte Seite</td><td class="mathe">'+a.rechts+' = <span class="zahl">'+fmt(R)+'</span></td></tr></table>'
+          +'<span class="urteil '+(passt?"passt":"passtnicht")+'">'
+          +(passt?"Beide Seiten sind gleich.":"Beide Seiten sind noch nicht gleich.")+'</span>';
+      };
+      reihe.addEventListener("input", probeAktualisieren);
+      probeAktualisieren();
     }
 
     var rueck=document.createElement("div");
@@ -848,8 +940,8 @@ function pruefen(k,felder,rueck,box,erfolg){
     if(!el) return;
     var roh=el.value.trim();
     if(roh===""){ offen++; alleOk=false; el.style.borderColor="var(--karo-stark)"; return; }
-    var ok = f.wort
-      ? roh.toLowerCase().replace(/[^a-z\u00e4\u00f6\u00fc\u00df]/g,"")==="keiner"
+    var ok = f.woerter
+      ? f.woerter.indexOf(wortNormal(roh)) >= 0
       : gleich(zahl(roh), f.soll);
     el.style.borderColor = ok ? "var(--richtig)":"var(--falsch)";
     if(!ok) alleOk=false;
