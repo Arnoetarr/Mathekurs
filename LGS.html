@@ -39,12 +39,35 @@ body{
 .wrap{max-width:800px;margin:0 auto;padding:0 22px}
 
 /* ---- Kopf ---- */
-.titelzeile{padding:34px 22px 20px;max-width:800px;margin:0 auto}
+.titelzeile{
+  padding:34px 22px 20px;max-width:800px;margin:0 auto;
+  display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap;
+}
 h1{
   font-family:Georgia,"Iowan Old Style","Times New Roman",serif;
   font-size:1.85rem;font-weight:400;margin:0 0 6px;letter-spacing:-.01em;
 }
 .untertitel{margin:0;color:var(--tinte-hell);font-size:.95rem}
+
+/* ---- Stationsübersicht (Kreise) ---- */
+.uebersicht{display:flex;flex-direction:column;align-items:flex-end;gap:7px}
+.uebersicht .beschriftung{
+  font-size:.72rem;font-weight:700;color:var(--tinte-zart);
+}
+.kreise{display:flex;gap:8px}
+.kreis{
+  width:36px;height:36px;border-radius:50%;
+  font:inherit;font-size:.85rem;font-weight:700;font-variant-numeric:tabular-nums;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;padding:0;
+  border:1.5px solid var(--rand);
+  background:#EDF1F4;color:var(--tinte-zart);
+  transition:transform .13s,box-shadow .13s;
+}
+.kreis:hover{transform:translateY(-2px)}
+.kreis:focus-visible{outline:2px solid var(--tinte);outline-offset:2px}
+.kreis.aktiv{box-shadow:0 0 0 2.5px var(--papier),0 0 0 4px var(--tinte)}
+.kreis.komplett{border-color:transparent}
 
 /* ---- Tableiste ---- */
 .tabbar{
@@ -238,8 +261,10 @@ svg.kos .schuelerlinie{stroke:var(--tinte);stroke-width:2.2;stroke-dasharray:7 5
   html{scroll-padding-top:104px}
   body{font-size:16px}
   .wrap,.tabbar-inner{padding:0 15px}
-  .titelzeile{padding:24px 15px 16px}
+  .titelzeile{padding:24px 15px 16px;align-items:flex-start;gap:16px}
+  .uebersicht{align-items:flex-start}
   h1{font-size:1.5rem}
+  .kreis{width:32px;height:32px;font-size:.8rem}
   .aufgabe{padding:18px 16px}
   input[type=text]{width:78px}
   table.wt th,table.wt td{padding:5px 8px;min-width:78px}
@@ -251,8 +276,14 @@ svg.kos .schuelerlinie{stroke:var(--tinte);stroke-width:2.2;stroke-dasharray:7 5
 <body>
 
 <div class="titelzeile">
-  <h1>Stationenlauf: Lineare Funktionen</h1>
-  <p class="untertitel">Wiederholung als Grundlage für lineare Gleichungssysteme</p>
+  <div>
+    <h1>Stationenlauf: Lineare Funktionen</h1>
+    <p class="untertitel">Wiederholung als Grundlage für lineare Gleichungssysteme</p>
+  </div>
+  <div class="uebersicht">
+    <span class="beschriftung">Dein Stand</span>
+    <div class="kreise" id="kreise"></div>
+  </div>
 </div>
 
 <div class="tabbar">
@@ -300,14 +331,9 @@ function term(m,n){
   return s;
 }
 function paar(x,y){ return "(" + fmt(x) + "&#8202;|&#8202;" + fmt(y) + ")"; }
-
-// Zahlen aufrecht setzen, Variablen bleiben kursiv
 function zahlenAufrecht(s){
   return s.replace(/(\u2212?[\d]+(?:,[\d]+)?)/g,'<span class="zahl">$1</span>');
 }
-
-/* Live-Vorschau: baut "…x + …" aus den beiden Eingaben.
-   symA / symB sind die Platzhalter, solange ein Feld leer ist. */
 function vorschauTerm(av, bv, symA, symB){
   var pa='<span class="platzhalter">'+symA+'</span>';
   var pb='<span class="platzhalter">'+symB+'</span>';
@@ -315,6 +341,18 @@ function vorschauTerm(av, bv, symA, symB){
   if(!isFinite(av))  return pa+"x "+(bv<0?"\u2212 ":"+ ")+'<span class="zahl">'+fmt(Math.abs(bv))+"</span>";
   if(!isFinite(bv))  return '<span class="zahl">'+fmt(av)+"</span>x + "+pb;
   return zahlenAufrecht(term(av,bv));
+}
+
+/* Farbverlauf für die Fortschrittskreise:
+   0 gelöst = grau, dann von Gelb (Farbton 45) nach Grün (Farbton 145). */
+function fortschrittsFarbe(anteil){
+  if(anteil<=0) return {hg:"#EDF1F4", vg:"var(--tinte-zart)"};
+  // Exponent > 1: Gelb hält länger, Grün erst gegen Ende
+  var lauf = Math.pow(anteil, 1.7);
+  var ton = 42 + 103*lauf;
+  var saettigung = 62 + 4*lauf;
+  var helligkeit = 47 - 9*lauf;
+  return {hg:"hsl("+ton.toFixed(0)+","+saettigung.toFixed(0)+"%,"+helligkeit.toFixed(0)+"%)", vg:"#fff"};
 }
 
 /* ---------- Koordinatensystem ---------- */
@@ -514,21 +552,52 @@ function schluessel(sid,niv,i){ return sid+"|"+niv+"|"+i; }
 var ALLE=0;
 STATIONEN.forEach(function(s){ NIVEAUS.forEach(function(n){ ALLE += s.niveaus[n].length; }); });
 
-/* ---------- Tabs ---------- */
+// Wie viele Aufgaben einer Station sind gelöst?
+function standDerStation(s){
+  var ges=0, ok=0;
+  NIVEAUS.forEach(function(n){
+    s.niveaus[n].forEach(function(_,k){ ges++; if(geloest[schluessel(s.id,n,k)]) ok++; });
+  });
+  return {ok:ok, ges:ges};
+}
+
+/* ---------- Kopfleiste: Tabs und Kreise ---------- */
 var nav=document.getElementById("nav");
+var kreise=document.getElementById("kreise");
+
+function kreiseBauen(){
+  kreise.innerHTML="";
+  STATIONEN.forEach(function(s,i){
+    var st=standDerStation(s);
+    var anteil = st.ges ? st.ok/st.ges : 0;
+    var farbe=fortschrittsFarbe(anteil);
+
+    var b=document.createElement("button");
+    b.type="button";
+    b.className="kreis"+(i===aktivStation?" aktiv":"")+(anteil>=1?" komplett":"");
+    b.textContent=String(i+1);
+    b.style.background=farbe.hg;
+    b.style.color=farbe.vg;
+    if(anteil>0) b.style.borderColor="transparent";
+    b.title="Station "+(i+1)+" – "+s.name+": "+st.ok+" von "+st.ges+" gelöst";
+    b.setAttribute("aria-label", b.title);
+    b.addEventListener("click", function(){
+      aktivStation=i; zeichnen();
+      window.scrollTo({top:0, behavior:"smooth"});
+    });
+    kreise.appendChild(b);
+  });
+}
 
 function navBauen(){
   nav.innerHTML="";
   STATIONEN.forEach(function(s,i){
-    var ges=0, ok=0;
-    NIVEAUS.forEach(function(n){
-      s.niveaus[n].forEach(function(_,k){ ges++; if(geloest[schluessel(s.id,n,k)]) ok++; });
-    });
+    var st=standDerStation(s);
     var b=document.createElement("button");
-    b.type="button"; b.className="tab"+(ok===ges?" fertig":"");
+    b.type="button"; b.className="tab"+(st.ok===st.ges?" fertig":"");
     b.setAttribute("role","tab");
     b.setAttribute("aria-selected", i===aktivStation?"true":"false");
-    b.innerHTML=s.name+' <span class="zaehler">'+ok+"/"+ges+"</span>";
+    b.innerHTML=s.name+' <span class="zaehler">'+st.ok+"/"+st.ges+"</span>";
     b.addEventListener("click", function(){
       aktivStation=i; zeichnen();
       window.scrollTo({top:0, behavior:"smooth"});
@@ -539,6 +608,7 @@ function navBauen(){
   Object.keys(geloest).forEach(function(k){ if(geloest[k]) summe++; });
   document.getElementById("gesamtStand").textContent=summe;
   document.getElementById("gesamtAlle").textContent=ALLE;
+  kreiseBauen();
 }
 
 function zeichnen(){
@@ -561,7 +631,6 @@ function zeichnen(){
   ziel.innerHTML="";
   var niv=aktivNiveau[s.id];
   s.niveaus[niv].forEach(function(a,i){
-    // Eine fehlerhafte Aufgabe darf nie die ganze Station leer lassen
     try{
       ziel.appendChild(aufgabeBauen(s.id,niv,i,a));
     }catch(fehler){
@@ -660,19 +729,18 @@ function aufgabeBauen(sid,niv,i,a){
       var tab=document.createElement("table");
       tab.className="wt";
       var r1="<tr><th>x</th>", r2="<tr><th>"+a.nam+"&#8202;(x) = y</th>", r3='<tr><th>Wertepaar</th>';
-      felder.forEach(function(f){
+      felder.forEach(function(f,j){
         r1+="<td>"+fmt(f.x)+"</td>";
-        r2+='<td><input type="text" id="'+f.id+'" inputmode="decimal" autocomplete="off" aria-label="y-Wert f\u00fcr x = '+fmt(f.x)+'"></td>';
-        r3+='<td class="paarzelle" data-paar="'+f.id+'">('+fmt(f.x)+"&#8202;|&#8202;?)</td>";
+        r2+='<td><input type="text" data-feld="'+j+'" inputmode="decimal" autocomplete="off" aria-label="y-Wert f\u00fcr x = '+fmt(f.x)+'"></td>';
+        r3+='<td class="paarzelle" data-paar="'+j+'">('+fmt(f.x)+"&#8202;|&#8202;?)</td>";
       });
       tab.innerHTML=r1+"</tr>"+r2+"</tr>"+r3+"</tr>";
-      // Referenzen merken: die Karte h\u00e4ngt noch nicht im Dokument
-      felder.forEach(function(f){ f.el = tab.querySelector('[data-paar="'+f.id+'"]') ? tab.querySelector('input[id="'+CSS.escape(f.id)+'"]') : null; });
+      felder.forEach(function(f,j){ f.el = tab.querySelector('input[data-feld="'+j+'"]'); });
       box.appendChild(tab);
       tab.addEventListener("input", function(){
-        felder.forEach(function(f){
+        felder.forEach(function(f,j){
           var v=zahl(f.el.value);
-          var z=tab.querySelector('[data-paar="'+f.id+'"]');
+          var z=tab.querySelector('[data-paar="'+j+'"]');
           if(isFinite(v)){ z.innerHTML="("+fmt(f.x)+"&#8202;|&#8202;"+fmt(v)+")"; z.classList.add("voll"); }
           else { z.innerHTML="("+fmt(f.x)+"&#8202;|&#8202;?)"; z.classList.remove("voll"); }
         });
@@ -683,7 +751,7 @@ function aufgabeBauen(sid,niv,i,a){
       gruppe.className="paar";
       gruppe.innerHTML='<span class="name">'+paarName+'</span><span class="klammer">(</span>';
       var i1=document.createElement("input");
-      i1.type="text"; i1.id=felder[0].id; i1.inputMode="decimal"; i1.autocomplete="off";
+      i1.type="text"; i1.inputMode="decimal"; i1.autocomplete="off";
       i1.setAttribute("aria-label","x-Koordinate");
       felder[0].el = i1;
       gruppe.appendChild(i1);
@@ -696,7 +764,7 @@ function aufgabeBauen(sid,niv,i,a){
         gruppe.appendChild(fest);
       } else {
         var i2=document.createElement("input");
-        i2.type="text"; i2.id=felder[1].id; i2.inputMode="decimal"; i2.autocomplete="off";
+        i2.type="text"; i2.inputMode="decimal"; i2.autocomplete="off";
         i2.setAttribute("aria-label","y-Koordinate");
         felder[1].el = i2;
         gruppe.appendChild(i2);
@@ -711,9 +779,9 @@ function aufgabeBauen(sid,niv,i,a){
         var w=document.createElement("div");
         w.className="feld";
         var lab=document.createElement("label");
-        lab.innerHTML=f.label; lab.setAttribute("for",f.id);
+        lab.innerHTML=f.label;
         var inp=document.createElement("input");
-        inp.type="text"; inp.id=f.id; inp.autocomplete="off";
+        inp.type="text"; inp.autocomplete="off";
         inp.inputMode = f.wort ? "text":"decimal";
         f.el = inp;
         w.appendChild(lab); w.appendChild(inp);
@@ -726,15 +794,14 @@ function aufgabeBauen(sid,niv,i,a){
     reihe.appendChild(pb);
     box.appendChild(reihe);
 
-    /* ---- Live-Vorschau: Station 2 (Term) und Station 4 (Gleichung) ---- */
     if((a.typ==="koeff" || a.typ==="aufstellen") && felder.length===2){
       var istKoeff = (a.typ==="koeff");
       var beschriftung = istKoeff ? "Deine L\u00f6sung behauptet:" : "Deine Gleichung:";
       var linkeSeite   = istKoeff ? a.t+" = " : "y = ";
       var symA = istKoeff ? "a" : "m";
       var symB = istKoeff ? "b" : "n";
-
       var feldA = felder[0].el, feldB = felder[1].el;
+
       var vorschau=document.createElement("div");
       vorschau.className="vorschau";
       box.appendChild(vorschau);
@@ -814,7 +881,7 @@ function zeichenFeld(k,a){
   for(var x=MIN;x<=MAX;x++) for(var y=MIN;y<=MAX;y++){
     s+='<circle class="ziel" cx="'+sx(x)+'" cy="'+sy(y)+'" r="9" data-x="'+x+'" data-y="'+y+'"></circle>';
   }
-  s+='</svg><p class="legende" data-hinweis="'+k+'">Noch kein Punkt gesetzt.</p>';
+  s+='</svg><p class="legende" data-hinweis="1">Noch kein Punkt gesetzt.</p>';
   return s;
 }
 
@@ -838,8 +905,8 @@ document.addEventListener("click", function(ev){
   liste.forEach(function(p){ inhalt+='<circle class="gesetzt" cx="'+sx(p[0])+'" cy="'+sy(p[1])+'" r="5"/>'; });
   g.innerHTML=inhalt;
 
-  var hinweis=svg.parentNode.querySelector('[data-hinweis="'+k+'"]');
   var box=svg.closest(".aufgabe");
+  var hinweis=box.querySelector('[data-hinweis]');
   if(liste.length<2){
     hinweis.textContent = liste.length===0 ? "Noch kein Punkt gesetzt.":"Ein Punkt gesetzt. Setze einen zweiten.";
     hinweis.style.color="var(--tinte-hell)";
