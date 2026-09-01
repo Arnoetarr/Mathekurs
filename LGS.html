@@ -187,6 +187,7 @@ input[type=text]:focus{
 }
 .vorschau .gl{font-family:Georgia,serif;font-style:italic;font-size:1.15em;color:var(--tinte);margin-left:4px}
 .vorschau .gl .zahl{font-style:normal}
+.vorschau .gl .platzhalter{color:var(--tinte-zart)}
 
 .rueck{margin-top:15px;font-size:.93rem;padding:11px 15px;border-radius:3px;display:none}
 .rueck.zeigen{display:block}
@@ -300,6 +301,22 @@ function term(m,n){
 }
 function paar(x,y){ return "(" + fmt(x) + "&#8202;|&#8202;" + fmt(y) + ")"; }
 
+// Zahlen im Term aufrecht setzen (Variablen bleiben kursiv)
+function zahlenAufrecht(s){
+  return s.replace(/(\u2212?[\d]+(?:,[\d]+)?)/g,'<span class="zahl">$1</span>');
+}
+
+/* Live-Vorschau: baut "…x + …" aus den beiden Eingaben.
+   symA / symB sind die Platzhalter, solange ein Feld leer ist. */
+function vorschauTerm(av, bv, symA, symB){
+  var pa='<span class="platzhalter">'+symA+'</span>';
+  var pb='<span class="platzhalter">'+symB+'</span>';
+  if(!isFinite(av) && !isFinite(bv)) return pa+"x + "+pb;
+  if(!isFinite(av))  return pa+"x "+(bv<0?"\u2212 ":"+ ")+'<span class="zahl">'+fmt(Math.abs(bv))+"</span>";
+  if(!isFinite(bv))  return '<span class="zahl">'+fmt(av)+"</span>x + "+pb;
+  return zahlenAufrecht(term(av,bv));
+}
+
 /* ---------- Koordinatensystem ---------- */
 var MIN=-6, MAX=6, PX=30, RAND=18;
 var GROESSE=(MAX-MIN)*PX + 2*RAND;
@@ -382,7 +399,7 @@ var STATIONEN=[
 {
   id:"klammern", name:"Klammern",
   titel:"Station 2 – Klammern auflösen",
-  info:"Vereinfache jeden Term zur Form ax + b und gib a und b ein. Ohne sicheres Klammerrechnen scheitert später jedes Einsetzungsverfahren.",
+  info:"Vereinfache jeden Term zur Form ax + b. Unter den Feldern siehst du beim Tippen, welche Gleichung deine Eingabe gerade behauptet.",
   merksatz:'<span class="kopf">Merke</span>Der Faktor vor der Klammer wird mit <em>jedem</em> Summanden in der Klammer multipliziert \u2013 auch mit dem hinteren. Ein Minus vor der Klammer dreht alle Vorzeichen um.',
   niveaus:{
     grund:[
@@ -576,6 +593,7 @@ function aufgabeBauen(sid,niv,i,a){
       +'<p class="hinweiszeile">Ergebnis in der Form <span class="mathe">ax + b</span></p>';
     felder.push({label:"a =", soll:a.a, id:k+"-0"});
     felder.push({label:"b =", soll:a.b, id:k+"-1"});
+    erfolg="Richtig. "+'<span class="mathe">'+a.t+" = "+zahlenAufrecht(term(a.a,a.b))+"</span>";
   }
   else if(a.typ==="zeichnen"){
     koerper+='<p class="frage">Zeichne die Gerade <span class="mathe">y = '+term(a.m,a.n)+'</span>, indem du zwei passende Gitterpunkte anklickst.</p>'
@@ -691,20 +709,23 @@ function aufgabeBauen(sid,niv,i,a){
     reihe.appendChild(pb);
     box.appendChild(reihe);
 
-    var vorschau=null;
-    if(a.typ==="aufstellen"){
-      vorschau=document.createElement("div");
+    /* ---- Live-Vorschau: Station 2 (Term) und Station 4 (Gleichung) ---- */
+    if(a.typ==="koeff" || a.typ==="aufstellen"){
+      var istKoeff = (a.typ==="koeff");
+      var beschriftung = istKoeff ? "Deine L\u00f6sung behauptet:" : "Deine Gleichung:";
+      var linkeSeite   = istKoeff ? a.t+" = " : "y = ";
+      var symA = istKoeff ? "a" : "m";
+      var symB = istKoeff ? "b" : "n";
+
+      var vorschau=document.createElement("div");
       vorschau.className="vorschau";
       box.appendChild(vorschau);
+
       var aktualisiere=function(){
-        var mv=zahl(document.getElementById(k+"-0").value);
-        var nv=zahl(document.getElementById(k+"-1").value);
-        var txt;
-        if(!isFinite(mv)&&!isFinite(nv)) txt="y = m&#8202;x + n";
-        else if(!isFinite(mv)) txt="y = m&#8202;x "+(nv<0?"\u2212 ":"+ ")+'<span class="zahl">'+fmt(Math.abs(nv))+"</span>";
-        else if(!isFinite(nv)) txt="y = "+'<span class="zahl">'+fmt(mv)+"</span>x + n";
-        else txt="y = "+term(mv,nv).replace(/(\u2212?[\d,]+)/g,'<span class="zahl">$1</span>');
-        vorschau.innerHTML='Deine Gleichung:<span class="gl">'+txt+'</span>';
+        var av=zahl(document.getElementById(k+"-0").value);
+        var bv=zahl(document.getElementById(k+"-1").value);
+        vorschau.innerHTML = beschriftung
+          + '<span class="gl">' + linkeSeite + vorschauTerm(av,bv,symA,symB) + '</span>';
       };
       reihe.addEventListener("input", aktualisiere);
       aktualisiere();
