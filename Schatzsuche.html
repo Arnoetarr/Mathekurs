@@ -105,7 +105,7 @@ svg.brett{display:block;width:100%;height:auto;touch-action:manipulation}
 .zaehler{font-size:15px;color:var(--tinte-hell);border-top:2px dotted var(--karo);padding-top:9px;margin-top:8px}
 
 /* Fortschritt */
-.muenzen{display:flex;gap:5px;margin:2px 0 10px;font-size:23px;line-height:1}
+.muenzen{display:grid;grid-template-columns:repeat(5,max-content);gap:5px 7px;margin:2px 0 12px;font-size:23px;line-height:1;justify-content:start}
 .muenzen span{filter:grayscale(1);opacity:.35}
 .muenzen span.voll{filter:none;opacity:1}
 
@@ -118,6 +118,11 @@ button.knopf:focus-visible{outline:3px solid var(--meer);outline-offset:2px}
 button.knopf[disabled]{opacity:.45;cursor:default;box-shadow:none}
 .knopfreihe{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
 label.wahl{display:block;font-size:15px;margin:14px 0 4px;color:var(--tinte-hell)}
+.werkzeuge{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px}
+.werkzeuge button{font:inherit;font-size:15px;border:3px solid var(--tinte);border-radius:8px;
+  padding:5px 11px;background:var(--pergament-dunkel);color:var(--tinte);cursor:pointer}
+.werkzeuge button[aria-pressed="true"]{background:var(--korall);color:#fff}
+.werkzeuge button:focus-visible{outline:3px solid var(--meer);outline-offset:2px}
 label.haken{display:flex;align-items:center;gap:9px;font-size:15px;margin:14px 0 2px;color:var(--tinte-hell);cursor:pointer}
 label.haken input{width:20px;height:20px;accent-color:var(--korall);flex:0 0 auto}
 select,input[type=number]{font:inherit;border:3px solid var(--tinte);border-radius:8px;padding:6px 8px;background:#fff;color:var(--tinte)}
@@ -177,10 +182,11 @@ footer button{font:inherit;font-size:14px;background:none;border:none;color:var(
     <div class="brett-rahmen" id="brett1"></div>
     <div class="tafel">
       <h2>🧭 Kartenkunde</h2>
-      <p class="untertitel">Sammle 5 Dublonen, dann darfst du an Bord.</p>
+      <p class="untertitel">Sammle 10 Dublonen, dann darfst du an Bord.</p>
+      <div class="werkzeuge" id="wz1"></div>
       <div class="muenzen" id="m1"></div>
       <p class="auftrag" id="a1">…</p>
-      <p class="rueckmeldung" id="f1">Klicke auf den Gitterpunkt, an dem der Punkt liegt.</p>
+      <p class="rueckmeldung" id="f1">Klicke auf den Gitterpunkt, an dem der Punkt liegt. Eine Dublone gibt es nur beim ersten Klick.</p>
       <p class="zaehler" id="z1"></p>
       <div class="weiter" id="weiter1">
         <button class="knopf gold" data-ziel="1">Weiter zum Ausguck</button>
@@ -195,7 +201,7 @@ footer button{font:inherit;font-size:14px;background:none;border:none;color:var(
     <div class="brett-rahmen" id="brett2"></div>
     <div class="tafel">
       <h2>🔭 Im Ausguck</h2>
-      <p class="untertitel">Sammle 5 Dublonen, dann sticht das Schiff in See.</p>
+      <p class="untertitel">Sammle 10 Dublonen, dann sticht das Schiff in See.</p>
       <div class="muenzen" id="m2"></div>
       <p class="auftrag" id="a2">…</p>
       <div class="eingabe">
@@ -224,6 +230,7 @@ footer button{font:inherit;font-size:14px;background:none;border:none;color:var(
     <div class="tafel">
       <h2>🏝️ Gestrandet auf der Insel</h2>
       <p class="untertitel" id="u3">Teil 1 von 2</p>
+      <div class="werkzeuge" id="wz3"></div>
       <p class="zettel" id="zettel3">…</p>
       <p class="auftrag" id="a3">…</p>
       <div class="eingabe" id="ein3">
@@ -253,6 +260,7 @@ footer button{font:inherit;font-size:14px;background:none;border:none;color:var(
     <div class="tafel">
       <h2>📜 Der Hinweis aus der Todesbucht</h2>
       <p class="untertitel">Folge dem Wegzettel Schritt für Schritt.</p>
+      <div class="werkzeuge" id="wz4"></div>
       <p class="zettel" id="zettel4">…</p>
       <p class="auftrag" id="a4">…</p>
       <p class="rueckmeldung" id="f4"></p>
@@ -275,6 +283,7 @@ footer button{font:inherit;font-size:14px;background:none;border:none;color:var(
     <div class="tafel">
       <h2>📐 Segelwerkstatt</h2>
       <p class="untertitel">Neue Segel zuschneiden: Punkte eintragen, verbinden, benennen.</p>
+      <div class="werkzeuge" id="wz5"></div>
       <p class="auftrag" id="a5">…</p>
       <ul class="liste" id="l5"></ul>
       <div class="namen" id="n5"></div>
@@ -297,7 +306,8 @@ footer button{font:inherit;font-size:14px;background:none;border:none;color:var(
     <div class="brett-rahmen" id="brett6"></div>
     <div class="tafel">
       <h2>💰 Selbst verstecken</h2>
-      <p class="untertitel">Zum Schluss versteckt ihr euren eigenen Schatz.</p>
+      <p class="untertitel" id="u6">Zum Schluss versteckt ihr euren eigenen Schatz.</p>
+      <p class="zettel" id="zettel6"></p>
       <p class="auftrag" id="a6">…</p>
       <p class="rueckmeldung" id="f6"></p>
       <div class="knopfreihe">
@@ -416,8 +426,9 @@ function bauBrett(host, opt){
   const kl1 = el("line"), kl2 = el("line"), kt = el("text");
   kreuz.appendChild(kl1); kreuz.appendChild(kl2); kreuz.appendChild(kt);
   const treffer = el("rect",{x:0,y:0,width:BW,height:BH,fill:"transparent"});
+  const ebeneM = el("g",{"pointer-events":"none"});
   const ebene = el("g",{"pointer-events":"none"});
-  svg.appendChild(treffer); svg.appendChild(kreuz); svg.appendChild(ebene);
+  svg.appendChild(treffer); svg.appendChild(ebeneM); svg.appendChild(kreuz); svg.appendChild(ebene);
   host.innerHTML = ""; host.appendChild(svg);
 
   function gitterPunkt(ev){
@@ -433,12 +444,32 @@ function bauBrett(host, opt){
   }
 
   let fkAn = opt.kreuz !== false;
+  let aktivesWerkzeug = "antwort";
+  const marken = new Map();
+
+  function markeUmschalten(x,y){
+    const k = x + "," + y;
+    if (marken.has(k)){ marken.get(k).remove(); marken.delete(k); return; }
+    const g = el("g");
+    g.appendChild(el("circle",{cx:sx(x),cy:sy(y),r:10,fill:"rgba(27,90,112,0.16)",
+      stroke:"#1B5A70","stroke-width":3}));
+    ebeneM.appendChild(g);
+    marken.set(k, g);
+  }
 
   const brett = {
     n:n, sx:sx, sy:sy,
     fadenkreuz(an){ fkAn = !!an; if (!an) kreuz.setAttribute("visibility","hidden"); },
+    setzeWerkzeug(w){ aktivesWerkzeug = w; },
+    markenWeg(){ marken.forEach(g => g.remove()); marken.clear(); },
+    markenZahl(){ return marken.size; },
     leeren(){ while (ebene.firstChild) ebene.removeChild(ebene.firstChild); },
-    beiKlick(fn){ treffer.addEventListener("click", ev => { const g = gitterPunkt(ev); if (g) fn(g); }); },
+    beiKlick(fn){ treffer.addEventListener("click", ev => {
+      const g = gitterPunkt(ev);
+      if (!g) return;
+      if (aktivesWerkzeug === "markieren"){ markeUmschalten(g.x, g.y); return; }
+      fn(g);
+    }); },
     punkt(x,y,o){
       o = o || {};
       const g = el("g");
@@ -503,6 +534,28 @@ function bauBrett(host, opt){
   return brett;
 }
 
+/* ================= Werkzeugleiste ================= */
+function werkzeugleiste(hostId, brett){
+  const host = document.getElementById(hostId);
+  const antwort = document.createElement("button");
+  const marke = document.createElement("button");
+  const weg = document.createElement("button");
+  antwort.textContent = "\u270B Antworten";
+  marke.textContent = "\u270F\uFE0F Markieren";
+  weg.textContent = "Markierungen weg";
+  antwort.setAttribute("aria-pressed","true");
+  marke.setAttribute("aria-pressed","false");
+  function waehle(w){
+    brett.setzeWerkzeug(w);
+    antwort.setAttribute("aria-pressed", w === "antwort" ? "true" : "false");
+    marke.setAttribute("aria-pressed", w === "markieren" ? "true" : "false");
+  }
+  antwort.addEventListener("click", () => waehle("antwort"));
+  marke.addEventListener("click", () => waehle("markieren"));
+  weg.addEventListener("click", () => brett.markenWeg());
+  host.appendChild(antwort); host.appendChild(marke); host.appendChild(weg);
+}
+
 /* ================= Reiseweg ================= */
 const STATIONEN = [
   {id:"s1", icon:"🧭", titel:"Kartenkunde"},
@@ -539,6 +592,7 @@ function geheZu(i){
   STATIONEN.forEach((st, k) =>
     document.getElementById(st.id).classList.toggle("aktiv", k === i));
   malReiseweg();
+  if (i === 5 && typeof zugang6 === "function") zugang6();
   window.scrollTo({top:0, behavior:"smooth"});
 }
 function freischalten(i){
@@ -587,8 +641,8 @@ function malMuenzen(hostId, hat, soll){
 /* ================= 1: Punkte eintragen ================= */
 const B1 = bauBrett(document.getElementById("brett1"));
 const A1 = document.getElementById("a1"), F1 = document.getElementById("f1"), Z1 = document.getElementById("z1");
-const st1 = {ziel:null, treffer:0, versuche:0, nr:0, gesperrt:false};
-const ZIEL1 = 5;
+const st1 = {ziel:null, treffer:0, versuche:0, nr:0, gesperrt:false, fehl:0};
+const ZIEL1 = 10;
 
 function neuerPunkt1(){
   let p;
@@ -596,35 +650,58 @@ function neuerPunkt1(){
   while (st1.ziel && p.x === st1.ziel.x && p.y === st1.ziel.y);
   st1.ziel = p;
   st1.gesperrt = false;
+  st1.fehl = 0;
   A1.innerHTML = "Trage ein: <b>" + BUCH[st1.nr % 16] + " (" + p.x + " | " + p.y + ")</b>";
   Z1.textContent = "Versuche insgesamt: " + st1.versuche;
   malMuenzen("m1", Math.min(st1.treffer, ZIEL1), ZIEL1);
+}
+function weiter1(){
+  st1.nr++;
+  if (st1.nr % 8 === 0) B1.leeren();
+  neuerPunkt1();
 }
 B1.beiKlick(g => {
   if (st1.gesperrt) return;
   const p = st1.ziel;
   st1.versuche++;
   if (g.x === p.x && g.y === p.y){
-    st1.gesperrt = true; st1.treffer++;
-    B1.punkt(p.x, p.y, {name:BUCH[st1.nr % 16], farbe:"#3E9455"});
-    muenzeGeben(1);
+    st1.gesperrt = true;
+    const ersterKlick = st1.fehl === 0;
+    B1.punkt(p.x, p.y, {name:BUCH[st1.nr % 16], farbe: ersterKlick ? "#3E9455" : "#4B7787"});
     F1.className = "rueckmeldung gut";
-    F1.textContent = "Richtig. " + BUCH[st1.nr % 16] + " liegt " + p.x + " nach rechts und " + p.y + " nach oben.";
-    malMuenzen("m1", Math.min(st1.treffer, ZIEL1), ZIEL1);
-    if (st1.treffer === ZIEL1){
-      freischalten(0);
-      F1.textContent = "Fünf Dublonen zusammen. Du darfst an Bord – oder du übst hier noch weiter.";
+    if (ersterKlick){
+      st1.treffer++;
+      muenzeGeben(1);
+      F1.textContent = "Richtig, auf Anhieb. " + BUCH[st1.nr % 16] + " liegt " + p.x
+        + " nach rechts und " + p.y + " nach oben.";
+      malMuenzen("m1", Math.min(st1.treffer, ZIEL1), ZIEL1);
+      if (st1.treffer === ZIEL1){
+        freischalten(0);
+        F1.textContent = ZIEL1 + " Dublonen zusammen. Du darfst an Bord – oder du übst hier noch weiter.";
+      }
+    } else {
+      F1.textContent = "Jetzt stimmt es. Eine Dublone gibt es nur, wenn der erste Klick sitzt.";
     }
-    setTimeout(() => { st1.nr++; if (st1.nr % 8 === 0) B1.leeren(); neuerPunkt1(); }, 950);
+    setTimeout(weiter1, 950);
   } else {
+    st1.fehl++;
     const kx = B1.kreuzchen(g.x, g.y);
     setTimeout(() => kx.remove(), 1400);
     F1.className = "rueckmeldung daneben";
-    F1.textContent = "Dort liegt (" + g.x + " | " + g.y + "). Gehe von der Null aus erst "
-      + p.x + " nach rechts und dann " + p.y + " nach oben.";
+    if (st1.fehl >= 3){
+      st1.gesperrt = true;
+      B1.punkt(p.x, p.y, {name:BUCH[st1.nr % 16], farbe:"#4B7787", blass:true});
+      F1.textContent = "Hier liegt (" + p.x + " | " + p.y + "): " + p.x + " nach rechts, "
+        + p.y + " nach oben. Schau es dir an, dann kommt die nächste Aufgabe.";
+      setTimeout(weiter1, 2600);
+    } else {
+      F1.textContent = "Dort liegt (" + g.x + " | " + g.y + "). Gehe von der Null aus erst "
+        + p.x + " nach rechts und dann " + p.y + " nach oben.";
+    }
     Z1.textContent = "Versuche insgesamt: " + st1.versuche;
   }
 });
+werkzeugleiste("wz1", B1);
 neuerPunkt1();
 
 /* ================= 2: Punkte ablesen ================= */
@@ -632,7 +709,7 @@ const B2 = bauBrett(document.getElementById("brett2"), {kreuz:false});
 const A2 = document.getElementById("a2"), F2 = document.getElementById("f2"), Z2 = document.getElementById("z2");
 const EX = document.getElementById("e2x"), EY = document.getElementById("e2y"), EN = document.getElementById("e2name");
 const st2 = {liste:[], nr:0, treffer:0, versuch:0, runde:0};
-const ZIEL2 = 5;
+const ZIEL2 = 10;
 
 function runde2(){
   st2.liste = []; st2.nr = 0;
@@ -674,7 +751,7 @@ function pruef2(){
     st2.versuch = 0; st2.nr++;
     if (st2.treffer === ZIEL2 && !fertig[1]){
       freischalten(1);
-      F2.textContent = "Fünf Dublonen zusammen. Das Schiff kann ablegen.";
+      F2.textContent = ZIEL2 + " Dublonen zusammen. Das Schiff kann ablegen.";
     }
     if (st2.nr >= st2.liste.length){ runde2(); } else { malen2(); zeige2(); }
     EX.focus();
@@ -795,7 +872,8 @@ B3.beiKlick(g => {
   if (st3.teil !== "b") return;
   const o = EINTRAGEN3[st3.nr];
   if (g.x === o.x && g.y === o.y){
-    st3.nr++; muenzeGeben(1);
+    if (st3.versuch === 0) muenzeGeben(1);
+    st3.versuch = 0; st3.nr++;
     F3.className = "rueckmeldung gut";
     F3.textContent = o.name + " eingetragen.";
     if (st3.nr >= EINTRAGEN3.length){
@@ -805,15 +883,18 @@ B3.beiKlick(g => {
     }
     zeige3();
   } else {
+    st3.versuch++;
     F3.className = "rueckmeldung daneben";
     F3.textContent = "Dort liegt (" + g.x + " | " + g.y + "). Gesucht ist ("
-      + o.x + " | " + o.y + "): " + o.x + " nach rechts, " + o.y + " nach oben.";
+      + o.x + " | " + o.y + "): " + o.x + " nach rechts, " + o.y + " nach oben."
+      + (st3.versuch === 1 ? " Für die Dublone muss der erste Klick sitzen." : "");
     const kx = B3.kreuzchen(g.x, g.y);
     setTimeout(() => kx.remove(), 1300);
   }
 });
 document.getElementById("b3pruef").addEventListener("click", pruef3);
 [E3X,E3Y].forEach(e => e.addEventListener("keydown", ev => { if (ev.key === "Enter") pruef3(); }));
+werkzeugleiste("wz3", B3);
 zeige3();
 
 /* ================= 4: Der Hinweis ================= */
@@ -832,7 +913,7 @@ const SCHRITTE = [
    ziel:{x:2,y:7},
    hilfe:"Du schaust nach Westen. Vorwärts heißt also nach links auf der Karte, und links von dir ist Süden."}
 ];
-const st4 = {nr:0, weg:[], blick:null, fertig:false};
+const st4 = {nr:0, weg:[], blick:null, fertig:false, versuch:0};
 
 function malen4(){
   B4.leeren();
@@ -871,7 +952,8 @@ B4.beiKlick(g => {
     st4.weg.push({x:g.x, y:g.y});
     if (s.dreht) st4.blick = s.dreht;
     st4.nr++;
-    muenzeGeben(1);
+    if (st4.versuch === 0) muenzeGeben(1);
+    st4.versuch = 0;
     F4.className = "rueckmeldung gut";
     if (st4.nr >= SCHRITTE.length){
       st4.fertig = true;
@@ -883,6 +965,7 @@ B4.beiKlick(g => {
     }
     zeige4();
   } else {
+    st4.versuch++;
     F4.className = "rueckmeldung daneben";
     F4.textContent = "Dort liegt (" + g.x + " | " + g.y + "). " + s.hilfe;
     const kx = B4.kreuzchen(g.x, g.y);
@@ -890,10 +973,11 @@ B4.beiKlick(g => {
   }
 });
 document.getElementById("b4neu").addEventListener("click", () => {
-  st4.nr = 0; st4.weg = []; st4.blick = null; st4.fertig = false;
+  st4.nr = 0; st4.weg = []; st4.blick = null; st4.fertig = false; st4.versuch = 0;
   F4.className = "rueckmeldung"; F4.textContent = "";
   zeige4();
 });
+werkzeugleiste("wz4", B4);
 zeige4();
 
 /* ================= 5: Figuren ================= */
@@ -1002,14 +1086,23 @@ B5.beiKlick(g => {
   }
 });
 document.getElementById("b5neu").addEventListener("click", neu5);
+werkzeugleiste("wz5", B5);
 neu5();
 
 
 /* ================= 6: Selbst verstecken ================= */
 const B6 = bauBrett(document.getElementById("brett6"), {ton:"#FBEFD2"});
 const A6 = document.getElementById("a6"), F6 = document.getElementById("f6"), Z6 = document.getElementById("z6");
+const ZE6 = document.getElementById("zettel6");
 const MAXGRAB = 8;
-const st6 = {schatz:null, grabungen:0, phase:"suchen", vorbei:false};
+const st6 = {schatz:null, grabungen:0, phase:"suchen", vorbei:false, frei:true, gestartet:false};
+
+function zugang6(){
+  const wort = dublonen === 1 ? "Dublone" : "Dublonen";
+  ZE6.innerHTML = "🎉 Herzlichen Glückwunsch! Du hast <b>" + dublonen + " " + wort
+    + "</b> gesammelt. Jetzt darfst du deinen eigenen Schatz verstecken.";
+  if (!st6.gestartet){ st6.gestartet = true; spiel6(); }
+}
 
 function spiel6(){
   B6.leeren();
@@ -1089,7 +1182,7 @@ document.getElementById("b6auf").addEventListener("click", () => {
   F6.className = "rueckmeldung daneben";
   F6.textContent = "Der Schatz lag bei (" + st6.schatz.x + " | " + st6.schatz.y + ").";
 });
-spiel6();
+zugang6();
 
 /* ================= Druck ================= */
 bauBrett(document.getElementById("druck1"), {kreuz:false});
