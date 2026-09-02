@@ -1,0 +1,1102 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Die Fahrt der Kapitänin Fuchsauge – Koordinatensystem, Klasse 5</title>
+<style>
+:root{
+  --meer:#1B5A70;
+  --meer-tief:#123E4E;
+  --meer-hell:#8FD0DE;
+  --pergament:#FFF7E6;
+  --pergament-dunkel:#F3E4C4;
+  --sand:#F0DBA0;
+  --wald:#3E9455;
+  --wald-dunkel:#2A6B3C;
+  --gold:#F0B21A;
+  --korall:#D9483E;
+  --tinte:#123A4B;
+  --tinte-hell:#4B7787;
+  --karo:#9FC3CC;
+  --serif:Georgia,"Iowan Old Style","Palatino Linotype",Palatino,serif;
+  --sans:"Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--meer);
+  background-image:radial-gradient(circle at 12% 8%, #2A7285 0, rgba(42,114,133,0) 46%),
+                   radial-gradient(circle at 88% 72%, #14495C 0, rgba(20,73,92,0) 52%);
+  color:var(--tinte);
+  font-family:var(--sans);
+  font-size:17px;
+  line-height:1.5;
+}
+.huelle{max-width:1120px;margin:0 auto;padding:18px 16px 60px}
+
+/* Kopfzeile */
+.kopf{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:16px}
+.kopf h1{
+  font-family:var(--serif);font-weight:400;color:var(--pergament);
+  font-size:clamp(25px,4vw,38px);margin:.15em 0 .1em;
+}
+.kopf p{margin:0;color:var(--meer-hell);max-width:56ch}
+.beutel{
+  background:var(--gold);border:3px solid var(--tinte);border-radius:40px;
+  padding:7px 18px;font-family:var(--serif);font-size:22px;white-space:nowrap;
+  box-shadow:0 3px 0 var(--tinte);
+}
+
+/* Reiseweg */
+.reiseweg{
+  position:relative;display:flex;gap:6px;justify-content:space-between;
+  background:rgba(255,247,230,.12);border:2px solid var(--meer-hell);border-radius:14px;
+  padding:12px 10px;margin-bottom:22px;overflow-x:auto;
+}
+.reiseweg::before{
+  content:"";position:absolute;left:34px;right:34px;top:38px;height:0;
+  border-top:3px dashed var(--meer-hell);opacity:.7;
+}
+.halt{
+  position:relative;background:none;border:none;font:inherit;color:var(--pergament);
+  display:flex;flex-direction:column;align-items:center;gap:5px;
+  width:110px;flex:0 0 auto;cursor:pointer;padding:0;
+}
+.halt .knopf-kreis{
+  width:52px;height:52px;border-radius:50%;background:var(--pergament);
+  border:3px solid var(--tinte);display:grid;place-items:center;font-size:25px;
+  box-shadow:0 3px 0 var(--tinte);
+}
+.halt .titel{font-size:13.5px;line-height:1.25;text-align:center}
+.halt[data-zustand="zu"]{cursor:not-allowed;opacity:.55}
+.halt[data-zustand="zu"] .knopf-kreis{background:var(--meer-tief);border-color:var(--meer-hell);box-shadow:none}
+.halt[data-zustand="fertig"] .knopf-kreis{background:var(--wald);color:#fff}
+.halt[aria-current="true"] .knopf-kreis{background:var(--gold);transform:scale(1.14)}
+.halt[aria-current="true"] .titel{font-weight:700}
+.halt:focus-visible .knopf-kreis{outline:3px solid var(--gold);outline-offset:3px}
+
+/* Stationen */
+.station{display:none}
+.station.aktiv{display:block}
+.spalten{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,350px);gap:22px;align-items:start}
+@media (max-width:860px){.spalten{grid-template-columns:1fr}}
+
+.brett-rahmen{background:var(--pergament);border:4px solid var(--tinte);border-radius:10px;padding:9px;box-shadow:0 6px 0 rgba(0,0,0,.25)}
+svg.brett{display:block;width:100%;height:auto;touch-action:manipulation}
+.karo{stroke:var(--karo);stroke-width:1;opacity:.85}
+.karo-fuenf{stroke:#6E9FAC;stroke-width:1.5}
+.achse{stroke:var(--tinte);stroke-width:2.6;stroke-linecap:round}
+.beschriftung{font-family:var(--sans);font-size:13px;fill:var(--tinte-hell)}
+.achsenname{font-family:var(--serif);font-style:italic;font-size:18px;fill:var(--tinte)}
+.fadenkreuz line{stroke:var(--korall);stroke-width:1.6;stroke-dasharray:5 4}
+.fadenkreuz text{font-family:var(--sans);font-size:14px;font-weight:700;fill:var(--korall)}
+.sinnbild{font-size:26px}
+
+/* Tafel */
+.tafel{background:var(--pergament);border:4px solid var(--tinte);border-radius:10px;padding:16px 18px 18px;box-shadow:0 6px 0 rgba(0,0,0,.25)}
+.tafel h2{font-family:var(--serif);font-weight:400;font-size:23px;margin:0 0 4px}
+.tafel .untertitel{margin:0 0 12px;font-size:15px;color:var(--tinte-hell)}
+.auftrag{font-size:19px;margin:0 0 12px}
+.auftrag b{font-family:var(--serif);font-size:23px}
+.rueckmeldung{min-height:5em;font-size:16px;margin:8px 0 12px}
+.rueckmeldung.gut{color:var(--wald-dunkel);font-weight:600}
+.rueckmeldung.daneben{color:var(--korall)}
+.zaehler{font-size:15px;color:var(--tinte-hell);border-top:2px dotted var(--karo);padding-top:9px;margin-top:8px}
+
+/* Fortschritt */
+.muenzen{display:flex;gap:5px;margin:2px 0 10px;font-size:23px;line-height:1}
+.muenzen span{filter:grayscale(1);opacity:.35}
+.muenzen span.voll{filter:none;opacity:1}
+
+button.knopf{font:inherit;background:var(--pergament-dunkel);border:3px solid var(--tinte);border-radius:8px;padding:7px 13px;cursor:pointer;color:var(--tinte);box-shadow:0 3px 0 var(--tinte)}
+button.knopf:hover{background:#fff}
+button.knopf:active{transform:translateY(3px);box-shadow:none}
+button.knopf.voll{background:var(--korall);color:#fff}
+button.knopf.gold{background:var(--gold)}
+button.knopf:focus-visible{outline:3px solid var(--meer);outline-offset:2px}
+button.knopf[disabled]{opacity:.45;cursor:default;box-shadow:none}
+.knopfreihe{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+label.wahl{display:block;font-size:15px;margin:14px 0 4px;color:var(--tinte-hell)}
+label.haken{display:flex;align-items:center;gap:9px;font-size:15px;margin:14px 0 2px;color:var(--tinte-hell);cursor:pointer}
+label.haken input{width:20px;height:20px;accent-color:var(--korall);flex:0 0 auto}
+select,input[type=number]{font:inherit;border:3px solid var(--tinte);border-radius:8px;padding:6px 8px;background:#fff;color:var(--tinte)}
+select{width:100%}
+input[type=number]{width:78px;font-size:21px;text-align:center}
+.eingabe{display:flex;align-items:center;gap:7px;font-size:23px;font-family:var(--serif)}
+.namen{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.liste{list-style:none;padding:0;margin:0 0 12px;font-family:var(--serif);font-size:18px}
+.liste li{padding:2px 0;color:var(--tinte-hell)}
+.liste li.dran{color:var(--tinte);font-weight:700}
+.liste li.fertig{color:var(--wald-dunkel)}
+.zettel{background:#fff;border:3px dashed var(--tinte-hell);border-radius:8px;padding:10px 12px;margin:0 0 12px;font-family:var(--serif);font-size:18px}
+.weiter{margin-top:14px;display:none}
+.weiter.zeigen{display:block}
+
+/* Fuß */
+footer{margin-top:26px;font-size:14px;color:var(--meer-hell)}
+footer button{font:inherit;font-size:14px;background:none;border:none;color:var(--pergament);text-decoration:underline;cursor:pointer;padding:0}
+.schloss{display:flex;flex-wrap:wrap;align-items:center;gap:9px;margin-top:12px;
+  background:var(--pergament);border:3px solid var(--tinte);border-radius:10px;padding:10px 14px;
+  color:var(--tinte);max-width:520px}
+.schloss label{font-size:15px}
+.schloss input{font:inherit;font-size:16px;border:3px solid var(--tinte);border-radius:8px;padding:5px 8px;width:150px;background:#fff;color:var(--tinte)}
+.schloss button{font:inherit;font-size:15px;color:var(--tinte);text-decoration:none;
+  background:var(--pergament-dunkel);border:3px solid var(--tinte);border-radius:8px;padding:5px 12px;cursor:pointer}
+.schloss #pwtext{font-size:15px}
+.schloss #pwtext.falsch{color:var(--korall);font-weight:600}
+.schloss #pwtext.gut{color:var(--wald-dunkel);font-weight:600}
+
+#druckgitter{display:none}
+@media print{
+  body{background:#fff}
+  .huelle{display:none}
+  #druckgitter{display:block;padding:8mm}
+  #druckgitter h2{font-family:var(--serif);font-weight:400}
+  #druckgitter .brett-rahmen{page-break-inside:avoid;margin-bottom:12mm;box-shadow:none;border-width:2px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="huelle">
+
+<div class="kopf">
+  <div>
+    <h1>Die Fahrt der Kapitänin Fuchsauge</h1>
+    <p>Sechs Stationen von der Kartenkunde bis zum Schatz. Jede Station wird freigeschaltet, wenn die vorherige geschafft ist.</p>
+  </div>
+  <div class="beutel">🪙 <span id="beutel">0</span> Dublonen</div>
+</div>
+
+<nav class="reiseweg" id="reiseweg" aria-label="Stationen der Fahrt"></nav>
+
+<!-- 1 EINTRAGEN -->
+<section class="station aktiv" id="s1">
+  <div class="spalten">
+    <div class="brett-rahmen" id="brett1"></div>
+    <div class="tafel">
+      <h2>🧭 Kartenkunde</h2>
+      <p class="untertitel">Sammle 5 Dublonen, dann darfst du an Bord.</p>
+      <div class="muenzen" id="m1"></div>
+      <p class="auftrag" id="a1">…</p>
+      <p class="rueckmeldung" id="f1">Klicke auf den Gitterpunkt, an dem der Punkt liegt.</p>
+      <p class="zaehler" id="z1"></p>
+      <div class="weiter" id="weiter1">
+        <button class="knopf gold" data-ziel="1">Weiter zum Ausguck</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 2 ABLESEN -->
+<section class="station" id="s2">
+  <div class="spalten">
+    <div class="brett-rahmen" id="brett2"></div>
+    <div class="tafel">
+      <h2>🔭 Im Ausguck</h2>
+      <p class="untertitel">Sammle 5 Dublonen, dann sticht das Schiff in See.</p>
+      <div class="muenzen" id="m2"></div>
+      <p class="auftrag" id="a2">…</p>
+      <div class="eingabe">
+        <span id="e2name">A</span>&nbsp;(
+        <input type="number" id="e2x" min="0" max="10" step="1" inputmode="numeric" aria-label="x-Wert">
+        <span>|</span>
+        <input type="number" id="e2y" min="0" max="10" step="1" inputmode="numeric" aria-label="y-Wert">
+        )
+      </div>
+      <p class="rueckmeldung" id="f2">Lies zuerst an der x‑Achse ab, dann an der y‑Achse.</p>
+      <div class="knopfreihe">
+        <button class="knopf voll" id="b2pruef">Prüfen</button>
+      </div>
+      <p class="zaehler" id="z2"></p>
+      <div class="weiter" id="weiter2">
+        <button class="knopf gold" data-ziel="2">Weiter zur Insel</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 3 INSEL -->
+<section class="station" id="s3">
+  <div class="spalten">
+    <div class="brett-rahmen" id="brett3"></div>
+    <div class="tafel">
+      <h2>🏝️ Gestrandet auf der Insel</h2>
+      <p class="untertitel" id="u3">Teil 1 von 2</p>
+      <p class="zettel" id="zettel3">…</p>
+      <p class="auftrag" id="a3">…</p>
+      <div class="eingabe" id="ein3">
+        <span id="e3name">A</span>&nbsp;(
+        <input type="number" id="e3x" min="0" max="14" step="1" inputmode="numeric" aria-label="x-Wert">
+        <span>|</span>
+        <input type="number" id="e3y" min="0" max="14" step="1" inputmode="numeric" aria-label="y-Wert">
+        )
+      </div>
+      <p class="rueckmeldung" id="f3"></p>
+      <div class="knopfreihe" id="k3">
+        <button class="knopf voll" id="b3pruef">Prüfen</button>
+      </div>
+      <label class="haken"><input type="checkbox" id="fk3"> Koordinaten beim Zeigen einblenden</label>
+      <p class="zaehler" id="z3"></p>
+      <div class="weiter" id="weiter3">
+        <button class="knopf gold" data-ziel="3">Weiter zur Todesbucht</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 4 RÄTSEL -->
+<section class="station" id="s4">
+  <div class="spalten">
+    <div class="brett-rahmen" id="brett4"></div>
+    <div class="tafel">
+      <h2>📜 Der Hinweis aus der Todesbucht</h2>
+      <p class="untertitel">Folge dem Wegzettel Schritt für Schritt.</p>
+      <p class="zettel" id="zettel4">…</p>
+      <p class="auftrag" id="a4">…</p>
+      <p class="rueckmeldung" id="f4"></p>
+      <div class="knopfreihe">
+        <button class="knopf" id="b4neu">Noch einmal von vorn</button>
+      </div>
+      <label class="haken"><input type="checkbox" id="fk4"> Koordinaten beim Zeigen einblenden</label>
+      <p class="zaehler" id="z4"></p>
+      <div class="weiter" id="weiter4">
+        <button class="knopf gold" data-ziel="4">Weiter zur Segelwerkstatt</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 5 FIGUREN -->
+<section class="station" id="s5">
+  <div class="spalten">
+    <div class="brett-rahmen" id="brett5"></div>
+    <div class="tafel">
+      <h2>📐 Segelwerkstatt</h2>
+      <p class="untertitel">Neue Segel zuschneiden: Punkte eintragen, verbinden, benennen.</p>
+      <p class="auftrag" id="a5">…</p>
+      <ul class="liste" id="l5"></ul>
+      <div class="namen" id="n5"></div>
+      <p class="rueckmeldung" id="f5"></p>
+      <div class="knopfreihe">
+        <button class="knopf voll" id="b5neu">Neue Figur</button>
+      </div>
+      <label class="haken"><input type="checkbox" id="fk5"> Koordinaten beim Zeigen einblenden</label>
+      <p class="zaehler" id="z5"></p>
+      <div class="weiter" id="weiter5">
+        <button class="knopf gold" data-ziel="5">Weiter zum Verstecken</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 6 BONUS -->
+<section class="station" id="s6">
+  <div class="spalten">
+    <div class="brett-rahmen" id="brett6"></div>
+    <div class="tafel">
+      <h2>💰 Selbst verstecken</h2>
+      <p class="untertitel">Zum Schluss versteckt ihr euren eigenen Schatz.</p>
+      <p class="auftrag" id="a6">…</p>
+      <p class="rueckmeldung" id="f6"></p>
+      <div class="knopfreihe">
+        <button class="knopf voll" id="b6neu">Neues Spiel</button>
+        <button class="knopf" id="b6auf">Aufgeben</button>
+      </div>
+      <label class="wahl" for="w6modus">Spielart</label>
+      <select id="w6modus">
+        <option value="allein" selected>gegen den Computer</option>
+        <option value="zweit">zu zweit: einer versteckt, einer sucht</option>
+      </select>
+      <label class="wahl" for="w6tipp">Tipps</label>
+      <select id="w6tipp">
+        <option value="voll" selected>Richtung und Entfernung</option>
+        <option value="richtung">nur die Richtung</option>
+        <option value="warm">nur warm oder kalt</option>
+      </select>
+      <p class="zaehler" id="z6"></p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <button id="alleauf">Stationen freischalten</button> ·
+  <button id="drucken">Leeres Gitter drucken</button>
+  <div class="schloss" id="schloss" hidden>
+    <label for="pw">Passwort</label>
+    <input type="password" id="pw" autocomplete="off" autocapitalize="off" spellcheck="false">
+    <button class="knopf" id="pwok">Öffnen</button>
+    <span id="pwtext"></span>
+  </div>
+</footer>
+</div>
+
+<div id="druckgitter">
+  <h2>Koordinatensystem</h2>
+  <div class="brett-rahmen" id="druck1"></div>
+  <div class="brett-rahmen" id="druck2"></div>
+</div>
+
+<script>
+"use strict";
+const NS = "http://www.w3.org/2000/svg";
+const BUCH = "ABCDEFGHIJKLMNOP";
+let markerId = 0;
+const zufall = (a,b) => a + Math.floor(Math.random()*(b-a+1));
+function el(name, attr, text){
+  const e = document.createElementNS(NS, name);
+  for (const k in (attr||{})) e.setAttribute(k, attr[k]);
+  if (text != null) e.textContent = text;
+  return e;
+}
+
+/* ================= Brett ================= */
+const INSEL = [[7,1.4],[9.5,2.2],[11.2,3.0],[10.6,4.1],[11.5,4.7],[12.6,5.4],[12.3,7.6],
+               [13.0,9.4],[12.0,12.0],[10.0,13.6],[7.5,13.9],[5.0,13.5],[3.0,12.4],
+               [1.6,10.4],[1.2,8.0],[2.0,5.8],[3.5,3.6],[5.0,2.2]];
+const WALD = [[4,10],[3.4,10.6],[4.6,10.6],[3.6,9.4],[4.5,9.4],[10,12],[9.4,12.6],[10.6,12.6],[9.6,11.5],[10.5,11.5]];
+
+function bauBrett(host, opt){
+  opt = opt || {};
+  const n = opt.n || 10;
+  const S = opt.s || (n <= 10 ? 42 : 31);
+  const PL = 46, PT = 26, PR = 26, PB = 42;
+  const BW = PL + n*S + PR, BH = PT + n*S + PB;
+  const sx = x => PL + x*S, sy = y => PT + n*S - y*S;
+
+  const svg = el("svg", {viewBox:`0 0 ${BW} ${BH}`, class:"brett"});
+  const id = "pf" + (++markerId);
+  const defs = el("defs");
+  const mk = el("marker",{id:id,markerWidth:8,markerHeight:8,refX:6,refY:3,orient:"auto"});
+  mk.appendChild(el("path",{d:"M0,0 L7,3 L0,6 z",fill:"#123A4B"}));
+  defs.appendChild(mk); svg.appendChild(defs);
+
+  svg.appendChild(el("rect",{x:sx(0)-9,y:sy(n)-9,width:n*S+18,height:n*S+18,
+    fill: opt.insel ? "#9FDCE8" : (opt.ton || "#FFFDF6"), rx:4}));
+
+  if (opt.insel){
+    svg.appendChild(el("polygon",{points:INSEL.map(p=>sx(p[0])+","+sy(p[1])).join(" "),
+      fill:"#F0DBA0", stroke:"#C9A85C","stroke-width":4,"stroke-linejoin":"round"}));
+    svg.appendChild(el("polygon",{points:INSEL.map(p=>sx(p[0])+","+sy(p[1])).join(" "),
+      fill:"none", stroke:"#FFFFFF","stroke-width":9,opacity:.35,"stroke-linejoin":"round"}));
+    WALD.forEach(w => svg.appendChild(el("circle",{cx:sx(w[0]),cy:sy(w[1]),r:S*0.42,
+      fill:"#3E9455",opacity:.55})));
+  }
+
+  for (let i=0;i<=n;i++){
+    const c = (i%5===0) ? "karo-fuenf" : "karo";
+    svg.appendChild(el("line",{x1:sx(i),y1:sy(0),x2:sx(i),y2:sy(n),class:c}));
+    svg.appendChild(el("line",{x1:sx(0),y1:sy(i),x2:sx(n),y2:sy(i),class:c}));
+  }
+  svg.appendChild(el("line",{x1:sx(0),y1:sy(0),x2:sx(n)+22,y2:sy(0),class:"achse","marker-end":`url(#${id})`}));
+  svg.appendChild(el("line",{x1:sx(0),y1:sy(0),x2:sx(0),y2:sy(n)-22,class:"achse","marker-end":`url(#${id})`}));
+  for (let i=1;i<=n;i++){
+    svg.appendChild(el("text",{x:sx(i),y:sy(0)+20,class:"beschriftung","text-anchor":"middle"}, i));
+    svg.appendChild(el("text",{x:sx(0)-11,y:sy(i)+5,class:"beschriftung","text-anchor":"end"}, i));
+  }
+  svg.appendChild(el("text",{x:sx(0)-11,y:sy(0)+20,class:"beschriftung","text-anchor":"end"},"0"));
+  svg.appendChild(el("text",{x:sx(n)+16,y:sy(0)+24,class:"achsenname"},"x"));
+  svg.appendChild(el("text",{x:sx(0)-26,y:sy(n)-18,class:"achsenname"},"y"));
+
+  if (opt.kompass){
+    const kx = sx(n)-16, ky = sy(n)+2;
+    const g = el("g");
+    g.appendChild(el("circle",{cx:kx,cy:ky,r:26,fill:"#FFF7E6",stroke:"#123A4B","stroke-width":3,opacity:.95}));
+    g.appendChild(el("polygon",{points:`${kx},${ky-19} ${kx-7},${ky+4} ${kx+7},${ky+4}`,fill:"#D9483E"}));
+    g.appendChild(el("polygon",{points:`${kx},${ky+19} ${kx-7},${ky-4} ${kx+7},${ky-4}`,fill:"#123A4B",opacity:.6}));
+    g.appendChild(el("text",{x:kx,y:ky-21,class:"beschriftung","text-anchor":"middle","font-weight":"700"},"N"));
+    g.appendChild(el("text",{x:kx,y:ky+34,class:"beschriftung","text-anchor":"middle","font-weight":"700"},"S"));
+    g.appendChild(el("text",{x:kx+31,y:ky+5,class:"beschriftung","text-anchor":"middle","font-weight":"700"},"O"));
+    g.appendChild(el("text",{x:kx-31,y:ky+5,class:"beschriftung","text-anchor":"middle","font-weight":"700"},"W"));
+    svg.appendChild(g);
+  }
+
+  const kreuz = el("g",{class:"fadenkreuz",visibility:"hidden","pointer-events":"none"});
+  const kl1 = el("line"), kl2 = el("line"), kt = el("text");
+  kreuz.appendChild(kl1); kreuz.appendChild(kl2); kreuz.appendChild(kt);
+  const treffer = el("rect",{x:0,y:0,width:BW,height:BH,fill:"transparent"});
+  const ebene = el("g",{"pointer-events":"none"});
+  svg.appendChild(treffer); svg.appendChild(kreuz); svg.appendChild(ebene);
+  host.innerHTML = ""; host.appendChild(svg);
+
+  function gitterPunkt(ev){
+    const ctm = svg.getScreenCTM();
+    if (!ctm) return null;
+    const p = svg.createSVGPoint();
+    p.x = ev.clientX; p.y = ev.clientY;
+    const q = p.matrixTransform(ctm.inverse());
+    const x = Math.round((q.x - PL)/S), y = Math.round((sy(0) - q.y)/S);
+    if (x<0 || x>n || y<0 || y>n) return null;
+    if (Math.abs(q.x - sx(x)) > S*0.62 || Math.abs(q.y - sy(y)) > S*0.62) return null;
+    return {x:x, y:y};
+  }
+
+  let fkAn = opt.kreuz !== false;
+
+  const brett = {
+    n:n, sx:sx, sy:sy,
+    fadenkreuz(an){ fkAn = !!an; if (!an) kreuz.setAttribute("visibility","hidden"); },
+    leeren(){ while (ebene.firstChild) ebene.removeChild(ebene.firstChild); },
+    beiKlick(fn){ treffer.addEventListener("click", ev => { const g = gitterPunkt(ev); if (g) fn(g); }); },
+    punkt(x,y,o){
+      o = o || {};
+      const g = el("g");
+      g.appendChild(el("circle",{cx:sx(x),cy:sy(y),r:o.r||7,fill:o.farbe||"#D9483E",
+        stroke:"#fff","stroke-width":2.5,opacity:o.blass?0.45:1}));
+      if (o.name) g.appendChild(el("text",{x:sx(x)+13,y:sy(y)-12,class:"achsenname",
+        fill:o.farbe||"#D9483E",opacity:o.blass?0.5:1}, o.name));
+      ebene.appendChild(g); return g;
+    },
+    sinnbild(x,y,zeichen,beschriftung){
+      const g = el("g");
+      g.appendChild(el("circle",{cx:sx(x),cy:sy(y),r:16,fill:"#FFF7E6",stroke:"#123A4B","stroke-width":3}));
+      g.appendChild(el("text",{x:sx(x),y:sy(y),class:"sinnbild","text-anchor":"middle",
+        "dominant-baseline":"central"}, zeichen));
+      if (beschriftung){
+        const t = el("text",{x:sx(x),y:sy(y)+34,class:"beschriftung","text-anchor":"middle",
+          "font-weight":"700",fill:"#123A4B"}, beschriftung);
+        g.appendChild(t);
+      }
+      ebene.appendChild(g); return g;
+    },
+    kreuzchen(x,y,farbe){
+      const d = 9, g = el("g");
+      g.appendChild(el("line",{x1:sx(x)-d,y1:sy(y)-d,x2:sx(x)+d,y2:sy(y)+d,stroke:farbe||"#D9483E","stroke-width":3.4,"stroke-linecap":"round"}));
+      g.appendChild(el("line",{x1:sx(x)-d,y1:sy(y)+d,x2:sx(x)+d,y2:sy(y)-d,stroke:farbe||"#D9483E","stroke-width":3.4,"stroke-linecap":"round"}));
+      ebene.appendChild(g); return g;
+    },
+    text(x,y,s,farbe){
+      ebene.appendChild(el("text",{x:sx(x),y:sy(y)+5,"text-anchor":"middle",class:"beschriftung",
+        fill:farbe||"#123A4B","font-weight":"700","font-size":"14"}, s));
+    },
+    linien(pkte,o){
+      o = o || {};
+      const d = pkte.map(p => sx(p.x)+","+sy(p.y)).join(" ");
+      const f = el(o.zu ? "polygon" : "polyline",{points:d,
+        fill:o.zu ? (o.fuell||"rgba(240,178,26,0.30)") : "none",
+        stroke:o.farbe||"#D9483E","stroke-width":o.strich||3.5,
+        "stroke-linejoin":"round","stroke-linecap":"round",
+        "stroke-dasharray":o.gestrichelt?"9 7":"none"});
+      ebene.appendChild(f); return f;
+    }
+  };
+
+  {
+    treffer.addEventListener("pointermove", ev => {
+      if (ev.pointerType === "touch" || !fkAn){ kreuz.setAttribute("visibility","hidden"); return; }
+      const g = gitterPunkt(ev);
+      if (!g){ kreuz.setAttribute("visibility","hidden"); return; }
+      kreuz.setAttribute("visibility","visible");
+      kl1.setAttribute("x1",sx(0)); kl1.setAttribute("y1",sy(g.y));
+      kl1.setAttribute("x2",sx(g.x)); kl1.setAttribute("y2",sy(g.y));
+      kl2.setAttribute("x1",sx(g.x)); kl2.setAttribute("y1",sy(0));
+      kl2.setAttribute("x2",sx(g.x)); kl2.setAttribute("y2",sy(g.y));
+      const rechts = g.x > n-3;
+      kt.setAttribute("x", sx(g.x) + (rechts ? -12 : 12));
+      kt.setAttribute("y", sy(g.y) - 13);
+      kt.setAttribute("text-anchor", rechts ? "end" : "start");
+      kt.textContent = "(" + g.x + " | " + g.y + ")";
+    });
+    treffer.addEventListener("pointerleave", () => kreuz.setAttribute("visibility","hidden"));
+  }
+  return brett;
+}
+
+/* ================= Reiseweg ================= */
+const STATIONEN = [
+  {id:"s1", icon:"🧭", titel:"Kartenkunde"},
+  {id:"s2", icon:"🔭", titel:"Ausguck"},
+  {id:"s3", icon:"🏝️", titel:"Die Insel"},
+  {id:"s4", icon:"📜", titel:"Der Hinweis"},
+  {id:"s5", icon:"📐", titel:"Segelwerkstatt"},
+  {id:"s6", icon:"💰", titel:"Selbst verstecken"}
+];
+let offen = 0, aktiv = 0;
+const fertig = STATIONEN.map(() => false);
+let dublonen = 0;
+
+function muenzeGeben(anzahl){
+  dublonen += (anzahl || 1);
+  document.getElementById("beutel").textContent = dublonen;
+}
+function malReiseweg(){
+  const nav = document.getElementById("reiseweg");
+  nav.innerHTML = "";
+  STATIONEN.forEach((st, i) => {
+    const b = document.createElement("button");
+    b.className = "halt";
+    b.dataset.zustand = fertig[i] ? "fertig" : (i <= offen ? "auf" : "zu");
+    if (i === aktiv) b.setAttribute("aria-current","true");
+    b.innerHTML = '<span class="knopf-kreis">' + (i <= offen ? (fertig[i] ? "✔" : st.icon) : "🔒")
+      + '</span><span class="titel">' + (i+1) + ". " + st.titel + "</span>";
+    b.addEventListener("click", () => { if (i <= offen) geheZu(i); });
+    nav.appendChild(b);
+  });
+}
+function geheZu(i){
+  aktiv = i;
+  STATIONEN.forEach((st, k) =>
+    document.getElementById(st.id).classList.toggle("aktiv", k === i));
+  malReiseweg();
+  window.scrollTo({top:0, behavior:"smooth"});
+}
+function freischalten(i){
+  fertig[i] = true;
+  if (i+1 > offen && i+1 < STATIONEN.length) offen = i+1;
+  document.getElementById("weiter" + (i+1)).classList.add("zeigen");
+  malReiseweg();
+}
+document.querySelectorAll("[data-ziel]").forEach(b =>
+  b.addEventListener("click", () => geheZu(parseInt(b.dataset.ziel, 10))));
+const PASSWORT = "Mathekurs";
+const schloss = document.getElementById("schloss"), pw = document.getElementById("pw"),
+      pwtext = document.getElementById("pwtext");
+document.getElementById("alleauf").addEventListener("click", () => {
+  schloss.hidden = !schloss.hidden;
+  if (!schloss.hidden){ pw.value = ""; pwtext.textContent = ""; pwtext.className = ""; pw.focus(); }
+});
+function pruefPasswort(){
+  if (pw.value.trim().toLowerCase() === PASSWORT.toLowerCase()){
+    offen = STATIONEN.length - 1;
+    for (let i=0;i<STATIONEN.length-1;i++) document.getElementById("weiter"+(i+1)).classList.add("zeigen");
+    malReiseweg();
+    pw.value = ""; pw.disabled = true;
+    document.getElementById("pwok").disabled = true;
+    pwtext.className = "gut";
+    pwtext.textContent = "Alle Stationen sind offen.";
+  } else {
+    pwtext.className = "falsch";
+    pwtext.textContent = "Das Passwort stimmt nicht.";
+    pw.select();
+  }
+}
+document.getElementById("pwok").addEventListener("click", pruefPasswort);
+pw.addEventListener("keydown", ev => { if (ev.key === "Enter") pruefPasswort(); });
+function malMuenzen(hostId, hat, soll){
+  const h = document.getElementById(hostId);
+  h.innerHTML = "";
+  for (let i=0;i<soll;i++){
+    const s = document.createElement("span");
+    s.textContent = "🪙";
+    if (i < hat) s.className = "voll";
+    h.appendChild(s);
+  }
+}
+
+/* ================= 1: Punkte eintragen ================= */
+const B1 = bauBrett(document.getElementById("brett1"));
+const A1 = document.getElementById("a1"), F1 = document.getElementById("f1"), Z1 = document.getElementById("z1");
+const st1 = {ziel:null, treffer:0, versuche:0, nr:0, gesperrt:false};
+const ZIEL1 = 5;
+
+function neuerPunkt1(){
+  let p;
+  do { p = {x:zufall(0,10), y:zufall(0,10)}; }
+  while (st1.ziel && p.x === st1.ziel.x && p.y === st1.ziel.y);
+  st1.ziel = p;
+  st1.gesperrt = false;
+  A1.innerHTML = "Trage ein: <b>" + BUCH[st1.nr % 16] + " (" + p.x + " | " + p.y + ")</b>";
+  Z1.textContent = "Versuche insgesamt: " + st1.versuche;
+  malMuenzen("m1", Math.min(st1.treffer, ZIEL1), ZIEL1);
+}
+B1.beiKlick(g => {
+  if (st1.gesperrt) return;
+  const p = st1.ziel;
+  st1.versuche++;
+  if (g.x === p.x && g.y === p.y){
+    st1.gesperrt = true; st1.treffer++;
+    B1.punkt(p.x, p.y, {name:BUCH[st1.nr % 16], farbe:"#3E9455"});
+    muenzeGeben(1);
+    F1.className = "rueckmeldung gut";
+    F1.textContent = "Richtig. " + BUCH[st1.nr % 16] + " liegt " + p.x + " nach rechts und " + p.y + " nach oben.";
+    malMuenzen("m1", Math.min(st1.treffer, ZIEL1), ZIEL1);
+    if (st1.treffer === ZIEL1){
+      freischalten(0);
+      F1.textContent = "Fünf Dublonen zusammen. Du darfst an Bord – oder du übst hier noch weiter.";
+    }
+    setTimeout(() => { st1.nr++; if (st1.nr % 8 === 0) B1.leeren(); neuerPunkt1(); }, 950);
+  } else {
+    const kx = B1.kreuzchen(g.x, g.y);
+    setTimeout(() => kx.remove(), 1400);
+    F1.className = "rueckmeldung daneben";
+    F1.textContent = "Dort liegt (" + g.x + " | " + g.y + "). Gehe von der Null aus erst "
+      + p.x + " nach rechts und dann " + p.y + " nach oben.";
+    Z1.textContent = "Versuche insgesamt: " + st1.versuche;
+  }
+});
+neuerPunkt1();
+
+/* ================= 2: Punkte ablesen ================= */
+const B2 = bauBrett(document.getElementById("brett2"), {kreuz:false});
+const A2 = document.getElementById("a2"), F2 = document.getElementById("f2"), Z2 = document.getElementById("z2");
+const EX = document.getElementById("e2x"), EY = document.getElementById("e2y"), EN = document.getElementById("e2name");
+const st2 = {liste:[], nr:0, treffer:0, versuch:0, runde:0};
+const ZIEL2 = 5;
+
+function runde2(){
+  st2.liste = []; st2.nr = 0;
+  while (st2.liste.length < 4){
+    const p = {x:zufall(0,10), y:zufall(0,10)};
+    if (st2.liste.some(q => q.x === p.x && q.y === p.y)) continue;
+    st2.liste.push(p);
+  }
+  malen2(); zeige2();
+}
+function malen2(){
+  B2.leeren();
+  st2.liste.forEach((p,i) => {
+    const dran = i === st2.nr;
+    B2.punkt(p.x, p.y, {name:BUCH[i], farbe: dran ? "#D9483E" : "#4B7787", r: dran ? 9 : 6, blass: !dran});
+  });
+}
+function zeige2(){
+  const nm = BUCH[st2.nr];
+  A2.innerHTML = "Welche Koordinaten hat der rote Punkt <b>" + nm + "</b>?";
+  EN.textContent = nm;
+  EX.value = ""; EY.value = "";
+  Z2.textContent = "Punkt " + (st2.nr+1) + " von 4 auf dieser Karte";
+  malMuenzen("m2", Math.min(st2.treffer, ZIEL2), ZIEL2);
+}
+function pruef2(){
+  const p = st2.liste[st2.nr];
+  const x = parseInt(EX.value,10), y = parseInt(EY.value,10);
+  if (isNaN(x) || isNaN(y)){
+    F2.className = "rueckmeldung daneben"; F2.textContent = "Trage beide Zahlen ein."; return;
+  }
+  if (x === p.x && y === p.y){
+    if (st2.versuch === 0){
+      st2.treffer++; muenzeGeben(1);
+      F2.className = "rueckmeldung gut"; F2.textContent = "Richtig, auf Anhieb.";
+    } else {
+      F2.className = "rueckmeldung gut"; F2.textContent = "Jetzt stimmt es.";
+    }
+    st2.versuch = 0; st2.nr++;
+    if (st2.treffer === ZIEL2 && !fertig[1]){
+      freischalten(1);
+      F2.textContent = "Fünf Dublonen zusammen. Das Schiff kann ablegen.";
+    }
+    if (st2.nr >= st2.liste.length){ runde2(); } else { malen2(); zeige2(); }
+    EX.focus();
+  } else {
+    st2.versuch++;
+    F2.className = "rueckmeldung daneben";
+    if (st2.versuch === 1){
+      if (x === p.y && y === p.x) F2.textContent = "Die Zahlen sind vertauscht. Zuerst kommt der Wert auf der x‑Achse.";
+      else if (x !== p.x) F2.textContent = "Schau noch einmal, wie weit der Punkt nach rechts liegt.";
+      else F2.textContent = "Nach rechts stimmt. Prüfe noch die Höhe auf der y‑Achse.";
+    } else {
+      F2.textContent = "Richtig wäre (" + p.x + " | " + p.y + "). Trage das ein und prüfe noch einmal.";
+    }
+  }
+}
+document.getElementById("b2pruef").addEventListener("click", pruef2);
+[EX,EY].forEach(e => e.addEventListener("keydown", ev => { if (ev.key === "Enter") pruef2(); }));
+runde2();
+
+/* ================= Karte: feste Orte ================= */
+const ORTE = {
+  schiff:      {x:7,  y:2,  zeichen:"⛵", name:"gestrandetes Schiff"},
+  quelle:      {x:5,  y:5,  zeichen:"💧", name:"Süßwasserquelle"},
+  palmen:      {x:4,  y:10, zeichen:"🌴", name:"Kokosnussbäume im Palmenwald"},
+  hoehlen:     {x:8,  y:13, zeichen:"🕳️", name:"heulende Höhlen"},
+  gespenster:  {x:10, y:12, zeichen:"👻", name:"Gespensterwald"},
+  sumpf:       {x:11, y:8,  zeichen:"🐊", name:"Sumpf der Krokodile"},
+  todesbucht:  {x:10, y:4,  zeichen:"☠️", name:"Todesbucht"},
+  schatz:      {x:2,  y:7,  zeichen:"💰", name:"Schatz"}
+};
+
+/* ================= 3: Die Insel ================= */
+const B3 = bauBrett(document.getElementById("brett3"), {n:14, insel:true, kompass:true, kreuz:false});
+document.getElementById("fk3").addEventListener("change", e => B3.fadenkreuz(e.target.checked));
+const A3 = document.getElementById("a3"), F3 = document.getElementById("f3"), Z3 = document.getElementById("z3");
+const ZE3 = document.getElementById("zettel3"), EIN3 = document.getElementById("ein3");
+const E3X = document.getElementById("e3x"), E3Y = document.getElementById("e3y"), E3N = document.getElementById("e3name");
+const ABLESEN3 = [ORTE.schiff, ORTE.quelle, ORTE.palmen];
+const EINTRAGEN3 = [ORTE.hoehlen, ORTE.gespenster, ORTE.sumpf];
+const st3 = {teil:"a", nr:0, versuch:0};
+
+const TEXT3A = "Kapitänin Fuchsauge ist mit ihrem Schiff an der Südspitze der Insel gestrandet. "
+  + "Auf der Suche nach Wasser und Essen entdeckt sie eine Süßwasserquelle und einen Palmenwald "
+  + "voller Kokosnüsse. Sie will diese Orte in ihr Logbuch schreiben – lies die drei Koordinaten "
+  + "von der Karte ab.";
+const TEXT3B = "Fuchsauge bricht vom Palmenwald aus auf. Ihr Weg führt an den heulenden Höhlen "
+  + "(8 | 13) vorbei, dann am Gespensterwald (10 | 12) und zuletzt durch den Sumpf der "
+  + "riesengroßen Krokodile bei (11 | 8). Klicke die drei Orte nacheinander auf der Karte an.";
+
+function malen3(){
+  B3.leeren();
+  ABLESEN3.forEach((o,i) => {
+    if (st3.teil === "b" || i < st3.nr) B3.sinnbild(o.x, o.y, o.zeichen, o.name.split(" ")[0]);
+    else if (i === st3.nr) B3.sinnbild(o.x, o.y, o.zeichen, "?");
+    else B3.sinnbild(o.x, o.y, o.zeichen, "");
+  });
+  if (st3.teil === "b"){
+    const weg = [ORTE.palmen];
+    for (let i=0;i<st3.nr;i++){
+      const o = EINTRAGEN3[i];
+      weg.push(o);
+      B3.sinnbild(o.x, o.y, o.zeichen, o.name.split(" ")[0]);
+    }
+    if (weg.length > 1) B3.linien(weg, {farbe:"#D9483E", gestrichelt:true, strich:4});
+  }
+}
+function zeige3(){
+  const u3 = document.getElementById("u3");
+  u3.textContent = st3.teil === "a" ? "Teil 1 von 2: Orte ablesen"
+                 : st3.teil === "b" ? "Teil 2 von 2: Route eintragen" : "geschafft";
+  if (st3.teil === "a"){
+    ZE3.textContent = TEXT3A;
+    EIN3.style.display = "flex";
+    document.getElementById("k3").style.display = "flex";
+    const o = ABLESEN3[st3.nr];
+    A3.innerHTML = "Lies ab: <b>" + o.name + "</b> " + o.zeichen;
+    E3N.textContent = o.zeichen;
+    E3X.value = ""; E3Y.value = "";
+    Z3.textContent = "Ort " + (st3.nr+1) + " von 3";
+  } else if (st3.teil === "b"){
+    ZE3.textContent = TEXT3B;
+    EIN3.style.display = "none";
+    document.getElementById("k3").style.display = "none";
+    const o = EINTRAGEN3[st3.nr];
+    A3.innerHTML = "Klicke auf die Karte: <b>" + o.name + " (" + o.x + " | " + o.y + ")</b>";
+    Z3.textContent = "Ort " + (st3.nr+1) + " von 3";
+  } else {
+    EIN3.style.display = "none";
+    document.getElementById("k3").style.display = "none";
+    A3.textContent = "Die Route ist eingezeichnet. Weiter geht es zur Todesbucht.";
+    Z3.textContent = "Beide Teile geschafft.";
+  }
+  malen3();
+}
+function pruef3(){
+  if (st3.teil !== "a") return;
+  const o = ABLESEN3[st3.nr];
+  const x = parseInt(E3X.value,10), y = parseInt(E3Y.value,10);
+  if (isNaN(x) || isNaN(y)){
+    F3.className = "rueckmeldung daneben"; F3.textContent = "Trage beide Zahlen ein."; return;
+  }
+  if (x === o.x && y === o.y){
+    if (st3.versuch === 0) muenzeGeben(1);
+    st3.versuch = 0; st3.nr++;
+    F3.className = "rueckmeldung gut";
+    F3.textContent = "Richtig, " + o.name + " liegt bei (" + o.x + " | " + o.y + ").";
+    if (st3.nr >= ABLESEN3.length){ st3.teil = "b"; st3.nr = 0; }
+    zeige3();
+  } else {
+    st3.versuch++;
+    F3.className = "rueckmeldung daneben";
+    F3.textContent = st3.versuch === 1
+      ? "Noch nicht. Fahre mit dem Finger vom Zeichen senkrecht nach unten zur x‑Achse."
+      : "Richtig wäre (" + o.x + " | " + o.y + ").";
+  }
+}
+B3.beiKlick(g => {
+  if (st3.teil !== "b") return;
+  const o = EINTRAGEN3[st3.nr];
+  if (g.x === o.x && g.y === o.y){
+    st3.nr++; muenzeGeben(1);
+    F3.className = "rueckmeldung gut";
+    F3.textContent = o.name + " eingetragen.";
+    if (st3.nr >= EINTRAGEN3.length){
+      st3.teil = "fertig";
+      F3.textContent = "Alle drei Orte sitzen. Fuchsauge kann weiterziehen.";
+      freischalten(2);
+    }
+    zeige3();
+  } else {
+    F3.className = "rueckmeldung daneben";
+    F3.textContent = "Dort liegt (" + g.x + " | " + g.y + "). Gesucht ist ("
+      + o.x + " | " + o.y + "): " + o.x + " nach rechts, " + o.y + " nach oben.";
+    const kx = B3.kreuzchen(g.x, g.y);
+    setTimeout(() => kx.remove(), 1300);
+  }
+});
+document.getElementById("b3pruef").addEventListener("click", pruef3);
+[E3X,E3Y].forEach(e => e.addEventListener("keydown", ev => { if (ev.key === "Enter") pruef3(); }));
+zeige3();
+
+/* ================= 4: Der Hinweis ================= */
+const B4 = bauBrett(document.getElementById("brett4"), {n:14, insel:true, kompass:true, kreuz:false});
+document.getElementById("fk4").addEventListener("change", e => B4.fadenkreuz(e.target.checked));
+const A4 = document.getElementById("a4"), F4 = document.getElementById("f4"), Z4 = document.getElementById("z4");
+const ZE4 = document.getElementById("zettel4");
+const SCHRITTE = [
+  {text:"3 Schritte Richtung Norden und 4 Schritte Richtung Westen",
+   ziel:{x:6,y:7},
+   hilfe:"Norden ist nach oben, Westen nach links. Zähle beides einzeln ab."},
+  {text:"1 Schritt Richtung Norden und dann Drehung in Richtung Westen",
+   ziel:{x:6,y:8}, dreht:"W",
+   hilfe:"Nur ein Feld nach oben. Die Drehung verändert deinen Standort noch nicht."},
+  {text:"3 Schritte vorwärts, 1 Schritt links und 1 Schritt vorwärts",
+   ziel:{x:2,y:7},
+   hilfe:"Du schaust nach Westen. Vorwärts heißt also nach links auf der Karte, und links von dir ist Süden."}
+];
+const st4 = {nr:0, weg:[], blick:null, fertig:false};
+
+function malen4(){
+  B4.leeren();
+  B4.sinnbild(ORTE.todesbucht.x, ORTE.todesbucht.y, ORTE.todesbucht.zeichen, "Todesbucht");
+  const weg = [{x:ORTE.todesbucht.x, y:ORTE.todesbucht.y}].concat(st4.weg);
+  if (weg.length > 1) B4.linien(weg, {farbe:"#D9483E", gestrichelt:true, strich:4});
+  st4.weg.forEach((p,i) => B4.punkt(p.x, p.y, {farbe:"#3E9455", r:8, name:String(i+1)}));
+  if (st4.fertig){
+    B4.sinnbild(ORTE.schatz.x, ORTE.schatz.y, "💰", "Grabe hier!");
+  }
+}
+function zeige4(){
+  if (st4.fertig){
+    ZE4.textContent = "Grabe hier! (:";
+    A4.innerHTML = "Der Schatz liegt bei <b>(" + ORTE.schatz.x + " | " + ORTE.schatz.y + ")</b>.";
+    Z4.textContent = "Rätsel gelöst.";
+    malen4();
+    return;
+  }
+  const s = SCHRITTE[st4.nr];
+  ZE4.innerHTML = (st4.nr === 0
+      ? "Am Ufer der Todesbucht (10 | 4) findet Fuchsauge einen zerknitterten Zettel. Darauf steht der Weg zum Schatz:<br><br>"
+      : "")
+    + "„" + s.text + "“";
+  const von = st4.nr === 0 ? ORTE.todesbucht : st4.weg[st4.weg.length-1];
+  A4.innerHTML = "Du stehst bei <b>(" + von.x + " | " + von.y + ")</b>"
+    + (st4.blick ? " und schaust nach " + (st4.blick === "W" ? "Westen" : st4.blick) : "")
+    + ". Klicke auf das Feld, auf dem du nach diesem Hinweis stehst.";
+  Z4.textContent = "Hinweis " + (st4.nr+1) + " von " + SCHRITTE.length;
+  malen4();
+}
+B4.beiKlick(g => {
+  if (st4.fertig) return;
+  const s = SCHRITTE[st4.nr];
+  if (g.x === s.ziel.x && g.y === s.ziel.y){
+    st4.weg.push({x:g.x, y:g.y});
+    if (s.dreht) st4.blick = s.dreht;
+    st4.nr++;
+    muenzeGeben(1);
+    F4.className = "rueckmeldung gut";
+    if (st4.nr >= SCHRITTE.length){
+      st4.fertig = true;
+      muenzeGeben(3);
+      F4.textContent = "Geschafft. Fuchsauge gräbt – und findet die Truhe. Drei Dublonen extra.";
+      freischalten(3);
+    } else {
+      F4.textContent = "Stimmt. Weiter zum nächsten Hinweis.";
+    }
+    zeige4();
+  } else {
+    F4.className = "rueckmeldung daneben";
+    F4.textContent = "Dort liegt (" + g.x + " | " + g.y + "). " + s.hilfe;
+    const kx = B4.kreuzchen(g.x, g.y);
+    setTimeout(() => kx.remove(), 1600);
+  }
+});
+document.getElementById("b4neu").addEventListener("click", () => {
+  st4.nr = 0; st4.weg = []; st4.blick = null; st4.fertig = false;
+  F4.className = "rueckmeldung"; F4.textContent = "";
+  zeige4();
+});
+zeige4();
+
+/* ================= 5: Figuren ================= */
+const B5 = bauBrett(document.getElementById("brett5"), {kreuz:false});
+document.getElementById("fk5").addEventListener("change", e => B5.fadenkreuz(e.target.checked));
+const A5 = document.getElementById("a5"), F5 = document.getElementById("f5"),
+      L5 = document.getElementById("l5"), N5 = document.getElementById("n5"), Z5 = document.getElementById("z5");
+
+const NAMEN = ["Dreieck","Rechteck","Quadrat","Drachenviereck","Trapez","Parallelogramm","Raute"];
+const FIGUREN = [
+  {p:[[2,1],[8,1],[8,5],[2,5]], name:"Rechteck", auch:["Parallelogramm"]},
+  {p:[[4,2],[9,2],[9,4],[4,4]], name:"Rechteck", auch:["Parallelogramm"]},
+  {p:[[3,2],[7,2],[7,6],[3,6]], name:"Quadrat", auch:["Rechteck","Raute","Parallelogramm","Drachenviereck"]},
+  {p:[[2,2],[9,2],[9,9],[2,9]], name:"Quadrat", auch:["Rechteck","Raute","Parallelogramm","Drachenviereck"]},
+  {p:[[1,1],[7,1],[4,6]], name:"Dreieck"},
+  {p:[[1,1],[7,1],[1,6]], name:"Dreieck"},
+  {p:[[2,2],[6,2],[8,5],[4,5]], name:"Parallelogramm", auch:["Trapez"]},
+  {p:[[1,3],[5,3],[8,7],[4,7]], name:"Parallelogramm", auch:["Trapez"]},
+  {p:[[1,2],[9,2],[7,6],[3,6]], name:"Trapez"},
+  {p:[[2,1],[10,1],[7,5],[2,5]], name:"Trapez"},
+  {p:[[5,1],[9,4],[5,7],[1,4]], name:"Raute", auch:["Parallelogramm","Drachenviereck","Trapez"]},
+  {p:[[3,6],[6,9],[9,6],[6,3]], name:"Quadrat", auch:["Rechteck","Raute","Parallelogramm","Drachenviereck"]},
+  {p:[[5,2],[9,5],[5,10],[1,5]], name:"Drachenviereck"},
+  {p:[[5,1],[7,4],[5,9],[3,4]], name:"Drachenviereck"},
+  {p:[[1,5],[5,2],[10,5],[5,8]], name:"Drachenviereck"}
+];
+
+const st5 = {fig:null, ziel:[], nr:0, gesetzt:[], phase:"punkte", geloest:0, letzte:-1};
+
+function neu5(){
+  B5.leeren(); N5.innerHTML = ""; L5.innerHTML = "";
+  st5.gesetzt = []; st5.nr = 0; st5.phase = "punkte";
+  F5.className = "rueckmeldung";
+  let i;
+  do { i = zufall(0, FIGUREN.length-1); } while (FIGUREN.length > 1 && i === st5.letzte);
+  st5.letzte = i;
+  st5.fig = FIGUREN[i];
+  st5.ziel = st5.fig.p.map(a => ({x:a[0], y:a[1]}));
+  A5.textContent = "Trage die Punkte der Reihe nach ein.";
+  F5.textContent = "Klicke genau auf den Gitterpunkt. Die Linien entstehen von selbst.";
+  liste5();
+  Z5.textContent = "Fertige Figuren: " + st5.geloest;
+}
+function liste5(){
+  L5.innerHTML = "";
+  st5.ziel.forEach((p,i) => {
+    const li = document.createElement("li");
+    li.textContent = BUCH[i] + " (" + p.x + " | " + p.y + ")";
+    li.className = i < st5.nr ? "fertig" : (i === st5.nr && st5.phase === "punkte" ? "dran" : "");
+    L5.appendChild(li);
+  });
+}
+function nameKnoepfe5(){
+  N5.innerHTML = "";
+  NAMEN.forEach(n => {
+    const b = document.createElement("button");
+    b.className = "knopf"; b.textContent = n;
+    b.addEventListener("click", () => antwort5(n, b));
+    N5.appendChild(b);
+  });
+}
+function antwort5(n, knopf){
+  if (st5.phase !== "benennen") return;
+  const f = st5.fig;
+  if (n === f.name){
+    st5.phase = "fertig"; st5.geloest++;
+    knopf.classList.add("voll");
+    muenzeGeben(1);
+    F5.className = "rueckmeldung gut";
+    F5.textContent = "Richtig, das ist ein " + f.name + ".";
+    Z5.textContent = "Fertige Figuren: " + st5.geloest;
+    Array.from(N5.children).forEach(b => { if (b !== knopf) b.disabled = true; });
+    if (st5.geloest >= 2 && !fertig[4]) freischalten(4);
+  } else if (f.auch && f.auch.indexOf(n) >= 0){
+    F5.className = "rueckmeldung";
+    F5.textContent = "Das stimmt auch – aber es gibt einen genaueren Namen. Vergleiche die Seitenlängen.";
+  } else {
+    F5.className = "rueckmeldung daneben";
+    F5.textContent = "Das passt nicht. Zähle die Kästchen an den Seiten und schau, welche Seiten parallel sind.";
+  }
+}
+B5.beiKlick(g => {
+  if (st5.phase !== "punkte") return;
+  const ziel = st5.ziel[st5.nr];
+  if (g.x === ziel.x && g.y === ziel.y){
+    st5.gesetzt.push(g); st5.nr++;
+    B5.leeren();
+    if (st5.gesetzt.length > 1) B5.linien(st5.gesetzt, {zu: st5.nr === st5.ziel.length, farbe:"#1B5A70"});
+    st5.gesetzt.forEach((p,i) => B5.punkt(p.x, p.y, {name:BUCH[i], farbe:"#123A4B"}));
+    F5.className = "rueckmeldung";
+    if (st5.nr === st5.ziel.length){
+      st5.phase = "benennen";
+      A5.textContent = "Wie heißt diese Figur?";
+      F5.textContent = "Vergleiche Seiten und Ecken, bevor du dich entscheidest.";
+      nameKnoepfe5();
+    } else {
+      F5.textContent = "Weiter mit " + BUCH[st5.nr] + ".";
+    }
+    liste5();
+  } else {
+    F5.className = "rueckmeldung daneben";
+    F5.textContent = "Dort liegt (" + g.x + " | " + g.y + "). Gesucht ist "
+      + BUCH[st5.nr] + " (" + ziel.x + " | " + ziel.y + ").";
+    const kx = B5.kreuzchen(g.x, g.y);
+    setTimeout(() => kx.remove(), 1200);
+  }
+});
+document.getElementById("b5neu").addEventListener("click", neu5);
+neu5();
+
+
+/* ================= 6: Selbst verstecken ================= */
+const B6 = bauBrett(document.getElementById("brett6"), {ton:"#FBEFD2"});
+const A6 = document.getElementById("a6"), F6 = document.getElementById("f6"), Z6 = document.getElementById("z6");
+const MAXGRAB = 8;
+const st6 = {schatz:null, grabungen:0, phase:"suchen", vorbei:false};
+
+function spiel6(){
+  B6.leeren();
+  st6.grabungen = 0; st6.vorbei = false; st6.schatz = null;
+  F6.className = "rueckmeldung"; F6.textContent = "";
+  if (document.getElementById("w6modus").value === "zweit"){
+    st6.phase = "verstecken";
+    A6.innerHTML = "<b>Spieler 1:</b> Klicke auf ein Feld. Dort liegt der Schatz.";
+    F6.textContent = "Spieler 2 schaut solange weg.";
+  } else {
+    st6.phase = "suchen";
+    st6.schatz = {x:zufall(0,10), y:zufall(0,10)};
+    A6.textContent = "Irgendwo liegt ein Schatz. Klicke auf eine Stelle und grabe.";
+  }
+  zeige6();
+}
+function zeige6(){
+  Z6.textContent = st6.phase === "verstecken"
+    ? "Warten auf das Versteck."
+    : "Grabungen: " + st6.grabungen + " von " + MAXGRAB;
+}
+function tipptext6(g){
+  const t = st6.schatz, dx = t.x - g.x, dy = t.y - g.y;
+  const d = Math.abs(dx) + Math.abs(dy);
+  const art = document.getElementById("w6tipp").value;
+  const r = [];
+  if (dy > 0) r.push("nach Norden (oben)");
+  if (dy < 0) r.push("nach Süden (unten)");
+  if (dx > 0) r.push("nach Osten (rechts)");
+  if (dx < 0) r.push("nach Westen (links)");
+  const waerme = d <= 2 ? "sehr heiß" : d <= 4 ? "heiß" : d <= 7 ? "lauwarm" : "eiskalt";
+  if (art === "warm") return "Bei (" + g.x + " | " + g.y + ") ist es " + waerme + ".";
+  let s = "Von (" + g.x + " | " + g.y + ") aus liegt der Schatz " + r.join(" und ") + ".";
+  if (art === "voll") s += " Entfernung: " + d + " Felder (" + waerme + ").";
+  return s;
+}
+B6.beiKlick(g => {
+  if (st6.phase === "verstecken"){
+    st6.schatz = {x:g.x, y:g.y};
+    st6.phase = "suchen";
+    B6.leeren();
+    A6.innerHTML = "<b>Spieler 2:</b> Suche den Schatz. Klicke auf eine Stelle und grabe.";
+    F6.className = "rueckmeldung"; F6.textContent = "Das Versteck ist gespeichert.";
+    zeige6(); return;
+  }
+  if (st6.vorbei) return;
+  st6.grabungen++;
+  if (g.x === st6.schatz.x && g.y === st6.schatz.y){
+    st6.vorbei = true;
+    B6.sinnbild(g.x, g.y, "💰", "gefunden");
+    muenzeGeben(2);
+    F6.className = "rueckmeldung gut";
+    F6.textContent = "Schatz gefunden bei (" + g.x + " | " + g.y + ") – mit " + st6.grabungen
+      + (st6.grabungen === 1 ? " Grabung." : " Grabungen.");
+    if (!fertig[5]){ fertig[5] = true; malReiseweg(); }
+  } else {
+    B6.kreuzchen(g.x, g.y, "#4B7787");
+    B6.text(g.x, g.y - 0.45, String(st6.grabungen), "#4B7787");
+    F6.className = "rueckmeldung";
+    F6.textContent = tipptext6(g);
+    if (st6.grabungen >= MAXGRAB){
+      st6.vorbei = true;
+      B6.sinnbild(st6.schatz.x, st6.schatz.y, "💰", "hier lag er");
+      F6.className = "rueckmeldung daneben";
+      F6.textContent = "Die Grabungen sind aufgebraucht. Der Schatz lag bei ("
+        + st6.schatz.x + " | " + st6.schatz.y + ").";
+    }
+  }
+  zeige6();
+});
+document.getElementById("b6neu").addEventListener("click", spiel6);
+document.getElementById("w6modus").addEventListener("change", spiel6);
+document.getElementById("b6auf").addEventListener("click", () => {
+  if (!st6.schatz || st6.vorbei || st6.phase === "verstecken") return;
+  st6.vorbei = true;
+  B6.sinnbild(st6.schatz.x, st6.schatz.y, "💰", "hier lag er");
+  F6.className = "rueckmeldung daneben";
+  F6.textContent = "Der Schatz lag bei (" + st6.schatz.x + " | " + st6.schatz.y + ").";
+});
+spiel6();
+
+/* ================= Druck ================= */
+bauBrett(document.getElementById("druck1"), {kreuz:false});
+bauBrett(document.getElementById("druck2"), {n:14, kreuz:false});
+document.getElementById("drucken").addEventListener("click", () => window.print());
+
+malReiseweg();
+</script>
+</body>
+</html>
