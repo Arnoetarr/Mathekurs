@@ -2,53 +2,155 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<title>Mathekurs</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mathekurse</title>
 <style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+  :root {
+    --paper: #faf8f3;
+    --grid: #dfe1e6;
+    --ink: #1c2541;
+    --ink-soft: #5a6178;
+    --geo: #2e6f6e;
+    --geo-bg: #eaf3f2;
+    --lgs: #b1601f;
+    --lgs-bg: #f7efe3;
+  }
+
+  * { box-sizing: border-box; }
+
   body {
-    font-family: system-ui, sans-serif;
-    max-width: 600px;
-    margin: 40px auto;
-    padding: 0 20px;
-    background: #f7f7f9;
-    color: #222;
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 56px 24px 80px;
+    background:
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px),
+      var(--paper);
+    background-size: 28px 28px;
+    color: var(--ink);
   }
+
+  header {
+    margin-bottom: 48px;
+  }
+
+  .eyebrow {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.8em;
+    color: var(--ink-soft);
+    margin: 0 0 6px;
+  }
+
   h1 {
-    font-size: 1.6em;
-    margin-bottom: 24px;
+    font-size: 2.1em;
+    font-weight: 700;
+    margin: 0;
+    letter-spacing: -0.01em;
   }
+
+  .stufe {
+    margin-bottom: 40px;
+  }
+
+  .stufe-kopf {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  .stufe-nr {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.85em;
+    padding: 3px 9px;
+    border-radius: 4px;
+    font-weight: 500;
+  }
+
+  .geo .stufe-nr { background: var(--geo-bg); color: var(--geo); }
+  .lgs .stufe-nr { background: var(--lgs-bg); color: var(--lgs); }
+
+  h2 {
+    font-size: 1.05em;
+    font-weight: 600;
+    margin: 0;
+    color: var(--ink-soft);
+  }
+
   ul {
     list-style: none;
     padding: 0;
+    margin: 0;
   }
-  li {
-    margin-bottom: 12px;
-  }
+
+  li + li { margin-top: 10px; }
+
   a {
-    display: block;
-    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 16px 20px;
     background: #fff;
-    border-radius: 8px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    border: 1.5px solid var(--ink);
+    border-radius: 3px;
     text-decoration: none;
-    color: #1a1a1a;
-    font-weight: 500;
-    transition: background 0.15s;
+    color: var(--ink);
+    font-weight: 600;
+    box-shadow: 4px 4px 0 var(--ink);
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
   }
+
   a:hover {
-    background: #eef2ff;
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0 var(--ink);
+  }
+
+  .geo a:hover { background: var(--geo-bg); }
+  .lgs a:hover { background: var(--lgs-bg); }
+
+  a::after {
+    content: "→";
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--ink-soft);
+    flex-shrink: 0;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    a { transition: none; }
   }
 </style>
 </head>
 <body>
-<h1>Kurse</h1>
-<h2>5/6-Ebene Geometrie</h2>
-<ul>
-  <li><a href="Schatzsuche.html">Koordinatensystem-Schatzsuche</a></li>
-  <li><a href="Winkel.html">Winkel</a></li>
-</ul>
-<h2>9/10-Lineare Gleichungssysteme</h2>
-<ul>
-  <li><a href="LGS.html">Stationen zur Wiederholung</a></li>
-</ul>
+
+<header>
+  <p class="eyebrow">Mathematik · Riesenklein</p>
+  <h1>Kurse</h1>
+</header>
+
+<section class="stufe geo">
+  <div class="stufe-kopf">
+    <span class="stufe-nr">5/6</span>
+    <h2>Geometrie</h2>
+  </div>
+  <ul>
+    <li><a href="Schatzsuche.html">Koordinatensystem-Schatzsuche</a></li>
+    <li><a href="Winkel.html">Winkel</a></li>
+  </ul>
+</section>
+
+<section class="stufe lgs">
+  <div class="stufe-kopf">
+    <span class="stufe-nr">9/10</span>
+    <h2>Lineare Gleichungssysteme</h2>
+  </div>
+  <ul>
+    <li><a href="LGS.html">Stationen zur Wiederholung</a></li>
+  </ul>
+</section>
+
 </body>
 </html>
