@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Mathekurse</title>
+<title>Kurse</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
 
@@ -16,6 +16,10 @@
     --geo-bg: #d8f5ee;
     --lgs: #e0553c;
     --lgs-bg: #ffe4d6;
+    --frei: #7a4fd6;
+    --frei-bg: #ece2fb;
+    --sonst: #d19a12;
+    --sonst-bg: #faf0d4;
   }
 
   * { box-sizing: border-box; }
@@ -24,7 +28,7 @@
     font-family: 'Space Grotesk', system-ui, sans-serif;
     max-width: 640px;
     margin: 0 auto;
-    padding: 56px 24px 80px;
+    padding: 48px 24px 80px;
     background:
       linear-gradient(var(--grid) 1px, transparent 1px),
       linear-gradient(90deg, var(--grid) 1px, transparent 1px),
@@ -33,41 +37,38 @@
     color: var(--ink);
   }
 
-  header {
-    margin-bottom: 48px;
-    position: relative;
+  .bereich {
+    margin-bottom: 52px;
   }
 
   h1 {
-    font-size: 2.4em;
+    font-size: 1.7em;
     font-weight: 700;
-    margin: 0;
+    margin: 0 0 20px;
     letter-spacing: -0.01em;
-    color: var(--ink);
-  }
-
-  h1 span {
     display: inline-block;
+    padding: 2px 6px;
   }
 
-  h1 .k1 { color: var(--geo); transform: rotate(-4deg); }
-  h1 .k2 { color: var(--lgs); transform: rotate(3deg); }
-  h1 .k3 { transform: rotate(-2deg); }
+  .kurse h1 { color: var(--geo); }
+  .freiarbeit h1 { color: var(--frei); }
+  .sonstiges h1 { color: var(--sonst); }
 
   .stufe {
-    margin-bottom: 40px;
+    margin-bottom: 28px;
   }
+  .stufe:last-child { margin-bottom: 0; }
 
   .stufe-kopf {
     display: flex;
     align-items: baseline;
     gap: 10px;
-    margin-bottom: 14px;
+    margin-bottom: 12px;
   }
 
   .stufe-nr {
     font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.85em;
+    font-size: 0.8em;
     padding: 3px 10px;
     border-radius: 20px;
     font-weight: 600;
@@ -78,7 +79,7 @@
   .lgs .stufe-nr { background: var(--lgs); color: #fff; }
 
   h2 {
-    font-size: 1.05em;
+    font-size: 1em;
     font-weight: 600;
     margin: 0;
     color: var(--ink-soft);
@@ -109,12 +110,16 @@
 
   .geo a { box-shadow: 5px 5px 0 var(--geo); }
   .lgs a { box-shadow: 5px 5px 0 var(--lgs); }
+  .frei a { box-shadow: 5px 5px 0 var(--frei); }
+  .sonst a { box-shadow: 5px 5px 0 var(--sonst); }
 
   li:nth-child(odd) a { transform: rotate(-0.6deg); }
   li:nth-child(even) a { transform: rotate(0.6deg); }
 
   .geo a:hover { background: var(--geo-bg); transform: translate(2px, 2px) rotate(0deg); box-shadow: 2px 2px 0 var(--geo); }
   .lgs a:hover { background: var(--lgs-bg); transform: translate(2px, 2px) rotate(0deg); box-shadow: 2px 2px 0 var(--lgs); }
+  .frei a:hover { background: var(--frei-bg); transform: translate(2px, 2px) rotate(0deg); box-shadow: 2px 2px 0 var(--frei); }
+  .sonst a:hover { background: var(--sonst-bg); transform: translate(2px, 2px) rotate(0deg); box-shadow: 2px 2px 0 var(--sonst); }
 
   a::after {
     content: "→";
@@ -124,6 +129,30 @@
 
   .geo a::after { color: var(--geo); }
   .lgs a::after { color: var(--lgs); }
+  .frei a::after { color: var(--frei); }
+  .sonst a::after { color: var(--sonst); }
+
+  /* Platzhalter für noch fehlende Links */
+  .platzhalter {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 16px 20px;
+    background: transparent;
+    border: 2px dashed var(--ink-soft);
+    border-radius: 12px;
+    color: var(--ink-soft);
+    font-weight: 600;
+  }
+
+  .platzhalter::after {
+    content: "bald";
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.8em;
+    font-weight: 500;
+    flex-shrink: 0;
+  }
 
   @media (prefers-reduced-motion: reduce) {
     a { transition: none; }
@@ -132,28 +161,42 @@
 </head>
 <body>
 
-<header>
-  <h1><span class="k1">Kurve.</span> <span class="k2">Winkel.</span> <span class="k3">Los.</span></h1>
-</header>
+<section class="bereich kurse">
+  <h1>Kurse</h1>
 
-<section class="stufe geo">
-  <div class="stufe-kopf">
-    <span class="stufe-nr">5/6</span>
-    <h2>Geometrie</h2>
+  <div class="stufe geo">
+    <div class="stufe-kopf">
+      <span class="stufe-nr">5/6</span>
+      <h2>Geometrie</h2>
+    </div>
+    <ul>
+      <li><a href="Schatzsuche.html">Koordinatensystem-Schatzsuche</a></li>
+      <li><a href="Winkel.html">Winkel</a></li>
+    </ul>
   </div>
+
+  <div class="stufe lgs">
+    <div class="stufe-kopf">
+      <span class="stufe-nr">9/10</span>
+      <h2>Lineare Gleichungssysteme</h2>
+    </div>
+    <ul>
+      <li><a href="LGS.html">Stationen zur Wiederholung</a></li>
+    </ul>
+  </div>
+</section>
+
+<section class="bereich freiarbeit frei">
+  <h1>Freiarbeit</h1>
   <ul>
-    <li><a href="Schatzsuche.html">Koordinatensystem-Schatzsuche</a></li>
-    <li><a href="Winkel.html">Winkel</a></li>
+    <li><span class="platzhalter">noch kein Material</span></li>
   </ul>
 </section>
 
-<section class="stufe lgs">
-  <div class="stufe-kopf">
-    <span class="stufe-nr">9/10</span>
-    <h2>Lineare Gleichungssysteme</h2>
-  </div>
+<section class="bereich sonstiges sonst">
+  <h1>Sonstiges</h1>
   <ul>
-    <li><a href="LGS.html">Stationen zur Wiederholung</a></li>
+    <li><span class="platzhalter">Noch kein Material</span></li>
   </ul>
 </section>
 
