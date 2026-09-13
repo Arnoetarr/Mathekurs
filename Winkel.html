@@ -1,0 +1,1214 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Winkel-Quest</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Baloo+2:wght@500;700;800&display=swap');
+
+  *{ box-sizing:border-box; }
+
+  body{
+    margin:0;
+    min-height:100vh;
+    background: linear-gradient(180deg, #cdeffd 0%, #cdeffd 50%, #eafbe7 50%, #eafbe7 100%);
+    background-attachment: fixed;
+    font-family:'Baloo 2', sans-serif;
+    color:#33403a;
+    padding:24px 14px 60px;
+  }
+
+  .wrap{ max-width:760px; margin:0 auto; }
+
+  h1{
+    font-family:'Press Start 2P', monospace;
+    font-size:clamp(15px, 4.4vw, 22px);
+    color:#2b6e3f;
+    text-shadow:2px 2px 0 #ffffff;
+    margin:0 0 6px;
+    text-align:center;
+  }
+  .tagline{ text-align:center; font-size:15px; color:#3d5a4c; margin-bottom:22px; }
+
+  .panel{
+    background:#fff;
+    border-radius:16px;
+    padding:20px 18px;
+    box-shadow:0 5px 0 #c7d6cc;
+    margin-bottom:18px;
+  }
+
+  .hidden{ display:none !important; }
+
+  /* ---------- Figurenwahl ---------- */
+  .roster{ display:flex; gap:16px; flex-wrap:wrap; justify-content:center; }
+  .card{
+    background:#fff;
+    border-radius:14px;
+    padding:14px 12px 12px;
+    display:flex; flex-direction:column; align-items:center; gap:8px;
+    width:160px; cursor:pointer;
+    border:4px solid var(--accent);
+    box-shadow:0 6px 0 var(--accent-dark);
+    transition:transform .1s;
+  }
+  .card:hover{ transform:translateY(-3px); }
+  .card.selected{ transform:translateY(3px); box-shadow:0 3px 0 var(--accent-dark); }
+  .card.selected .check{ opacity:1; }
+  .card.huhn{ --accent:#ffb703; --accent-dark:#c98a00; }
+  .card.monster{ --accent:#2a9d8f; --accent-dark:#1b6e63; }
+  .card.blume{ --accent:#e76f51; --accent-dark:#b84e34; }
+  .card-name{ font-weight:700; font-size:15px; }
+  .evo-strip{ display:flex; align-items:flex-end; gap:2px; background:#f6f6f2; border-radius:8px; padding:5px 6px; }
+  .check{ font-size:12px; font-weight:700; color:var(--accent-dark); opacity:0; }
+
+  /* ---------- Buttons ---------- */
+  button{ font-family:'Baloo 2', sans-serif; cursor:pointer; }
+  .btn{
+    font-weight:700; font-size:16px;
+    background:#2b6e3f; color:#fff; border:none; border-radius:12px;
+    padding:11px 26px; box-shadow:0 5px 0 #1c4a29;
+  }
+  .btn:disabled{ background:#b8c4bc; box-shadow:0 5px 0 #92a098; cursor:not-allowed; }
+  .btn:not(:disabled):active{ transform:translateY(4px); box-shadow:0 1px 0 #1c4a29; }
+  .btn.ghost{ background:#fff; color:#2b6e3f; border:3px solid #2b6e3f; box-shadow:0 5px 0 #c7d6cc; }
+  .btn.ghost:active{ transform:translateY(4px); box-shadow:0 1px 0 #c7d6cc; }
+  .btn.small{ font-size:14px; padding:8px 16px; }
+
+  /* ---------- HUD ---------- */
+  .hud{
+    display:flex; align-items:center; gap:14px;
+    background:#fff; border-radius:16px; padding:12px 16px;
+    box-shadow:0 5px 0 #c7d6cc; margin-bottom:18px;
+  }
+  .hud-info{ flex:1; }
+  .hud-title{ font-weight:800; font-size:17px; }
+  .hud-sub{ font-size:13px; color:#5c6b73; }
+  .bar{ height:14px; background:#e8ece9; border-radius:7px; overflow:hidden; margin-top:6px; }
+  .bar-fill{ height:100%; background:#52b788; width:0%; transition:width .3s; }
+
+  /* ---------- Levelauswahl ---------- */
+  .levels{ display:grid; grid-template-columns:repeat(auto-fill, minmax(210px,1fr)); gap:12px; }
+  .lvl{
+    text-align:left; background:#fff; border:3px solid #d5e0d8; border-radius:12px;
+    padding:12px 14px; box-shadow:0 4px 0 #c7d6cc; font-size:15px; color:#33403a;
+  }
+  .lvl.open{ border-color:#52b788; }
+  .lvl.done{ border-color:#ffb703; background:#fffaf0; }
+  .lvl.locked{ opacity:.55; cursor:not-allowed; }
+  .lvl b{ display:block; font-size:16px; }
+  .lvl small{ color:#5c6b73; }
+
+  /* ---------- Aufgaben ---------- */
+  .question{ font-size:18px; font-weight:700; text-align:center; margin-bottom:14px; }
+  .figure-row{ display:flex; gap:18px; justify-content:center; flex-wrap:wrap; margin-bottom:16px; }
+  .figure-box{
+    background:#f8fbf8; border:3px solid #d5e0d8; border-radius:12px; padding:8px;
+    display:flex; flex-direction:column; align-items:center; gap:6px;
+  }
+  .figure-box.choice{ cursor:pointer; }
+  .figure-box.choice:hover{ border-color:#52b788; }
+  .figure-label{ font-weight:700; font-size:15px; }
+  .options{ display:flex; flex-wrap:wrap; gap:10px; justify-content:center; }
+  .opt{
+    background:#fff; border:3px solid #2a9d8f; border-radius:10px;
+    padding:9px 16px; font-size:15px; font-weight:700; color:#1b6e63;
+    box-shadow:0 4px 0 #b6ded8;
+  }
+  .opt:active{ transform:translateY(3px); box-shadow:0 1px 0 #b6ded8; }
+  .answer-row{ display:flex; gap:10px; justify-content:center; align-items:center; flex-wrap:wrap; }
+  input[type=number], input[type=text]{
+    font-family:'Baloo 2', sans-serif; font-size:18px; font-weight:700;
+    padding:9px 12px; width:130px; text-align:center;
+    border:3px solid #d5e0d8; border-radius:10px; background:#fff; color:#33403a;
+  }
+  input:focus{ outline:none; border-color:#52b788; }
+  .feedback{ text-align:center; font-size:16px; font-weight:700; min-height:26px; margin-top:14px; }
+  .feedback.ok{ color:#2b6e3f; }
+  .feedback.no{ color:#c1121f; }
+  .hint{ text-align:center; font-size:14px; color:#5c6b73; margin-top:6px; line-height:1.5; }
+
+  .unlock-box{
+    background:#fff8e1; border:3px dashed #ffb703; border-radius:12px;
+    padding:16px; margin-top:16px; text-align:center;
+  }
+  .unlock-box p{ margin:0 0 10px; font-size:15px; }
+
+  .foot{ text-align:center; margin-top:24px; }
+  .foot button{ background:none; border:none; color:#5c6b73; font-size:13px; text-decoration:underline; }
+
+  .teacher table{ width:100%; border-collapse:collapse; font-size:14px; margin-top:8px; }
+  .teacher th, .teacher td{ border:1px solid #d5e0d8; padding:6px 8px; text-align:left; }
+  .teacher th{ background:#f0f5f1; }
+  .teacher h3{ margin:16px 0 4px; font-size:16px; }
+
+  .celebrate{ text-align:center; }
+  .celebrate .big{ font-family:'Press Start 2P', monospace; font-size:16px; color:#2b6e3f; margin:12px 0; }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ transition:none !important; animation:none !important; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>WINKEL-QUEST</h1>
+  <div class="tagline">Übe Winkel — und bring deinen Begleiter groß raus.</div>
+
+  <!-- ============ FIGURENWAHL ============ -->
+  <div id="screen-select">
+    <div class="panel">
+      <div class="question">Wähle deinen Begleiter</div>
+      <div class="roster" id="roster"></div>
+      <div style="text-align:center; margin-top:18px;">
+        <button class="btn" id="startBtn" disabled>Los geht's</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ LEVELAUSWAHL ============ -->
+  <div id="screen-map" class="hidden">
+    <div class="hud">
+      <div id="hudSprite"></div>
+      <div class="hud-info">
+        <div class="hud-title" id="hudStage">—</div>
+        <div class="hud-sub" id="hudSub">—</div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="question">Deine Stationen</div>
+      <div class="levels" id="levelList"></div>
+    </div>
+  </div>
+
+  <!-- ============ LEVEL ============ -->
+  <div id="screen-level" class="hidden">
+    <div class="hud">
+      <div id="lvlSprite"></div>
+      <div class="hud-info">
+        <div class="hud-title" id="lvlTitle">—</div>
+        <div class="hud-sub" id="lvlPoints">—</div>
+        <div class="bar"><div class="bar-fill" id="lvlBar"></div></div>
+      </div>
+      <button class="btn ghost small" id="backBtn">Zurück</button>
+    </div>
+    <div class="panel" id="taskPanel"></div>
+    <div id="unlockArea"></div>
+  </div>
+
+  <div class="foot">
+    <button id="teacherToggle">Lehrer-Info</button>
+    <button id="resetBtn">Fortschritt zurücksetzen</button>
+  </div>
+
+  <div class="panel teacher hidden" id="teacherPanel"></div>
+
+</div>
+
+<script>
+/* =====================================================================
+   WINKEL-QUEST
+   Eine Datei, keine Abhängigkeiten. Fortschritt in localStorage.
+   Alles Anpassbare steht in CONFIG und CARDS ganz oben.
+   ===================================================================== */
+
+const CONFIG = {
+  punkteZiel: 10,          // Punkte pro Level bis zum Freischalten
+  messToleranz: 2,         // erlaubte Abweichung in Grad bei Level 2
+  codes: {                 // Codewörter zum Freischalten (Level 2–6)
+    2: 'GEODREIECK',
+    3: 'BOGENMASS',
+    4: 'SCHEITEL',
+    5: 'STUMPFSINN',
+    6: 'MONDFLUG'
+  }
+};
+
+// Level 2: analoge Karten. Nummer -> tatsächlicher Winkel in Grad.
+// Diese Werte müssen mit den ausgedruckten/gezeichneten Karten übereinstimmen.
+const CARDS = {
+  1: 35, 2: 112, 3: 68, 4: 150, 5: 24, 6: 95,
+  7: 130, 8: 47, 9: 165, 10: 78, 11: 105, 12: 55
+};
+
+const LEVELS = [
+  { n:1, name:'Winkel vergleichen',  sub:'Welcher Winkel ist größer?' },
+  { n:2, name:'Winkel messen',       sub:'Mit Geodreieck auf Karten messen' },
+  { n:3, name:'Winkel zeichnen',     sub:'Auf Papier zeichnen, selbst prüfen' },
+  { n:4, name:'Winkel berechnen',    sub:'Ergänzen zu 90°, 180°, 360°' },
+  { n:5, name:'Winkelarten',         sub:'Spitz, recht, stumpf, gestreckt, überstumpf' },
+  { n:6, name:'Neben- & Scheitelwinkel', sub:'Zusatzstation — danach hebt die Rakete ab' }
+];
+
+/* ---------------------------------------------------------------
+   PIXEL-SPRITES  (14 x 14, ein Buchstabe = ein Pixel)
+   --------------------------------------------------------------- */
+const PALETTE = {
+  '.':null,
+  'W':'#fdf6e3','w':'#e8dcc0',
+  'Y':'#ffd23f','y':'#e0a800','O':'#f77f00',
+  'K':'#262626','T':'#ffffff','S':'#adb5bd','D':'#6c757d',
+  'R':'#e63946','P':'#ff7eb6','M':'#6b4c9a','C':'#48cae4',
+  'G':'#52b788','g':'#2d6a4f','L':'#a8e6a3',
+  'B':'#8b5e3c','b':'#5c3d24'
+};
+
+const SPRITES = {
+  /* ---- Huhn-Linie ---- */
+  ei: [
+    "..............",
+    ".....WWWW.....",
+    "....WWWWWW....",
+    "...WWWWWWWW...",
+    "..WWWWWWWWWW..",
+    "..WWWWWWWWWW..",
+    ".WWWWWWWWWWWW.",
+    ".WWWwWWWWwWWW.",
+    ".WWWWWWWWWWWW.",
+    ".WWWWWWWWWWWW.",
+    "..WWWWWWWWWW..",
+    "..WWWWWWWWWW..",
+    "...wwwwwwww...",
+    ".............."
+  ],
+  kueken: [
+    "..............",
+    "..............",
+    ".....YYYY.....",
+    "....YYYYYY....",
+    "...YKYYYYKY...",
+    "...YYYYYYYY...",
+    "...YYYOOYYY...",
+    "..YYYYYYYYYY..",
+    "..YYYYYYYYYY..",
+    "..YYYYYYYYYY..",
+    "...YYYYYYYY...",
+    "....Y....Y....",
+    "...OO....OO...",
+    ".............."
+  ],
+  huhnSchule: [
+    ".....RR.......",
+    "....RRRR......",
+    "...YYYYYY.....",
+    "..YYKYYKYY....",
+    "..YYYYYYYY....",
+    "..YYYOOYYY....",
+    ".YYYYYYYYYY.b.",
+    ".YYYYYYYYYYbb.",
+    ".YYYYYYYYYYbb.",
+    ".YYYYYYYYYY.b.",
+    "..YYYYYYYY....",
+    "..YYYYYYYY....",
+    "...O....O.....",
+    "...O....O....."
+  ],
+  huhnBeruf: [
+    ".....RRR......",
+    "....RRRRR.....",
+    "...YYYYYYY....",
+    "..YYKYYYKYY...",
+    "..YYYYYYYYY...",
+    "..YYYOOOYYY...",
+    ".YYYYYYYYYYY..",
+    ".YYYYMMYYYYY..",
+    ".YYYYMMYYYYY..",
+    ".YYYYYYYYYYY..",
+    "..YYYYYYYYY...",
+    "...O.....O....",
+    "...O.....O....",
+    "....bbbb......"
+  ],
+  huhnAlt: [
+    ".....RRR......",
+    "....RRRRR.....",
+    "...WWWWWWW....",
+    "..WWKWWWKWW...",
+    "..WWWWWWWWW...",
+    "..WWWOOOWWW...",
+    ".WWWWWWWWWWW..",
+    ".WWWWWWWWWWW..",
+    ".bWWWWWWWWWb..",
+    ".bWWWWWWWWWb..",
+    ".b.WWWWWWW.b..",
+    ".b..O...O..b..",
+    ".bbbbbbbbbb...",
+    "..bb......bb.."
+  ],
+
+  /* ---- Monster-Linie ---- */
+  mon1: [
+    "..............",
+    "..............",
+    ".....GGGG.....",
+    "....GGGGGG....",
+    "...GGGGGGGG...",
+    "...GTTGGTTG...",
+    "...GTKGGTKG...",
+    "...GGGGGGGG...",
+    "...GGGGGGGG...",
+    "....GGGGGG....",
+    "....GG..GG....",
+    "....G....G....",
+    "..............",
+    ".............."
+  ],
+  mon2: [
+    "..............",
+    "...g......g...",
+    "...gg....gg...",
+    "....GGGGGG....",
+    "...GGGGGGGG...",
+    "..GGTTGGTTGG..",
+    "..GGTKGGTKGG..",
+    "..GGGGGGGGGG..",
+    "..GGGGGGGGGG..",
+    "..GGGGGGGGGG..",
+    "...GGGGGGGG...",
+    "...GG....GG...",
+    "...G......G...",
+    ".............."
+  ],
+  mon3: [
+    "..............",
+    "...g......g...",
+    "...gg....gg...",
+    "....GGGGGG....",
+    "...GGGGGGGG...",
+    "G.GGTTGGTTGG.G",
+    "GGGGTKGGTKGGGG",
+    ".GGGGGGGGGGGG.",
+    "..GGGGGGGGGG..",
+    "..GGGGGGGGGG..",
+    "..GGGGGGGGGG..",
+    "...GGGGGGGG...",
+    "...GG....GG...",
+    "...G......G..."
+  ],
+  mon4: [
+    "..Y.Y.YY.Y.Y..",
+    "..YYYYYYYYYY..",
+    "...g......g...",
+    "....GGGGGG....",
+    "...GGGGGGGG...",
+    "G.GGGTTGGTTG.G",
+    "GGGGGTKGGTKGGG",
+    ".GGGGGGGGGGGG.",
+    "..GGGGGGGGGG..",
+    "..GGGGGGGGGG..",
+    "..GGGGGGGGGG..",
+    "...GGGGGGGG...",
+    "...GG....GG...",
+    "...G......G..."
+  ],
+  mon5: [
+    "..Y.YYYY.Y....",
+    "..YYYYYYYY....",
+    "M..g......g..M",
+    "MM..GGGGGG..MM",
+    "MMGGGGGGGGGGMM",
+    "MMGGGTTGGTTGMM",
+    "MMGGGTKGGTKGMM",
+    "M.GGGGGGGGGG.M",
+    "..GGGGGGGGGG..",
+    "..GGGGGGGGGG..",
+    "..GGGGGGGGGG..",
+    "...GGGGGGGG...",
+    "...GG....GG...",
+    "...G......G..."
+  ],
+
+  /* ---- Blumen-Linie ---- */
+  samen: [
+    "..............",
+    "..............",
+    "..............",
+    "..............",
+    "..............",
+    "..............",
+    "..............",
+    ".....bb.......",
+    "....bBBb......",
+    "....bBBb......",
+    ".....bb.......",
+    "..bbbbbbbbbb..",
+    ".bbbbbbbbbbbb.",
+    ".............."
+  ],
+  keimling: [
+    "..............",
+    "..............",
+    "..............",
+    "..............",
+    "..............",
+    "......LL......",
+    ".....LGGL.....",
+    "......GG......",
+    "......GG......",
+    "......GG......",
+    "......GG......",
+    "..bbbbbbbbbb..",
+    ".bbbbbbbbbbbb.",
+    ".............."
+  ],
+  stengel: [
+    "..............",
+    "..............",
+    "......GG......",
+    "......GG......",
+    "...LLLGG......",
+    "..LLLLGG......",
+    "......GGLLL...",
+    "......GGLLLL..",
+    "......GG......",
+    "......GG......",
+    "......GG......",
+    "..bbbbbbbbbb..",
+    ".bbbbbbbbbbbb.",
+    ".............."
+  ],
+  knospe: [
+    "..............",
+    "......PP......",
+    ".....PPPP.....",
+    ".....gPPg.....",
+    "......GG......",
+    "...LLLGG......",
+    "..LLLLGG......",
+    "......GGLLL...",
+    "......GGLLLL..",
+    "......GG......",
+    "......GG......",
+    "..bbbbbbbbbb..",
+    ".bbbbbbbbbbbb.",
+    ".............."
+  ],
+  bluete: [
+    "...PP.PP.PP...",
+    "..PPPPPPPPPP..",
+    "..PPPYYYYPPP..",
+    "...PPYYYYPP...",
+    "..PPPPYYPPPP..",
+    "...PP.GG.PP...",
+    "...LLLGG......",
+    "..LLLLGGLLL...",
+    "......GGLLLL..",
+    "......GG......",
+    "......GG......",
+    "..bbbbbbbbbb..",
+    ".bbbbbbbbbbbb.",
+    ".............."
+  ],
+
+  /* ---- Belohnung nach Level 6 ---- */
+  rakete: [
+    "......TT......",
+    ".....TRRT.....",
+    ".....TRRT.....",
+    "....TTRRTT....",
+    "....TTRRTT....",
+    "....TRRRRT....",
+    "...RTRRRRTR...",
+    "...RRTRRTRR...",
+    "..RRRTTTTRRR..",
+    "..RRR.TT.RRR..",
+    ".....OYYO.....",
+    ".....OOYO.....",
+    "......OO......",
+    ".............."
+  ]
+};
+
+const CHARACTERS = {
+  huhn: {
+    name:'Ei → Huhn', cls:'huhn',
+    stages:[
+      { key:'ei',         label:'Ei' },
+      { key:'kueken',     label:'Küken in der Kita' },
+      { key:'huhnSchule', label:'Huhn in der Schule' },
+      { key:'huhnBeruf',  label:'Huhn im Beruf' },
+      { key:'huhnAlt',    label:'Huhn im Schaukelstuhl' }
+    ]
+  },
+  monster: {
+    name:'Monster', cls:'monster',
+    stages:[
+      { key:'mon1', label:'Kleiner Schleim' },
+      { key:'mon2', label:'Monster mit Hörnern' },
+      { key:'mon3', label:'Monster mit Armen' },
+      { key:'mon4', label:'Monsterkönig' },
+      { key:'mon5', label:'Geflügeltes Monster' }
+    ]
+  },
+  blume: {
+    name:'Blume', cls:'blume',
+    stages:[
+      { key:'samen',    label:'Samenkorn' },
+      { key:'keimling', label:'Keimling' },
+      { key:'stengel',  label:'Stängel mit Blättern' },
+      { key:'knospe',   label:'Knospe' },
+      { key:'bluete',   label:'Blüte in voller Pracht' }
+    ]
+  }
+};
+
+/* ---------------------------------------------------------------
+   Sprite-Rendering
+   --------------------------------------------------------------- */
+function spriteEl(key, px){
+  const rows = SPRITES[key];
+  const el = document.createElement('div');
+  el.style.display = 'grid';
+  el.style.gridTemplateColumns = `repeat(${rows[0].length}, ${px}px)`;
+  el.style.gridTemplateRows = `repeat(${rows.length}, ${px}px)`;
+  for (const row of rows){
+    for (const ch of row){
+      const cell = document.createElement('div');
+      cell.style.width = px+'px';
+      cell.style.height = px+'px';
+      const c = PALETTE[ch];
+      if (c) cell.style.background = c;
+      el.appendChild(cell);
+    }
+  }
+  return el;
+}
+
+/* ---------------------------------------------------------------
+   Winkel als SVG zeichnen
+   --------------------------------------------------------------- */
+function angleSVG(deg, opts){
+  opts = opts || {};
+  const size = opts.size || 190;
+  const base = (opts.base === undefined) ? -20 + Math.random()*40 : opts.base;
+  const showValue = !!opts.showValue;
+  const cx = size/2, cy = size/2;
+  const rayLen = size*0.42;
+  const r = size*0.17;
+
+  const pt = (a, len) => {
+    const rad = a * Math.PI/180;
+    return [cx + len*Math.cos(-rad), cy + len*Math.sin(-rad)];
+  };
+
+  const A = pt(base, rayLen);
+  const B = pt(base+deg, rayLen);
+  const a1 = pt(base, r);
+  const a2 = pt(base+deg, r);
+  const largeArc = deg > 180 ? 1 : 0;
+
+  const mid = pt(base + deg/2, r*1.75);
+
+  return `
+  <svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" role="img" aria-label="Winkel">
+    <path d="M ${a1[0].toFixed(1)} ${a1[1].toFixed(1)}
+             A ${r} ${r} 0 ${largeArc} 0 ${a2[0].toFixed(1)} ${a2[1].toFixed(1)}"
+          fill="none" stroke="#e76f51" stroke-width="3"/>
+    <line x1="${cx}" y1="${cy}" x2="${A[0].toFixed(1)}" y2="${A[1].toFixed(1)}"
+          stroke="#33403a" stroke-width="4" stroke-linecap="round"/>
+    <line x1="${cx}" y1="${cy}" x2="${B[0].toFixed(1)}" y2="${B[1].toFixed(1)}"
+          stroke="#33403a" stroke-width="4" stroke-linecap="round"/>
+    <circle cx="${cx}" cy="${cy}" r="4" fill="#33403a"/>
+    ${showValue ? `<text x="${mid[0].toFixed(1)}" y="${mid[1].toFixed(1)}"
+        font-family="Baloo 2, sans-serif" font-size="17" font-weight="700"
+        fill="#c1121f" text-anchor="middle" dominant-baseline="middle">${deg}°</text>` : ''}
+  </svg>`;
+}
+
+// Zwei sich schneidende Geraden mit markiertem Winkel (Level 6)
+function crossSVG(deg, markWhich){
+  const size = 210, cx = size/2, cy = size/2, L = size*0.44;
+  const base = 0;
+  const pt = (a, len) => {
+    const rad = a*Math.PI/180;
+    return [cx + len*Math.cos(-rad), cy + len*Math.sin(-rad)];
+  };
+  const p1 = pt(base, L), p2 = pt(base+180, L);
+  const p3 = pt(base+deg, L), p4 = pt(base+deg+180, L);
+  const r = 34;
+  const arc = (from, span, color) => {
+    const s = pt(from, r), e = pt(from+span, r);
+    return `<path d="M ${s[0].toFixed(1)} ${s[1].toFixed(1)}
+             A ${r} ${r} 0 ${span>180?1:0} 0 ${e[0].toFixed(1)} ${e[1].toFixed(1)}"
+             fill="none" stroke="${color}" stroke-width="4"/>`;
+  };
+  const lbl = (from, span, txt, color) => {
+    const m = pt(from+span/2, r*1.55);
+    return `<text x="${m[0].toFixed(1)}" y="${m[1].toFixed(1)}"
+      font-family="Baloo 2, sans-serif" font-size="16" font-weight="700" fill="${color}"
+      text-anchor="middle" dominant-baseline="middle">${txt}</text>`;
+  };
+  let marks = arc(base, deg, '#2a9d8f') + lbl(base, deg, deg+'°', '#1b6e63');
+  if (markWhich === 'neben')   marks += arc(base+deg, 180-deg, '#e76f51') + lbl(base+deg, 180-deg, '?', '#c1121f');
+  if (markWhich === 'scheitel')marks += arc(base+180, deg, '#e76f51') + lbl(base+180, deg, '?', '#c1121f');
+
+  return `
+  <svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" role="img" aria-label="Zwei sich schneidende Geraden">
+    <line x1="${p2[0].toFixed(1)}" y1="${p2[1].toFixed(1)}" x2="${p1[0].toFixed(1)}" y2="${p1[1].toFixed(1)}" stroke="#33403a" stroke-width="4" stroke-linecap="round"/>
+    <line x1="${p4[0].toFixed(1)}" y1="${p4[1].toFixed(1)}" x2="${p3[0].toFixed(1)}" y2="${p3[1].toFixed(1)}" stroke="#33403a" stroke-width="4" stroke-linecap="round"/>
+    ${marks}
+    <circle cx="${cx}" cy="${cy}" r="4" fill="#33403a"/>
+  </svg>`;
+}
+
+/* ---------------------------------------------------------------
+   Spielstand
+   --------------------------------------------------------------- */
+const SAVE_KEY = 'winkelquest.v1';
+let state = null;
+
+function freshState(){
+  return { figur:null, punkte:{1:0,2:0,3:0,4:0,5:0,6:0}, frei:1, karten:[] };
+}
+function load(){
+  try {
+    const raw = localStorage.getItem(SAVE_KEY);
+    state = raw ? JSON.parse(raw) : freshState();
+  } catch(e){ state = freshState(); }
+  if (!state.punkte) state = freshState();
+}
+function save(){
+  try { localStorage.setItem(SAVE_KEY, JSON.stringify(state)); } catch(e){}
+}
+
+const rnd = (a,b) => a + Math.floor(Math.random()*(b-a+1));
+const pick = arr => arr[Math.floor(Math.random()*arr.length)];
+
+function currentStageIndex(){
+  // Eine Stufe pro abgeschlossenem Level 1–5 (max. 5 Stufen)
+  let done = 0;
+  for (let i=1;i<=5;i++) if (state.punkte[i] >= CONFIG.punkteZiel) done++;
+  return Math.min(done, 4);
+}
+function level6Done(){ return state.punkte[6] >= CONFIG.punkteZiel; }
+
+/* ---------------------------------------------------------------
+   Bildschirm: Figurenwahl
+   --------------------------------------------------------------- */
+const $ = id => document.getElementById(id);
+
+function buildRoster(){
+  const roster = $('roster');
+  roster.innerHTML = '';
+  let chosen = null;
+  Object.entries(CHARACTERS).forEach(([id, c]) => {
+    const card = document.createElement('div');
+    card.className = 'card ' + c.cls;
+
+    card.appendChild(spriteEl(c.stages[0].key, 9));
+
+    const nm = document.createElement('div');
+    nm.className = 'card-name';
+    nm.textContent = c.name;
+    card.appendChild(nm);
+
+    const strip = document.createElement('div');
+    strip.className = 'evo-strip';
+    c.stages.forEach(s => strip.appendChild(spriteEl(s.key, 3)));
+    card.appendChild(strip);
+
+    const chk = document.createElement('div');
+    chk.className = 'check';
+    chk.textContent = '✓ ausgewählt';
+    card.appendChild(chk);
+
+    card.addEventListener('click', () => {
+      document.querySelectorAll('.card').forEach(el => el.classList.remove('selected'));
+      card.classList.add('selected');
+      chosen = id;
+      $('startBtn').disabled = false;
+    });
+    roster.appendChild(card);
+  });
+
+  $('startBtn').onclick = () => {
+    if (!chosen) return;
+    state.figur = chosen;
+    save();
+    showMap();
+  };
+}
+
+/* ---------------------------------------------------------------
+   Bildschirm: Levelauswahl
+   --------------------------------------------------------------- */
+function showMap(){
+  $('screen-select').classList.add('hidden');
+  $('screen-level').classList.add('hidden');
+  $('screen-map').classList.remove('hidden');
+
+  const c = CHARACTERS[state.figur];
+  const done6 = level6Done();
+  const key = done6 ? 'rakete' : c.stages[currentStageIndex()].key;
+  const label = done6 ? 'Rakete startklar!' : c.stages[currentStageIndex()].label;
+
+  const sp = $('hudSprite');
+  sp.innerHTML = '';
+  sp.appendChild(spriteEl(key, 5));
+  $('hudStage').textContent = label;
+  $('hudSub').textContent = done6
+    ? 'Alle Stationen geschafft — du kannst zum Mond fliegen.'
+    : 'Schließe Stationen ab, damit dein Begleiter wächst.';
+
+  const list = $('levelList');
+  list.innerHTML = '';
+  LEVELS.forEach(l => {
+    const b = document.createElement('button');
+    const pts = state.punkte[l.n] || 0;
+    const offen = l.n <= state.frei;
+    const fertig = pts >= CONFIG.punkteZiel;
+    b.className = 'lvl ' + (fertig ? 'done' : offen ? 'open' : 'locked');
+    b.disabled = !offen;
+    b.innerHTML = `<b>${fertig ? '★' : offen ? '' : '🔒'} ${l.n}. ${l.name}</b>
+                   <small>${l.sub}</small><br>
+                   <small>${pts} / ${CONFIG.punkteZiel} Punkte</small>`;
+    b.onclick = () => openLevel(l.n);
+    list.appendChild(b);
+  });
+}
+
+/* ---------------------------------------------------------------
+   Bildschirm: Level
+   --------------------------------------------------------------- */
+let currentLevel = 1;
+let currentTask = null;
+
+function openLevel(n){
+  currentLevel = n;
+  $('screen-map').classList.add('hidden');
+  $('screen-level').classList.remove('hidden');
+  refreshHud();
+  nextTask();
+}
+
+function refreshHud(){
+  const c = CHARACTERS[state.figur];
+  const done6 = level6Done();
+  const key = done6 ? 'rakete' : c.stages[currentStageIndex()].key;
+  const sp = $('lvlSprite'); sp.innerHTML = '';
+  sp.appendChild(spriteEl(key, 5));
+
+  const l = LEVELS[currentLevel-1];
+  const pts = state.punkte[currentLevel] || 0;
+  $('lvlTitle').textContent = `${l.n}. ${l.name}`;
+  $('lvlPoints').textContent = `${pts} / ${CONFIG.punkteZiel} Punkte`;
+  $('lvlBar').style.width = Math.min(100, pts/CONFIG.punkteZiel*100) + '%';
+}
+
+function award(ok, msg){
+  const fb = document.createElement('div');
+  fb.className = 'feedback ' + (ok ? 'ok' : 'no');
+  fb.textContent = msg;
+  $('taskPanel').appendChild(fb);
+
+  if (ok){
+    state.punkte[currentLevel] = (state.punkte[currentLevel]||0) + 1;
+    save();
+    refreshHud();
+  }
+
+  const row = document.createElement('div');
+  row.style.textAlign = 'center';
+  row.style.marginTop = '12px';
+  const nb = document.createElement('button');
+  nb.className = 'btn';
+  nb.textContent = 'Nächste Aufgabe';
+  nb.onclick = nextTask;
+  row.appendChild(nb);
+  $('taskPanel').appendChild(row);
+
+  renderUnlock();
+}
+
+function renderUnlock(){
+  const area = $('unlockArea');
+  area.innerHTML = '';
+  const pts = state.punkte[currentLevel] || 0;
+  if (pts < CONFIG.punkteZiel) return;
+
+  // Level 6 abgeschlossen -> Abschluss statt Codewort
+  if (currentLevel === 6){
+    const box = document.createElement('div');
+    box.className = 'panel celebrate';
+    box.innerHTML = `<div class="big">GESCHAFFT!</div>
+      <p>Alle Stationen abgeschlossen. Deine Rakete ist startklar.</p>`;
+    const sp = spriteEl('rakete', 9);
+    sp.style.margin = '0 auto';
+    box.appendChild(sp);
+    const b = document.createElement('button');
+    b.className = 'btn';
+    b.style.marginTop = '14px';
+    b.textContent = 'Zur Übersicht';
+    b.onclick = showMap;
+    box.appendChild(b);
+    area.appendChild(box);
+    return;
+  }
+
+  const nextN = currentLevel + 1;
+  if (state.frei >= nextN){
+    const box = document.createElement('div');
+    box.className = 'panel unlock-box';
+    box.innerHTML = `<p>Station ${nextN} ist schon freigeschaltet. Du kannst hier weiterüben oder wechseln.</p>`;
+    const b = document.createElement('button');
+    b.className = 'btn'; b.textContent = 'Zur Übersicht'; b.onclick = showMap;
+    box.appendChild(b);
+    area.appendChild(box);
+    return;
+  }
+
+  const box = document.createElement('div');
+  box.className = 'panel unlock-box';
+  box.innerHTML = `<p><b>${CONFIG.punkteZiel} Punkte geschafft!</b><br>
+    Frag nach dem Codewort für Station ${nextN} — oder übe einfach weiter.</p>`;
+
+  const row = document.createElement('div');
+  row.className = 'answer-row';
+  const inp = document.createElement('input');
+  inp.type = 'text';
+  inp.placeholder = 'Codewort';
+  inp.style.width = '190px';
+  const btn = document.createElement('button');
+  btn.className = 'btn';
+  btn.textContent = 'Freischalten';
+  const msg = document.createElement('div');
+  msg.className = 'feedback';
+
+  btn.onclick = () => {
+    const val = inp.value.trim().toUpperCase().replace(/\s+/g,'');
+    if (val === CONFIG.codes[nextN]){
+      state.frei = Math.max(state.frei, nextN);
+      save();
+      msg.className = 'feedback ok';
+      msg.textContent = `Station ${nextN} freigeschaltet!`;
+      setTimeout(showMap, 900);
+    } else {
+      msg.className = 'feedback no';
+      msg.textContent = 'Das Codewort stimmt noch nicht.';
+    }
+  };
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter') btn.click(); });
+
+  row.appendChild(inp); row.appendChild(btn);
+  box.appendChild(row);
+  box.appendChild(msg);
+  area.appendChild(box);
+}
+
+/* ---------------------------------------------------------------
+   Aufgaben-Generatoren
+   --------------------------------------------------------------- */
+function nextTask(){
+  const p = $('taskPanel');
+  p.innerHTML = '';
+  ({1:taskCompare, 2:taskMeasure, 3:taskDraw, 4:taskCalc, 5:taskTypes, 6:taskAdvanced}[currentLevel])();
+  renderUnlock();
+}
+
+function head(text){
+  const d = document.createElement('div');
+  d.className = 'question';
+  d.textContent = text;
+  return d;
+}
+function hint(text){
+  const d = document.createElement('div');
+  d.className = 'hint';
+  d.innerHTML = text;
+  return d;
+}
+
+/* --- Level 1: Vergleichen --- */
+function taskCompare(){
+  const p = $('taskPanel');
+  let a = rnd(15,170), b = rnd(15,170);
+  while (Math.abs(a-b) < 15){ b = rnd(15,170); }
+
+  p.appendChild(head('Welcher Winkel ist größer?'));
+
+  const row = document.createElement('div');
+  row.className = 'figure-row';
+  [['A',a],['B',b]].forEach(([name, val]) => {
+    const box = document.createElement('div');
+    box.className = 'figure-box choice';
+    box.innerHTML = angleSVG(val) + `<div class="figure-label">Winkel ${name}</div>`;
+    box.onclick = () => {
+      if (box.dataset.used) return;
+      document.querySelectorAll('.figure-box').forEach(f => f.dataset.used = '1');
+      const ok = (name === 'A') ? a > b : b > a;
+      award(ok, ok
+        ? `Richtig! ${a}° und ${b}° — Winkel ${a>b?'A':'B'} ist größer.`
+        : `Leider nicht. A misst ${a}°, B misst ${b}°.`);
+    };
+    row.appendChild(box);
+  });
+  p.appendChild(row);
+  p.appendChild(hint('Tipp: Achte auf die Öffnung zwischen den Schenkeln, nicht auf ihre Länge.'));
+}
+
+/* --- Level 2: Messen (analoge Karten) --- */
+function taskMeasure(){
+  const p = $('taskPanel');
+  const nums = Object.keys(CARDS).map(Number);
+  if (!state.karten) state.karten = [];
+  let pool = nums.filter(n => !state.karten.includes(n));
+  if (pool.length === 0){ state.karten = []; pool = nums; }
+  const num = pick(pool);
+  currentTask = { num, soll: CARDS[num] };
+
+  p.appendChild(head(`Miss Karte Nr. ${num} mit dem Geodreieck.`));
+  p.appendChild(hint(`Hol dir die Karte mit der Nummer <b>${num}</b>, miss den Winkel und trage dein Ergebnis ein.<br>
+    Eine Abweichung von ±${CONFIG.messToleranz}° zählt als richtig.`));
+
+  const row = document.createElement('div');
+  row.className = 'answer-row';
+  row.style.marginTop = '16px';
+  const inp = document.createElement('input');
+  inp.type = 'number'; inp.min = '0'; inp.max = '360'; inp.placeholder = '… °';
+  const btn = document.createElement('button');
+  btn.className = 'btn'; btn.textContent = 'Prüfen';
+  btn.onclick = () => {
+    const v = parseFloat(inp.value);
+    if (isNaN(v)){ return; }
+    btn.disabled = true; inp.disabled = true;
+    const diff = Math.abs(v - currentTask.soll);
+    const ok = diff <= CONFIG.messToleranz;
+    if (ok) state.karten.push(num);
+    save();
+    award(ok, ok
+      ? `Genau gemessen! Karte ${num} hat ${currentTask.soll}°.`
+      : `Noch nicht. Karte ${num} hat ${currentTask.soll}° — du bist ${diff.toFixed(0)}° daneben. Leg das Geodreieck neu an.`);
+  };
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter') btn.click(); });
+  row.appendChild(inp); row.appendChild(btn);
+  p.appendChild(row);
+}
+
+/* --- Level 3: Zeichnen (analog, Selbstkontrolle) --- */
+function taskDraw(){
+  const p = $('taskPanel');
+  const soll = rnd(2,34)*5;   // 10° bis 170° in 5er-Schritten
+  p.appendChild(head(`Zeichne einen Winkel von ${soll}°.`));
+  p.appendChild(hint('Zeichne den Winkel mit Geodreieck auf dein Papier. Wenn du fertig bist, zeigt dir das Spiel den Winkel zum Vergleich — leg dein Blatt zum Prüfen auf den Bildschirm.'));
+
+  const area = document.createElement('div');
+  area.style.textAlign = 'center';
+  area.style.marginTop = '18px';
+  p.appendChild(area);
+
+  const show = document.createElement('button');
+  show.className = 'btn';
+  show.textContent = 'Fertig — Vergleichsbild zeigen';
+  show.onclick = () => {
+    area.innerHTML = '';
+    const box = document.createElement('div');
+    box.className = 'figure-box';
+    box.style.display = 'inline-flex';
+    box.innerHTML = angleSVG(soll, { size: 300, base: 0, showValue: true });
+    area.appendChild(box);
+    area.appendChild(hint('Leg dein Blatt auf den Bildschirm. Liegen die Schenkel etwa aufeinander?'));
+
+    const row = document.createElement('div');
+    row.className = 'answer-row';
+    row.style.marginTop = '14px';
+    const yes = document.createElement('button');
+    yes.className = 'btn'; yes.textContent = 'Passt — Punkt holen';
+    yes.onclick = () => award(true, `Gut gezeichnet! ${soll}° sitzt.`);
+    const no = document.createElement('button');
+    no.className = 'btn ghost'; no.textContent = 'Nochmal versuchen';
+    no.onclick = () => award(false, 'Kein Problem — zeichne den nächsten Winkel sorgfältiger.');
+    row.appendChild(yes); row.appendChild(no);
+    area.appendChild(row);
+  };
+  area.appendChild(show);
+}
+
+/* --- Level 4: Berechnen --- */
+function taskCalc(){
+  const p = $('taskPanel');
+  const typ = pick(['zu90','zu180','zu360','gegen']);
+  let frage, loesung, extra = '';
+
+  if (typ === 'zu90'){
+    const a = rnd(5,85);
+    frage = `Wie viel fehlt von ${a}° bis zu einem rechten Winkel (90°)?`;
+    loesung = 90 - a;
+    extra = `90° − ${a}° = ${loesung}°`;
+  } else if (typ === 'zu180'){
+    const a = rnd(10,170);
+    frage = `Wie viel fehlt von ${a}° bis zu einem gestreckten Winkel (180°)?`;
+    loesung = 180 - a;
+    extra = `180° − ${a}° = ${loesung}°`;
+  } else if (typ === 'zu360'){
+    const a = rnd(20,340);
+    frage = `Wie viel fehlt von ${a}° bis zum Vollwinkel (360°)?`;
+    loesung = 360 - a;
+    extra = `360° − ${a}° = ${loesung}°`;
+  } else {
+    const a = rnd(15,165);
+    frage = `Ein Winkel misst ${a}°. Wie groß ist der zugehörige überstumpfe Winkel (Rest bis 360°)?`;
+    loesung = 360 - a;
+    extra = `360° − ${a}° = ${loesung}°`;
+  }
+
+  p.appendChild(head(frage));
+  numericAnswer(p, loesung, extra);
+}
+
+function numericAnswer(p, loesung, extra){
+  const row = document.createElement('div');
+  row.className = 'answer-row';
+  row.style.marginTop = '16px';
+  const inp = document.createElement('input');
+  inp.type = 'number'; inp.placeholder = '… °';
+  const btn = document.createElement('button');
+  btn.className = 'btn'; btn.textContent = 'Prüfen';
+  btn.onclick = () => {
+    const v = parseFloat(inp.value);
+    if (isNaN(v)) return;
+    btn.disabled = true; inp.disabled = true;
+    const ok = Math.abs(v - loesung) < 0.01;
+    award(ok, ok ? `Richtig! ${extra}` : `Nicht ganz. Richtig wäre: ${extra}`);
+  };
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter') btn.click(); });
+  row.appendChild(inp); row.appendChild(btn);
+  p.appendChild(row);
+  inp.focus();
+}
+
+/* --- Level 5: Winkelarten --- */
+const ARTEN = [
+  { name:'spitzer Winkel',      test:d => d > 0   && d < 90 },
+  { name:'rechter Winkel',      test:d => d === 90 },
+  { name:'stumpfer Winkel',     test:d => d > 90  && d < 180 },
+  { name:'gestreckter Winkel',  test:d => d === 180 },
+  { name:'überstumpfer Winkel', test:d => d > 180 && d < 360 }
+];
+
+function taskTypes(){
+  const p = $('taskPanel');
+  const art = pick(ARTEN);
+  let deg;
+  switch(art.name){
+    case 'spitzer Winkel':      deg = rnd(10,85); break;
+    case 'rechter Winkel':      deg = 90; break;
+    case 'stumpfer Winkel':     deg = rnd(95,175); break;
+    case 'gestreckter Winkel':  deg = 180; break;
+    default:                    deg = rnd(190,340);
+  }
+
+  p.appendChild(head('Welche Winkelart ist das?'));
+  const box = document.createElement('div');
+  box.className = 'figure-row';
+  const fig = document.createElement('div');
+  fig.className = 'figure-box';
+  fig.innerHTML = angleSVG(deg, { size: 210, base: 0 });
+  box.appendChild(fig);
+  p.appendChild(box);
+
+  const opts = document.createElement('div');
+  opts.className = 'options';
+  ARTEN.forEach(a => {
+    const b = document.createElement('button');
+    b.className = 'opt';
+    b.textContent = a.name;
+    b.onclick = () => {
+      document.querySelectorAll('.opt').forEach(o => o.disabled = true);
+      const ok = a.name === art.name;
+      award(ok, ok
+        ? `Richtig! ${deg}° ist ein ${art.name}.`
+        : `Nicht ganz — ${deg}° ist ein ${art.name}.`);
+    };
+    opts.appendChild(b);
+  });
+  p.appendChild(opts);
+  p.appendChild(hint('Merke: unter 90° spitz · genau 90° recht · zwischen 90° und 180° stumpf · genau 180° gestreckt · über 180° überstumpf.'));
+}
+
+/* --- Level 6: Neben-, Scheitelwinkel, überstumpf --- */
+function taskAdvanced(){
+  const p = $('taskPanel');
+  const typ = pick(['neben','scheitel','ueber','summe']);
+
+  if (typ === 'neben'){
+    const a = rnd(20,160);
+    p.appendChild(head('Wie groß ist der markierte Nebenwinkel?'));
+    const row = document.createElement('div'); row.className = 'figure-row';
+    const fig = document.createElement('div'); fig.className = 'figure-box';
+    fig.innerHTML = crossSVG(a, 'neben');
+    row.appendChild(fig); p.appendChild(row);
+    numericAnswer(p, 180-a, `Nebenwinkel ergänzen sich zu 180°: 180° − ${a}° = ${180-a}°`);
+    p.appendChild(hint('Nebenwinkel liegen nebeneinander an einer Geraden und ergeben zusammen 180°.'));
+
+  } else if (typ === 'scheitel'){
+    const a = rnd(20,160);
+    p.appendChild(head('Wie groß ist der markierte Scheitelwinkel?'));
+    const row = document.createElement('div'); row.className = 'figure-row';
+    const fig = document.createElement('div'); fig.className = 'figure-box';
+    fig.innerHTML = crossSVG(a, 'scheitel');
+    row.appendChild(fig); p.appendChild(row);
+    numericAnswer(p, a, `Scheitelwinkel sind gleich groß: ${a}°`);
+    p.appendChild(hint('Scheitelwinkel liegen sich am Schnittpunkt gegenüber und sind immer gleich groß.'));
+
+  } else if (typ === 'ueber'){
+    const a = rnd(200,350);
+    p.appendChild(head(`Ein überstumpfer Winkel misst ${a}°. Wie groß ist der zugehörige Winkel auf der anderen Seite?`));
+    numericAnswer(p, 360-a, `360° − ${a}° = ${360-a}°`);
+    p.appendChild(hint('Beide Winkel zusammen bilden einen Vollwinkel von 360°.'));
+
+  } else {
+    const a = rnd(20,80), b = rnd(20,80);
+    p.appendChild(head(`Zwei Winkel von ${a}° und ${b}° liegen nebeneinander an einer Geraden. Wie groß ist der dritte Winkel bis 180°?`));
+    numericAnswer(p, 180-a-b, `180° − ${a}° − ${b}° = ${180-a-b}°`);
+  }
+}
+
+/* ---------------------------------------------------------------
+   Lehrer-Info
+   --------------------------------------------------------------- */
+function buildTeacher(){
+  const t = $('teacherPanel');
+  let cards = '';
+  Object.entries(CARDS).forEach(([n,v]) => { cards += `<tr><td>Karte ${n}</td><td>${v}°</td></tr>`; });
+  let codes = '';
+  Object.entries(CONFIG.codes).forEach(([n,c]) => { codes += `<tr><td>Station ${n}: ${LEVELS[n-1].name}</td><td><b>${c}</b></td></tr>`; });
+
+  t.innerHTML = `
+    <h3>Codewörter</h3>
+    <p style="font-size:14px; margin:4px 0;">Station 1 ist von Anfang an offen. Die Codewörter gibst du mündlich aus.</p>
+    <table><tr><th>Station</th><th>Codewort</th></tr>${codes}</table>
+
+    <h3>Kartenwerte für Station 2</h3>
+    <p style="font-size:14px; margin:4px 0;">Diese Winkel müssen auf den nummerierten Papierkarten gezeichnet sein.
+       Toleranz im Spiel: ±${CONFIG.messToleranz}°.</p>
+    <table><tr><th>Karte</th><th>Winkel</th></tr>${cards}</table>
+
+    <h3>Anpassen</h3>
+    <p style="font-size:14px; line-height:1.6;">Im Quelltext ganz oben stehen <code>CONFIG</code> (Punkteziel, Toleranz, Codewörter)
+       und <code>CARDS</code> (Kartennummer → Winkel). Dort änderst du alles, ohne den Rest anzufassen.
+       Der Fortschritt liegt im Browser des Schülers (<code>localStorage</code>), ist also pro Gerät und Browser gespeichert.</p>
+  `;
+}
+
+/* ---------------------------------------------------------------
+   Start
+   --------------------------------------------------------------- */
+load();
+buildRoster();
+buildTeacher();
+
+if (state.figur && CHARACTERS[state.figur]) showMap();
+
+$('backBtn').onclick = showMap;
+$('teacherToggle').onclick = () => $('teacherPanel').classList.toggle('hidden');
+$('resetBtn').onclick = () => {
+  if (!confirm('Wirklich allen Fortschritt löschen und neu starten?')) return;
+  state = freshState();
+  save();
+  location.reload();
+};
+</script>
+</body>
+</html>
