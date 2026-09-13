@@ -8,14 +8,14 @@
   @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
 
   :root {
-    --paper: #faf8f3;
-    --grid: #dfe1e6;
-    --ink: #1c2541;
-    --ink-soft: #5a6178;
-    --geo: #2e6f6e;
-    --geo-bg: #eaf3f2;
-    --lgs: #b1601f;
-    --lgs-bg: #f7efe3;
+    --paper: #fffdf7;
+    --grid: #e9e2d0;
+    --ink: #241b3a;
+    --ink-soft: #6b6280;
+    --geo: #0f8b7f;
+    --geo-bg: #d8f5ee;
+    --lgs: #e0553c;
+    --lgs-bg: #ffe4d6;
   }
 
   * { box-sizing: border-box; }
@@ -29,27 +29,30 @@
       linear-gradient(var(--grid) 1px, transparent 1px),
       linear-gradient(90deg, var(--grid) 1px, transparent 1px),
       var(--paper);
-    background-size: 28px 28px;
+    background-size: 26px 26px;
     color: var(--ink);
   }
 
   header {
     margin-bottom: 48px;
-  }
-
-  .eyebrow {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.8em;
-    color: var(--ink-soft);
-    margin: 0 0 6px;
+    position: relative;
   }
 
   h1 {
-    font-size: 2.1em;
+    font-size: 2.4em;
     font-weight: 700;
     margin: 0;
     letter-spacing: -0.01em;
+    color: var(--ink);
   }
+
+  h1 span {
+    display: inline-block;
+  }
+
+  h1 .k1 { color: var(--geo); transform: rotate(-4deg); }
+  h1 .k2 { color: var(--lgs); transform: rotate(3deg); }
+  h1 .k3 { transform: rotate(-2deg); }
 
   .stufe {
     margin-bottom: 40px;
@@ -65,13 +68,14 @@
   .stufe-nr {
     font-family: 'IBM Plex Mono', monospace;
     font-size: 0.85em;
-    padding: 3px 9px;
-    border-radius: 4px;
-    font-weight: 500;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-weight: 600;
+    transform: rotate(-2deg);
   }
 
-  .geo .stufe-nr { background: var(--geo-bg); color: var(--geo); }
-  .lgs .stufe-nr { background: var(--lgs-bg); color: var(--lgs); }
+  .geo .stufe-nr { background: var(--geo); color: #fff; }
+  .lgs .stufe-nr { background: var(--lgs); color: #fff; }
 
   h2 {
     font-size: 1.05em;
@@ -86,7 +90,7 @@
     margin: 0;
   }
 
-  li + li { margin-top: 10px; }
+  li + li { margin-top: 12px; }
 
   a {
     display: flex;
@@ -95,29 +99,31 @@
     gap: 12px;
     padding: 16px 20px;
     background: #fff;
-    border: 1.5px solid var(--ink);
-    border-radius: 3px;
+    border: 2px solid var(--ink);
+    border-radius: 12px;
     text-decoration: none;
     color: var(--ink);
     font-weight: 600;
-    box-shadow: 4px 4px 0 var(--ink);
-    transition: transform 0.12s ease, box-shadow 0.12s ease;
+    transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
   }
 
-  a:hover {
-    transform: translate(2px, 2px);
-    box-shadow: 2px 2px 0 var(--ink);
-  }
+  .geo a { box-shadow: 5px 5px 0 var(--geo); }
+  .lgs a { box-shadow: 5px 5px 0 var(--lgs); }
 
-  .geo a:hover { background: var(--geo-bg); }
-  .lgs a:hover { background: var(--lgs-bg); }
+  li:nth-child(odd) a { transform: rotate(-0.6deg); }
+  li:nth-child(even) a { transform: rotate(0.6deg); }
+
+  .geo a:hover { background: var(--geo-bg); transform: translate(2px, 2px) rotate(0deg); box-shadow: 2px 2px 0 var(--geo); }
+  .lgs a:hover { background: var(--lgs-bg); transform: translate(2px, 2px) rotate(0deg); box-shadow: 2px 2px 0 var(--lgs); }
 
   a::after {
     content: "→";
     font-family: 'IBM Plex Mono', monospace;
-    color: var(--ink-soft);
     flex-shrink: 0;
   }
+
+  .geo a::after { color: var(--geo); }
+  .lgs a::after { color: var(--lgs); }
 
   @media (prefers-reduced-motion: reduce) {
     a { transition: none; }
@@ -127,8 +133,7 @@
 <body>
 
 <header>
-  <p class="eyebrow">Mathematik · Riesenklein</p>
-  <h1>Kurse</h1>
+  <h1><span class="k1">Kurve.</span> <span class="k2">Winkel.</span> <span class="k3">Los.</span></h1>
 </header>
 
 <section class="stufe geo">
