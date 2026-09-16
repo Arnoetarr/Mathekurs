@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Konstruktionen mit dem Zirkel</title>
+<style>
+  :root{
+    --paper:#FBF9F4;
+    --grid:#DED7C4;
+    --ink:#1E2A44;
+    --ink-soft:#4A5674;
+    --construction:#3E7C74;
+    --result:#A6321B;
+    --highlight:#C98A00;
+    --panel:#EFEAE0;
+    --border:#D8D0BC;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:#E8E3D6;
+    color:var(--ink);
+    font-family:'IBM Plex Sans','Segoe UI',system-ui,sans-serif;
+    padding:28px 16px 60px;
+  }
+  .wrap{max-width:980px;margin:0 auto;}
+  header{margin-bottom:22px;display:flex;align-items:flex-end;gap:18px;flex-wrap:wrap;}
+  header svg{flex:none;}
+  h1{
+    font-family:'Fraunces','Georgia',serif;
+    font-weight:600;
+    font-size:clamp(24px,4vw,34px);
+    margin:0 0 4px;
+    letter-spacing:.2px;
+  }
+  header p{margin:0;color:var(--ink-soft);font-size:15px;}
+
+  nav.tabs{display:flex;gap:6px;margin-bottom:0;position:relative;z-index:1;flex-wrap:wrap;}
+  nav.tabs button{
+    font-family:'Fraunces','Georgia',serif;
+    font-size:15px;
+    padding:11px 18px 13px;
+    border:2px solid var(--border);
+    border-bottom:none;
+    background:#DFD8C6;
+    color:var(--ink-soft);
+    border-radius:8px 8px 0 0;
+    cursor:pointer;
+    transition:background .2s, color .2s;
+  }
+  nav.tabs button:hover{background:#E9E2D0;}
+  nav.tabs button.active{
+    background:var(--panel);
+    color:var(--ink);
+    font-weight:600;
+  }
+
+  .card{
+    background:var(--panel);
+    border:2px solid var(--border);
+    border-radius:0 10px 10px 10px;
+    padding:20px;
+  }
+
+  .mode-panel{display:none;}
+  .mode-panel.active{display:block;}
+
+  .layout{display:grid;grid-template-columns:1.5fr 1fr;gap:22px;align-items:start;}
+  @media (max-width:760px){.layout{grid-template-columns:1fr;}}
+
+  .canvas-box{
+    background:var(--paper);
+    border:1px solid var(--border);
+    border-radius:6px;
+    overflow:hidden;
+  }
+  .canvas-box svg{display:block;width:100%;height:auto;}
+
+  .legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:10px;font-size:12.5px;color:var(--ink-soft);}
+  .legend span{display:inline-flex;align-items:center;gap:6px;}
+  .swatch{width:20px;height:3px;display:inline-block;border-radius:2px;}
+  .sw-given{background:var(--ink);}
+  .sw-constr{background:repeating-linear-gradient(90deg,var(--construction) 0 5px,transparent 5px 9px);}
+  .sw-result{background:var(--result);height:4px;}
+  .sw-active{width:11px;height:11px;border-radius:50%;background:var(--highlight);}
+
+  .info h2{
+    font-family:'Fraunces','Georgia',serif;
+    font-size:19px;
+    margin:2px 0 12px;
+  }
+  .step-counter{
+    font-size:12.5px;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    color:var(--ink-soft);
+    margin-bottom:8px;
+    font-weight:600;
+  }
+  .step-text{
+    font-size:16.5px;
+    line-height:1.5;
+    min-height:96px;
+    background:var(--paper);
+    border:1px solid var(--border);
+    border-left:4px solid var(--construction);
+    border-radius:4px;
+    padding:14px 16px;
+  }
+  .step-text ul{margin:0;padding-left:20px;}
+  .step-text li{margin:5px 0;}
+  .step-text li b{color:var(--highlight);}
+  .mode-panel[data-final="true"] .step-text{border-left-color:var(--result);}
+
+  .controls{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;}
+  .controls button{
+    font-family:inherit;
+    font-size:14.5px;
+    font-weight:600;
+    padding:10px 16px;
+    border-radius:6px;
+    border:2px solid var(--ink);
+    background:var(--ink);
+    color:var(--paper);
+    cursor:pointer;
+    transition:opacity .15s, transform .1s;
+  }
+  .controls button:active{transform:translateY(1px);}
+  .controls button.secondary{
+    background:transparent;
+    color:var(--ink);
+  }
+  .controls button:disabled{opacity:.35;cursor:default;}
+  .controls .reset{
+    margin-left:auto;
+    background:transparent;
+    border-color:var(--border);
+    color:var(--ink-soft);
+    font-weight:500;
+  }
+
+  .hint{margin-top:14px;font-size:13px;color:var(--ink-soft);}
+
+  /* SVG element states */
+  .mode-panel svg [data-step]{transition:opacity .45s ease;}
+  .mode-panel svg .settled{opacity:.4;}
+  .mode-panel svg .current{
+    filter:drop-shadow(0 0 4px rgba(62,124,116,.55));
+  }
+  .mode-panel svg .current.result-el{
+    filter:drop-shadow(0 0 5px rgba(166,50,27,.6));
+  }
+  .mode-panel svg .pt circle{transition:fill .3s, stroke .3s, r .3s;}
+  .mode-panel svg .pt text{transition:fill .3s;}
+  .mode-panel svg .pt.point-active{opacity:1 !important;}
+  .mode-panel svg .pt.point-active circle{fill:var(--highlight); r:6.5;}
+  .mode-panel svg .pt.point-active text{fill:var(--highlight);}
+  .mode-panel svg .pt.point-active{filter:drop-shadow(0 0 5px rgba(201,138,0,.65));}
+
+  text{
+    font-family:'Fraunces','Georgia',serif;
+    font-weight:600;
+    paint-order:stroke;
+    stroke:var(--paper);
+    stroke-width:4px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <svg width="46" height="46" viewBox="0 0 46 46" aria-hidden="true">
+      <g fill="none" stroke="#1E2A44" stroke-width="2.2" stroke-linecap="round">
+        <path d="M23 6 L11 40"/>
+        <path d="M23 6 L35 40"/>
+        <circle cx="23" cy="6" r="3.2" fill="#A6321B" stroke="none"/>
+        <path d="M15 28 L31 28" stroke="#3E7C74" stroke-dasharray="4 3"/>
+      </g>
+    </svg>
+    <div>
+      <h1>Konstruktionen mit dem Zirkel</h1>
+      <p>Senkrechte und Parallele – Schritt für Schritt, in deinem eigenen Tempo.</p>
+    </div>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab active" data-mode="m1">Mittelsenkrechte</button>
+    <button class="tab" data-mode="m2">Lot von außen</button>
+    <button class="tab" data-mode="m3">Parallele (Raute)</button>
+  </nav>
+
+  <div class="card">
+
+    <!-- ============ MODE 1 ============ -->
+    <div class="mode-panel active" id="m1">
+      <div class="layout">
+        <div class="canvas-box">
+          <svg viewBox="0 0 640 480" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <pattern id="grid1" width="20" height="20" patternUnits="userSpaceOnUse">
+                <path d="M20 0 L0 0 0 20" fill="none" stroke="#DED7C4" stroke-width="1"/>
+              </pattern>
+            </defs>
+            <rect width="640" height="480" fill="#FBF9F4"/>
+            <rect width="640" height="480" fill="url(#grid1)"/>
+
+            <g data-step="0">
+              <line x1="200" y1="240" x2="440" y2="240" stroke="var(--ink)" stroke-width="2.5" stroke-linecap="round"/>
+            </g>
+            <g data-step="0" data-point="A" class="pt">
+              <circle cx="200" cy="240" r="4" fill="var(--ink)"/>
+              <text x="180" y="262" font-size="16" fill="var(--ink)">A</text>
+            </g>
+            <g data-step="0" data-point="B" class="pt">
+              <circle cx="440" cy="240" r="4" fill="var(--ink)"/>
+              <text x="450" y="262" font-size="16" fill="var(--ink)">B</text>
+            </g>
+
+            <g data-step="1">
+              <path d="M285,92.8 A170,170 0 0,1 285,387.2" fill="none" stroke="var(--construction)" stroke-width="1.8" stroke-dasharray="6 5"/>
+            </g>
+
+            <g data-step="2">
+              <path d="M355,92.8 A170,170 0 0,0 355,387.2" fill="none" stroke="var(--construction)" stroke-width="1.8" stroke-dasharray="6 5"/>
+            </g>
+            <g data-step="2" data-point="C" class="pt">
+              <circle cx="320" cy="119.6" r="3.5" fill="var(--ink)"/>
+              <text x="330" y="114" font-size="16" fill="var(--ink)">C</text>
+            </g>
+            <g data-step="2" data-point="D" class="pt">
+              <circle cx="320" cy="360.4" r="3.5" fill="var(--ink)"/>
+              <text x="330" y="378" font-size="16" fill="var(--ink)">D</text>
+            </g>
+
+            <g data-step="3" class="result-el">
+              <line x1="320" y1="80" x2="320" y2="400" stroke="var(--result)" stroke-width="3.5" stroke-linecap="round"/>
+              <path d="M320,240 L340,240 L340,220 L320,220" fill="none" stroke="var(--result)" stroke-width="2"/>
+            </g>
+            <g data-step="3" data-point="M" class="pt">
+              <circle cx="320" cy="240" r="3.5" fill="var(--ink)"/>
+              <text x="330" y="258" font-size="15" fill="var(--ink)">M</text>
+            </g>
+          </svg>
+        </div>
+
+        <div class="info">
+          <h2>Mittelsenkrechte einer Strecke</h2>
+          <div class="step-counter">Schritt <span class="cur">1</span> von <span class="tot">4</span></div>
+          <div class="step-text"></div>
+          <div class="controls">
+            <button class="secondary btn-back">← Zurück</button>
+            <button class="btn-next">Weiter →</button>
+            <button class="reset">↺ Neu starten</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="legend">
+        <span><span class="swatch sw-given"></span>Gegeben</span>
+        <span><span class="swatch sw-constr"></span>Zirkelbogen</span>
+        <span><span class="swatch sw-result"></span>Ergebnis</span>
+        <span><span class="sw-active"></span>Aktueller Punkt</span>
+      </div>
+    </div>
+
+    <!-- ============ MODE 2 ============ -->
+    <div class="mode-panel" id="m2">
+      <div class="layout">
+        <div class="canvas-box">
+          <svg viewBox="0 0 640 480" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <pattern id="grid2" width="20" height="20" patternUnits="userSpaceOnUse">
+                <path d="M20 0 L0 0 0 20" fill="none" stroke="#DED7C4" stroke-width="1"/>
+              </pattern>
+            </defs>
+            <rect width="640" height="480" fill="#FBF9F4"/>
+            <rect width="640" height="480" fill="url(#grid2)"/>
+
+            <g data-step="0">
+              <line x1="60" y1="300" x2="580" y2="300" stroke="var(--ink)" stroke-width="2.5" stroke-linecap="round"/>
+              <text x="590" y="305" font-size="17" fill="var(--ink)">g</text>
+            </g>
+            <g data-step="0" data-point="P" class="pt">
+              <circle cx="260" cy="110" r="4" fill="var(--ink)"/>
+              <text x="238" y="98" font-size="16" fill="var(--ink)">P</text>
+            </g>
+
+            <g data-step="1">
+              <circle cx="260" cy="110" r="240" fill="none" stroke="var(--construction)" stroke-width="1.8" stroke-dasharray="6 5"/>
+            </g>
+            <g data-step="1" data-point="A" class="pt">
+              <circle cx="113.4" cy="300" r="3.5" fill="var(--ink)"/>
+              <text x="90" y="323" font-size="16" fill="var(--ink)">A</text>
+            </g>
+            <g data-step="1" data-point="B" class="pt">
+              <circle cx="406.6" cy="300" r="3.5" fill="var(--ink)"/>
+              <text x="412" y="323" font-size="16" fill="var(--ink)">B</text>
+            </g>
+
+            <g data-step="2">
+              <path d="M277.6,344 A170,170 0 0,1 55.3,459.8" fill="none" stroke="var(--construction)" stroke-width="1.8" stroke-dasharray="6 5"/>
+            </g>
+
+            <g data-step="3">
+              <path d="M242.4,344 A170,170 0 0,0 464.7,459.8" fill="none" stroke="var(--construction)" stroke-width="1.8" stroke-dasharray="6 5"/>
+            </g>
+            <g data-step="3" data-point="Q" class="pt">
+              <circle cx="260" cy="386.1" r="3.5" fill="var(--ink)"/>
+              <text x="270" y="392" font-size="16" fill="var(--ink)">Q</text>
+            </g>
+
+            <g data-step="4" class="result-el">
+              <line x1="260" y1="100" x2="260" y2="400" stroke="var(--result)" stroke-width="3.5" stroke-linecap="round"/>
+              <path d="M260,300 L280,300 L280,280 L260,280" fill="none" stroke="var(--result)" stroke-width="2"/>
+            </g>
+            <g data-step="4" data-point="F" class="pt">
+              <text x="266" y="316" font-size="15" fill="var(--result)">F</text>
+            </g>
+          </svg>
+        </div>
+
+        <div class="info">
+          <h2>Lot von einem Punkt außerhalb der Geraden</h2>
+          <div class="step-counter">Schritt <span class="cur">1</span> von <span class="tot">5</span></div>
+          <div class="step-text"></div>
+          <div class="controls">
+            <button class="secondary btn-back">← Zurück</button>
+            <button class="btn-next">Weiter →</button>
+            <button class="reset">↺ Neu starten</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="legend">
+        <span><span class="swatch sw-given"></span>Gegeben</span>
+        <span><span class="swatch sw-constr"></span>Zirkelbogen</span>
+        <span><span class="swatch sw-result"></span>Ergebnis</span>
+        <span><span class="sw-active"></span>Aktueller Punkt</span>
+      </div>
+    </div>
+
+    <!-- ============ MODE 3 ============ -->
+    <div class="mode-panel" id="m3">
+      <div class="layout">
+        <div class="canvas-box">
+          <svg viewBox="0 0 640 480" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <pattern id="grid3" width="20" height="20" patternUnits="userSpaceOnUse">
+                <path d="M20 0 L0 0 0 20" fill="none" stroke="#DED7C4" stroke-width="1"/>
+              </pattern>
+            </defs>
+            <rect width="640" height="480" fill="#FBF9F4"/>
+            <rect width="640" height="480" fill="url(#grid3)"/>
+
+            <g data-step="0">
+              <line x1="60" y1="340" x2="580" y2="340" stroke="var(--ink)" stroke-width="2.5" stroke-linecap="round"/>
+              <text x="590" y="345" font-size="17" fill="var(--ink)">g</text>
+            </g>
+            <g data-step="0" data-point="P" class="pt">
+              <circle cx="180" cy="140" r="4" fill="var(--ink)"/>
+              <text x="158" y="126" font-size="16" fill="var(--ink)">P</text>
+            </g>
+
+            <g data-step="1" data-point="A" class="pt">
+              <circle cx="260" cy="340" r="3.5" fill="var(--ink)"/>
+              <text x="252" y="364" font-size="16" fill="var(--ink)">A</text>
+            </g>
+
+            <g data-step="2">
+              <path d="M367.7,153.5 A215.4,215.4 0 0,1 475.4,340" fill="none" stroke="var(--construction)" stroke-width="1.8" stroke-dasharray="6 5"/>
+            </g>
+            <g data-step="2" data-point="B" class="pt">
+              <circle cx="475.4" cy="340" r="3.5" fill="var(--ink)"/>
+              <text x="467" y="364" font-size="16" fill="var(--ink)">B</text>
+            </g>
+
+            <g data-step="3">
+              <path d="M375.3,49 A215.4,215.4 0 0,1 375.3,231" fill="none" stroke="var(--construction)" stroke-width="1.8" stroke-dasharray="6 5"/>
+            </g>
+
+            <g data-step="4">
+              <path d="M336.9,175.0 A215.4,215.4 0 0,0 456.6,125.4" fill="none" stroke="var(--construction)" stroke-width="1.8" stroke-dasharray="6 5"/>
+            </g>
+            <g data-step="4" data-point="Q" class="pt">
+              <circle cx="395.4" cy="140" r="3.5" fill="var(--ink)"/>
+              <text x="385" y="120" font-size="16" fill="var(--ink)">Q</text>
+            </g>
+
+            <g data-step="5" class="result-el">
+              <line x1="110" y1="140" x2="470" y2="140" stroke="var(--result)" stroke-width="3.5" stroke-linecap="round"/>
+            </g>
+
+            <g data-step="6">
+              <line x1="260" y1="340" x2="180" y2="140" stroke="var(--ink)" stroke-width="1.6" stroke-dasharray="5 4"/>
+              <line x1="475.4" y1="340" x2="395.4" y2="140" stroke="var(--ink)" stroke-width="1.6" stroke-dasharray="5 4"/>
+            </g>
+          </svg>
+        </div>
+
+        <div class="info">
+          <h2>Parallele durch einen Punkt (Rautenverfahren)</h2>
+          <div class="step-counter">Schritt <span class="cur">1</span> von <span class="tot">7</span></div>
+          <div class="step-text"></div>
+          <div class="controls">
+            <button class="secondary btn-back">← Zurück</button>
+            <button class="btn-next">Weiter →</button>
+            <button class="reset">↺ Neu starten</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="legend">
+        <span><span class="swatch sw-given"></span>Gegeben</span>
+        <span><span class="swatch sw-constr"></span>Zirkelbogen</span>
+        <span><span class="swatch sw-result"></span>Ergebnis</span>
+        <span><span class="sw-active"></span>Aktueller Punkt</span>
+      </div>
+    </div>
+
+  </div>
+
+  <p class="hint">Pfeiltasten ← → blättern ebenfalls. Farbig = der Punkt, um den es gerade geht.</p>
+
+</div>
+
+<script>
+const DATA = {
+  m1: {
+    steps: [
+      { text: ["Strecke <b>AB</b> gegeben."], hl: ["A","B"] },
+      { text: ["Zirkel in <b>A</b> einstechen.", "Radius > halbe Strecke AB.", "Bogen zeichnen."], hl: ["A"] },
+      { text: ["Zirkel in <b>B</b> einstechen.", "Gleicher Radius.", "Bogen schneidet ersten Bogen → Punkte <b>C</b> und <b>D</b>."], hl: ["B","C","D"] },
+      { text: ["<b>C</b> und <b>D</b> verbinden.", "Ergebnis: Mittelsenkrechte.", "Senkrecht auf AB, durch die Mitte <b>M</b>."], hl: ["C","D","M"] }
+    ]
+  },
+  m2: {
+    steps: [
+      { text: ["Punkt <b>P</b> liegt nicht auf g."], hl: ["P"] },
+      { text: ["Zirkel in <b>P</b> einstechen.", "Radius groß genug wählen.", "Kreis schneidet g in <b>A</b> und <b>B</b>."], hl: ["P","A","B"] },
+      { text: ["Zirkel in <b>A</b> einstechen.", "Neuer Radius.", "Bogen unterhalb von g."], hl: ["A"] },
+      { text: ["Zirkel in <b>B</b> einstechen.", "Radius beibehalten.", "Bogen schneidet ersten Bogen → Punkt <b>Q</b>."], hl: ["B","Q"] },
+      { text: ["<b>P</b> und <b>Q</b> verbinden.", "Schnittpunkt mit g: Lotfußpunkt <b>F</b>.", "Rechter Winkel."], hl: ["P","Q","F"] }
+    ]
+  },
+  m3: {
+    steps: [
+      { text: ["<b>P</b> liegt nicht auf g."], hl: ["P"] },
+      { text: ["Punkt <b>A</b> auf g wählen."], hl: ["A"] },
+      { text: ["Zirkel in <b>A</b> einstechen.", "Radius = Strecke AP.", "Bogen schneidet g → Punkt <b>B</b>."], hl: ["A","B"] },
+      { text: ["Radius AP beibehalten.", "Zirkel in <b>P</b> einstechen.", "Bogen zeichnen."], hl: ["P"] },
+      { text: ["Zirkel in <b>B</b> einstechen.", "Gleicher Radius.", "Bogen schneidet vorigen Bogen → Punkt <b>Q</b>."], hl: ["B","Q"] },
+      { text: ["<b>P</b> und <b>Q</b> verbinden.", "Ergebnis: parallel zu g."], hl: ["P","Q"] },
+      { text: ["A–P und B–Q verbinden (gestrichelt).", "Raute APQB erkennbar.", "Gegenüberliegende Seiten einer Raute sind parallel."], hl: ["A","P","Q","B"] }
+    ]
+  }
+};
+
+let active = "m1";
+const stepState = { m1:0, m2:0, m3:0 };
+
+function maxStep(mode){ return DATA[mode].steps.length - 1; }
+
+function render(){
+  document.querySelectorAll(".mode-panel").forEach(p => p.classList.toggle("active", p.id === active));
+  document.querySelectorAll(".tab").forEach(t => t.classList.toggle("active", t.dataset.mode === active));
+
+  const panel = document.getElementById(active);
+  const cur = stepState[active];
+  const top = maxStep(active);
+  const stepData = DATA[active].steps[cur];
+
+  panel.querySelectorAll("svg [data-step]").forEach(el => {
+    const s = parseInt(el.getAttribute("data-step"), 10);
+    el.classList.remove("current","settled");
+    if (s > cur){ el.style.opacity = 0; }
+    else {
+      el.style.opacity = 1;
+      el.classList.add(s === cur ? "current" : "settled");
+    }
+  });
+
+  panel.querySelectorAll("svg .pt").forEach(el => {
+    el.classList.toggle("point-active", stepData.hl.includes(el.getAttribute("data-point")));
+  });
+
+  panel.querySelector(".cur").textContent = cur + 1;
+  panel.querySelector(".tot").textContent = top + 1;
+  panel.querySelector(".step-text").innerHTML = "<ul>" + stepData.text.map(t => "<li>" + t + "</li>").join("") + "</ul>";
+  panel.querySelector(".btn-back").disabled = cur === 0;
+  panel.querySelector(".btn-next").disabled = cur === top;
+  panel.dataset.final = (cur === top) ? "true" : "false";
+}
+
+document.querySelectorAll(".tab").forEach(btn => {
+  btn.addEventListener("click", () => {
+    active = btn.dataset.mode;
+    stepState[active] = 0;
+    render();
+  });
+});
+
+document.querySelectorAll(".mode-panel").forEach(panel => {
+  panel.querySelector(".btn-next").addEventListener("click", () => {
+    if (stepState[active] < maxStep(active)) stepState[active]++;
+    render();
+  });
+  panel.querySelector(".btn-back").addEventListener("click", () => {
+    if (stepState[active] > 0) stepState[active]--;
+    render();
+  });
+  panel.querySelector(".reset").addEventListener("click", () => {
+    stepState[active] = 0;
+    render();
+  });
+});
+
+document.addEventListener("keydown", (e) => {
+  if (e.key === "ArrowRight"){ if (stepState[active] < maxStep(active)) stepState[active]++; render(); }
+  if (e.key === "ArrowLeft"){ if (stepState[active] > 0) stepState[active]--; render(); }
+});
+
+render();
+</script>
+</body>
+</html>
