@@ -113,6 +113,12 @@
   .step-text li b{color:var(--highlight);}
   .mode-panel[data-final="true"] .step-text{border-left-color:var(--result);}
 
+  .step-text .seg{
+  text-decoration: overline;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 0; /* wird bei overline ignoriert, schadet aber nicht */
+}
+
   .controls{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;}
   .controls button{
     font-family:inherit;
@@ -429,7 +435,7 @@
 const DATA = {
   m1: {
     steps: [
-      { text: ["Strecke <b>AB</b> gegeben."], hl: ["A","B"] },
+      { text: ["Strecke <b class="seg">AB</b> ist gegeben."], hl: ["A","B"] },
       { text: ["Zirkel in <b>A</b> einstechen.", "Radius > halbe Strecke AB.", "Bogen zeichnen."], hl: ["A"] },
       { text: ["Zirkel in <b>B</b> einstechen.", "Gleicher Radius.", "Bogen schneidet ersten Bogen → Punkte <b>C</b> und <b>D</b>."], hl: ["B","C","D"] },
       { text: ["<b>C</b> und <b>D</b> verbinden.", "Ergebnis: Mittelsenkrechte.", "Senkrecht auf AB, durch die Mitte <b>M</b>."], hl: ["C","D","M"] }
