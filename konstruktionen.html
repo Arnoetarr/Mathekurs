@@ -363,49 +363,44 @@
               <text x="590" y="345" font-size="17" fill="var(--ink)">g</text>
             </g>
             <g data-step="0" data-point="P" class="pt">
-              <circle cx="180" cy="140" r="4" fill="var(--ink)"/>
-              <text x="158" y="126" font-size="16" fill="var(--ink)">P</text>
+              <circle cx="460" cy="140" r="4" fill="var(--ink)"/>
+              <text x="438" y="126" font-size="16" fill="var(--ink)">P</text>
             </g>
 
             <g data-step="1" data-point="A" class="pt">
-              <circle cx="260" cy="340" r="3.5" fill="var(--ink)"/>
-              <text x="252" y="364" font-size="16" fill="var(--ink)">A</text>
+              <circle cx="380" cy="340" r="3.5" fill="var(--ink)"/>
+              <text x="372" y="364" font-size="16" fill="var(--ink)">A</text>
             </g>
 
             <g data-step="2">
-              <circle cx="260" cy="340" r="215.4" fill="none" stroke="var(--construction)" stroke-width="1.8" stroke-dasharray="6 5"/>
+              <circle cx="380" cy="340" r="215.4" fill="none" stroke="var(--construction)" stroke-width="1.8" stroke-dasharray="6 5"/>
             </g>
             <g data-step="2" data-point="B" class="pt">
-              <circle cx="475.4" cy="340" r="3.5" fill="var(--ink)"/>
-              <text x="467" y="364" font-size="16" fill="var(--ink)">B</text>
+              <circle cx="164.6" cy="340" r="3.5" fill="var(--ink)"/>
+              <text x="156.6" y="364" font-size="16" fill="var(--ink)">B</text>
             </g>
 
             <g data-step="3">
-              <circle cx="475.4" cy="340" r="215.4" fill="none" stroke="var(--construction)" stroke-width="1.8" stroke-dasharray="6 5"/>
+              <circle cx="164.6" cy="340" r="215.4" fill="none" stroke="var(--construction)" stroke-width="1.8" stroke-dasharray="6 5"/>
             </g>
 
             <g data-step="4">
-              <circle cx="180" cy="140" r="215.4" fill="none" stroke="var(--construction)" stroke-width="1.8" stroke-dasharray="6 5"/>
+              <circle cx="460" cy="140" r="215.4" fill="none" stroke="var(--construction)" stroke-width="1.8" stroke-dasharray="6 5"/>
             </g>
             <g data-step="4" data-point="C" class="pt">
-              <circle cx="395.4" cy="140" r="3.5" fill="var(--ink)"/>
-              <text x="385" y="120" font-size="16" fill="var(--ink)">C</text>
+              <circle cx="244.6" cy="140" r="3.5" fill="var(--ink)"/>
+              <text x="234.6" y="120" font-size="16" fill="var(--ink)">C</text>
             </g>
 
             <g data-step="5" class="result-el">
-              <line x1="110" y1="140" x2="470" y2="140" stroke="var(--result)" stroke-width="3.5" stroke-linecap="round"/>
-            </g>
-
-            <g data-step="6">
-              <line x1="260" y1="340" x2="180" y2="140" stroke="var(--ink)" stroke-width="1.6" stroke-dasharray="5 4"/>
-              <line x1="475.4" y1="340" x2="395.4" y2="140" stroke="var(--ink)" stroke-width="1.6" stroke-dasharray="5 4"/>
+              <line x1="170" y1="140" x2="530" y2="140" stroke="var(--result)" stroke-width="3.5" stroke-linecap="round"/>
             </g>
           </svg>
         </div>
 
         <div class="info">
           <h2>Parallele durch einen Punkt konstruieren</h2>
-          <div class="step-counter">Schritt <span class="cur">1</span> von <span class="tot">7</span></div>
+          <div class="step-counter">Schritt <span class="cur">1</span> von <span class="tot">6</span></div>
           <div class="step-text"></div>
           <div class="controls">
             <button class="secondary btn-back">← Zurück</button>
@@ -453,10 +448,9 @@ const DATA = {
       { text: ["Gerade g und Punkt <b>P</b> sind gegeben.", "P liegt nicht auf g."], hl: ["P"] },
       { text: ["Auf g einen Punkt <b>A</b> markieren.", "Du darfst ihn frei wählen."], hl: ["A"] },
       { text: ["Zirkelspanne = Strecke <span class=\"ov\">AP</span>.", "In <b>A</b> einstechen.", "Bogen bis zu <b>P</b> schlagen.", "Bogen trifft g im neuen Punkt <b>B</b>."], hl: ["A","P","B"] },
-      { text: ["Zirkelspanne bleibt gleich.", "In <b>B</b> einstechen.", "Zweiten Bogen zeichnen, rechts daneben."], hl: ["B"] },
+      { text: ["Zirkelspanne bleibt gleich.", "In <b>B</b> einstechen.", "Zweiten Bogen zeichnen."], hl: ["B"] },
       { text: ["Zirkelspanne bleibt gleich.", "Wieder in <b>P</b> einstechen, Bogen zeichnen.", "Schnittpunkt mit dem 2. Bogen: neuer Punkt <b>C</b>."], hl: ["P","C"] },
-      { text: ["<b>P</b> und <b>C</b> verbinden.", "Fertig: parallel zu g!"], hl: ["P","C"] },
-      { text: ["<span class=\"ov\">AP</span> und <span class=\"ov\">BC</span> ergänzen (gestrichelt).", "Raute erkennbar.", "Gegenüberliegende Seiten einer Raute sind parallel."], hl: ["A","P","C","B"] }
+      { text: ["<b>P</b> und <b>C</b> verbinden.", "Fertig: parallel zu g!"], hl: ["P","C"] }
     ]
   }
 };
