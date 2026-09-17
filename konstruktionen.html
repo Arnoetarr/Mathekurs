@@ -326,7 +326,7 @@
         </div>
 
         <div class="info">
-          <h2>Abstand eines Punktes zu einer geraden bestimmen (Lot fällen)</h2>
+          <h2>Abstand eines Punktes zu einer Geraden bestimmen (Lot fällen)</h2>
           <div class="step-counter">Schritt <span class="cur">1</span> von <span class="tot">5</span></div>
           <div class="step-text"></div>
           <div class="controls">
@@ -349,14 +349,14 @@
     <div class="mode-panel" id="m3">
       <div class="layout">
         <div class="canvas-box">
-          <svg viewBox="0 0 640 480" xmlns="http://www.w3.org/2000/svg">
+          <svg viewBox="0 0 640 560" xmlns="http://www.w3.org/2000/svg">
             <defs>
               <pattern id="grid3" width="20" height="20" patternUnits="userSpaceOnUse">
                 <path d="M20 0 L0 0 0 20" fill="none" stroke="#DED7C4" stroke-width="1"/>
               </pattern>
             </defs>
-            <rect width="640" height="480" fill="#FBF9F4"/>
-            <rect width="640" height="480" fill="url(#grid3)"/>
+            <rect width="640" height="560" fill="#FBF9F4"/>
+            <rect width="640" height="560" fill="url(#grid3)"/>
 
             <g data-step="0">
               <line x1="60" y1="340" x2="580" y2="340" stroke="var(--ink)" stroke-width="2.5" stroke-linecap="round"/>
@@ -373,7 +373,7 @@
             </g>
 
             <g data-step="2">
-              <path d="M367.7,153.5 A215.4,215.4 0 0,1 475.4,340" fill="none" stroke="var(--construction)" stroke-width="1.8" stroke-dasharray="6 5"/>
+              <circle cx="260" cy="340" r="215.4" fill="none" stroke="var(--construction)" stroke-width="1.8" stroke-dasharray="6 5"/>
             </g>
             <g data-step="2" data-point="B" class="pt">
               <circle cx="475.4" cy="340" r="3.5" fill="var(--ink)"/>
@@ -381,15 +381,15 @@
             </g>
 
             <g data-step="3">
-              <path d="M375.3,49 A215.4,215.4 0 0,1 375.3,231" fill="none" stroke="var(--construction)" stroke-width="1.8" stroke-dasharray="6 5"/>
+              <circle cx="475.4" cy="340" r="215.4" fill="none" stroke="var(--construction)" stroke-width="1.8" stroke-dasharray="6 5"/>
             </g>
 
             <g data-step="4">
-              <path d="M336.9,175.0 A215.4,215.4 0 0,0 456.6,125.4" fill="none" stroke="var(--construction)" stroke-width="1.8" stroke-dasharray="6 5"/>
+              <circle cx="180" cy="140" r="215.4" fill="none" stroke="var(--construction)" stroke-width="1.8" stroke-dasharray="6 5"/>
             </g>
-            <g data-step="4" data-point="Q" class="pt">
+            <g data-step="4" data-point="C" class="pt">
               <circle cx="395.4" cy="140" r="3.5" fill="var(--ink)"/>
-              <text x="385" y="120" font-size="16" fill="var(--ink)">Q</text>
+              <text x="385" y="120" font-size="16" fill="var(--ink)">C</text>
             </g>
 
             <g data-step="5" class="result-el">
@@ -404,7 +404,7 @@
         </div>
 
         <div class="info">
-          <h2>Parallele durch einen Punkt (Rautenverfahren)</h2>
+          <h2>Parallele durch einen Punkt konstruieren</h2>
           <div class="step-counter">Schritt <span class="cur">1</span> von <span class="tot">7</span></div>
           <div class="step-text"></div>
           <div class="controls">
@@ -445,18 +445,18 @@ const DATA = {
       { text: ["Zirkel in <b>P</b> einstechen.", "Zirkelspanne groß genug wählen.", "Kreis schneidet g in <b>A</b> und <b>B</b>."], hl: ["P","A","B"] },
       { text: ["Zirkel in <b>A</b> einstechen.", "Neue (kleinere) Zirkelspanne.", "Bogen unterhalb von g zeichnen."], hl: ["A"] },
       { text: ["Zirkelspanne beibehalten.", "Zirkel in <b>B</b> einstechen.", "Bogen schneidet den anderen Bogen → Punkt <b>Q</b>."], hl: ["B","Q"] },
-      { text: ["<b>P</b> und <b>Q</b> verbinden (Hilfslinie fürs Lineal).", "Schnittpunkt mit g: Lotfußpunkt <b>F</b>.", "Der Abstand ist nun die Länge von <>bP</b> zu <b/>F<b/>. Das Lot ist nur die Strecke <span class=\"ov\">PF</span> – rechter Winkel."], hl: ["P","Q","F"] }
+      { text: ["<b>P</b> und <b>Q</b> verbinden (Hilfslinie fürs Lineal).", "Schnittpunkt mit g: Lotfußpunkt <b>F</b>.", "Der Abstand ist nun die Länge von <b>P</b> zu <b>F</b>. Das Lot ist diese Strecke <span class=\"ov\">PF</span>."], hl: ["P","Q","F"] }
     ]
   },
   m3: {
     steps: [
-      { text: ["<b>P</b> liegt nicht auf g."], hl: ["P"] },
-      { text: ["Punkt <b>A</b> auf g wählen."], hl: ["A"] },
-      { text: ["Zirkel in <b>A</b> einstechen.", "Radius = Strecke <span class=\"ov\">AP</span>.", "Bogen schneidet g → Punkt <b>B</b>."], hl: ["A","B"] },
-      { text: ["Radius <span class=\"ov\">AP</span> beibehalten.", "Zirkel in <b>P</b> einstechen.", "Bogen zeichnen."], hl: ["P"] },
-      { text: ["Zirkel in <b>B</b> einstechen.", "Gleicher Radius.", "Bogen schneidet vorigen Bogen → Punkt <b>Q</b>."], hl: ["B","Q"] },
-      { text: ["<b>P</b> und <b>Q</b> verbinden.", "Ergebnis: parallel zu g."], hl: ["P","Q"] },
-      { text: ["Strecken <span class=\"ov\">AP</span> und <span class=\"ov\">BQ</span> ergänzen (gestrichelt).", "Raute APQB erkennbar.", "Gegenüberliegende Seiten einer Raute sind parallel."], hl: ["A","P","Q","B"] }
+      { text: ["Gerade g und Punkt <b>P</b> sind gegeben.", "P liegt nicht auf g."], hl: ["P"] },
+      { text: ["Auf g einen Punkt <b>A</b> markieren.", "Du darfst ihn frei wählen."], hl: ["A"] },
+      { text: ["Zirkelspanne = Strecke <span class=\"ov\">AP</span>.", "In <b>A</b> einstechen.", "Bogen bis zu <b>P</b> schlagen.", "Bogen trifft g im neuen Punkt <b>B</b>."], hl: ["A","P","B"] },
+      { text: ["Zirkelspanne bleibt gleich.", "In <b>B</b> einstechen.", "Zweiten Bogen zeichnen, rechts daneben."], hl: ["B"] },
+      { text: ["Zirkelspanne bleibt gleich.", "Wieder in <b>P</b> einstechen, Bogen zeichnen.", "Schnittpunkt mit dem 2. Bogen: neuer Punkt <b>C</b>."], hl: ["P","C"] },
+      { text: ["<b>P</b> und <b>C</b> verbinden.", "Fertig: parallel zu g!"], hl: ["P","C"] },
+      { text: ["<span class=\"ov\">AP</span> und <span class=\"ov\">BC</span> ergänzen (gestrichelt).", "Raute erkennbar.", "Gegenüberliegende Seiten einer Raute sind parallel."], hl: ["A","P","C","B"] }
     ]
   }
 };
