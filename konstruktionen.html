@@ -111,13 +111,8 @@
   .step-text ul{margin:0;padding-left:20px;}
   .step-text li{margin:5px 0;}
   .step-text li b{color:var(--highlight);}
+  .ov{text-decoration:overline; text-decoration-thickness:1.4px;}
   .mode-panel[data-final="true"] .step-text{border-left-color:var(--result);}
-
-  .step-text .seg{
-  text-decoration: overline;
-  text-decoration-thickness: 1.5px;
-  text-underline-offset: 0; /* wird bei overline ignoriert, schadet aber nicht */
-}
 
   .controls{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;}
   .controls button{
@@ -435,8 +430,8 @@
 const DATA = {
   m1: {
     steps: [
-      { text: ["Strecke <b class="seg">AB</b> ist gegeben."], hl: ["A","B"] },
-      { text: ["Zirkel in <b>A</b> einstechen.", "Radius > halbe Strecke AB.", "Bogen zeichnen."], hl: ["A"] },
+      { text: ["Strecke <b class=\"ov\">AB</b> gegeben."], hl: ["A","B"] },
+      { text: ["Zirkel in <b>A</b> einstechen.", "Radius > halbe Strecke <span class=\"ov\">AB</span>.", "Bogen zeichnen."], hl: ["A"] },
       { text: ["Zirkel in <b>B</b> einstechen.", "Gleicher Radius.", "Bogen schneidet ersten Bogen → Punkte <b>C</b> und <b>D</b>."], hl: ["B","C","D"] },
       { text: ["<b>C</b> und <b>D</b> verbinden.", "Ergebnis: Mittelsenkrechte.", "Senkrecht auf AB, durch die Mitte <b>M</b>."], hl: ["C","D","M"] }
     ]
@@ -454,11 +449,11 @@ const DATA = {
     steps: [
       { text: ["<b>P</b> liegt nicht auf g."], hl: ["P"] },
       { text: ["Punkt <b>A</b> auf g wählen."], hl: ["A"] },
-      { text: ["Zirkel in <b>A</b> einstechen.", "Radius = Strecke AP.", "Bogen schneidet g → Punkt <b>B</b>."], hl: ["A","B"] },
-      { text: ["Radius AP beibehalten.", "Zirkel in <b>P</b> einstechen.", "Bogen zeichnen."], hl: ["P"] },
+      { text: ["Zirkel in <b>A</b> einstechen.", "Radius = Strecke <span class=\"ov\">AP</span>.", "Bogen schneidet g → Punkt <b>B</b>."], hl: ["A","B"] },
+      { text: ["Radius <span class=\"ov\">AP</span> beibehalten.", "Zirkel in <b>P</b> einstechen.", "Bogen zeichnen."], hl: ["P"] },
       { text: ["Zirkel in <b>B</b> einstechen.", "Gleicher Radius.", "Bogen schneidet vorigen Bogen → Punkt <b>Q</b>."], hl: ["B","Q"] },
       { text: ["<b>P</b> und <b>Q</b> verbinden.", "Ergebnis: parallel zu g."], hl: ["P","Q"] },
-      { text: ["A–P und B–Q verbinden (gestrichelt).", "Raute APQB erkennbar.", "Gegenüberliegende Seiten einer Raute sind parallel."], hl: ["A","P","Q","B"] }
+      { text: ["Strecken <span class=\"ov\">AP</span> und <span class=\"ov\">BQ</span> ergänzen (gestrichelt).", "Raute APQB erkennbar.", "Gegenüberliegende Seiten einer Raute sind parallel."], hl: ["A","P","Q","B"] }
     ]
   }
 };
