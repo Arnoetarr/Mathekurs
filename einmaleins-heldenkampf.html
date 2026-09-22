@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>1×1 Heldenkampf</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-deep:#10143a;
+    --bg-panel:#181d52;
+    --bg-panel-light:#232a6b;
+    --accent-yellow:#ffd23f;
+    --accent-pink:#ff3d77;
+    --accent-cyan:#3de0f5;
+    --accent-green:#5bdc7e;
+    --text-light:#f4f2ff;
+    --text-dim:#a9aee0;
+    --danger:#ff5252;
+    --line:#2f3680;
+    font-size:16px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    min-height:100vh;
+    background:
+      radial-gradient(circle at 8% 12%, rgba(61,224,245,0.10) 0, transparent 45%),
+      radial-gradient(circle at 92% 85%, rgba(255,61,119,0.12) 0, transparent 45%),
+      repeating-radial-gradient(circle at 0 0, transparent 0, transparent 3px, rgba(255,255,255,0.025) 3px, rgba(255,255,255,0.025) 4px),
+      var(--bg-deep);
+    color:var(--text-light);
+    font-family:'Inter',system-ui,sans-serif;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:18px;
+    -webkit-tap-highlight-color:transparent;
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important;}
+  }
+  .comic{
+    font-family:'Bangers',cursive;
+    letter-spacing:0.5px;
+  }
+  #app{
+    width:100%;
+    max-width:480px;
+  }
+  .card{
+    background:var(--bg-panel);
+    border:3px solid var(--line);
+    border-radius:22px;
+    padding:22px 20px;
+    box-shadow:0 14px 0 rgba(0,0,0,0.28), 0 20px 40px rgba(0,0,0,0.35);
+    position:relative;
+    overflow:hidden;
+  }
+  .screen{display:none;}
+  .screen.active{display:block;}
+
+  /* ---------- START SCREEN ---------- */
+  .hero-title{
+    font-size:2.6rem;
+    line-height:1.05;
+    text-align:center;
+    color:var(--accent-yellow);
+    text-shadow:3px 3px 0 var(--accent-pink), 6px 6px 0 rgba(0,0,0,0.3);
+    margin:6px 0 4px;
+    transform:rotate(-1.5deg);
+  }
+  .hero-sub{
+    text-align:center;
+    color:var(--text-dim);
+    font-weight:600;
+    margin:0 0 18px;
+    font-size:0.95rem;
+  }
+  .badge-row{
+    display:flex;
+    gap:8px;
+    justify-content:center;
+    flex-wrap:wrap;
+    margin-bottom:18px;
+  }
+  .badge{
+    background:var(--bg-panel-light);
+    border:2px solid var(--line);
+    border-radius:999px;
+    padding:6px 12px;
+    font-size:0.78rem;
+    font-weight:700;
+    color:var(--accent-cyan);
+  }
+  .mode-choice{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+    margin-bottom:18px;
+  }
+  .mode-btn{
+    background:var(--bg-panel-light);
+    border:2px solid var(--line);
+    border-radius:14px;
+    padding:12px 8px;
+    color:var(--text-light);
+    font-family:'Inter';
+    font-weight:700;
+    font-size:0.85rem;
+    cursor:pointer;
+    text-align:center;
+  }
+  .mode-btn.selected{
+    border-color:var(--accent-cyan);
+    background:rgba(61,224,245,0.14);
+    box-shadow:0 0 0 2px rgba(61,224,245,0.35) inset;
+  }
+  .mode-btn small{display:block; color:var(--text-dim); font-weight:600; margin-top:3px; font-size:0.72rem;}
+  .big-btn{
+    display:block;
+    width:100%;
+    border:none;
+    border-radius:16px;
+    padding:16px;
+    font-family:'Bangers';
+    font-size:1.5rem;
+    letter-spacing:1px;
+    color:#1a1030;
+    background:linear-gradient(180deg, var(--accent-yellow), #f5b400);
+    box-shadow:0 6px 0 #b57e00, 0 10px 18px rgba(0,0,0,0.35);
+    cursor:pointer;
+    transform:translateY(0);
+    transition:transform 0.08s, box-shadow 0.08s;
+  }
+  .big-btn:active{ transform:translateY(4px); box-shadow:0 2px 0 #b57e00; }
+  .path-list{ margin:0 0 6px; padding:0; list-style:none; font-size:0.8rem; color:var(--text-dim);}
+  .path-list li{ display:flex; gap:8px; padding:4px 0; align-items:baseline;}
+  .path-list .num{ color:var(--accent-pink); font-weight:800; width:1.2em;}
+
+  /* ---------- GAME SCREEN ---------- */
+  .topbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:10px;
+    font-size:0.78rem;
+    color:var(--text-dim);
+    font-weight:700;
+  }
+  .rank-pill{
+    background:var(--bg-panel-light);
+    border:2px solid var(--line);
+    border-radius:999px;
+    padding:4px 10px;
+    color:var(--accent-yellow);
+  }
+  .score-pill{ color:var(--accent-cyan); }
+  .timer-track{
+    height:12px;
+    background:var(--bg-panel-light);
+    border:2px solid var(--line);
+    border-radius:999px;
+    overflow:hidden;
+    margin-bottom:14px;
+  }
+  .timer-fill{
+    height:100%;
+    background:linear-gradient(90deg, var(--accent-green), var(--accent-yellow));
+    width:100%;
+    transition:width 0.12s linear, background-color 0.3s;
+    border-radius:999px;
+  }
+  .timer-fill.warn{ background:linear-gradient(90deg, var(--accent-yellow), var(--danger)); }
+
+  .arena{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    margin-bottom:8px;
+  }
+  .level-label{
+    font-family:'Bangers';
+    color:var(--accent-pink);
+    font-size:1.1rem;
+    text-align:center;
+    margin-bottom:2px;
+  }
+  .monster-name{
+    font-size:0.78rem;
+    color:var(--text-dim);
+    font-weight:700;
+    margin-bottom:8px;
+    text-align:center;
+  }
+  .monster-wrap{
+    width:150px;
+    height:150px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    position:relative;
+    margin-bottom:8px;
+  }
+  .monster-wrap svg{
+    width:100%;
+    height:100%;
+    animation:idleBob 2.1s ease-in-out infinite;
+  }
+  @keyframes idleBob{
+    0%,100%{ transform:translateY(0) rotate(0deg); }
+    50%{ transform:translateY(-6px) rotate(-1.5deg); }
+  }
+  .monster-wrap.hit svg{ animation:hitShake 0.35s ease; }
+  @keyframes hitShake{
+    0%{ transform:translate(0,0) rotate(0); }
+    20%{ transform:translate(-8px,2px) rotate(-4deg); }
+    40%{ transform:translate(7px,-2px) rotate(4deg); }
+    60%{ transform:translate(-5px,1px) rotate(-2deg); }
+    80%{ transform:translate(4px,0) rotate(2deg); }
+    100%{ transform:translate(0,0) rotate(0); }
+  }
+  .monster-wrap.defeated svg{ animation:defeatSpin 0.6s ease forwards; }
+  @keyframes defeatSpin{
+    to{ transform:scale(0.2) rotate(35deg); opacity:0; }
+  }
+  .pow{
+    position:absolute;
+    font-family:'Bangers';
+    font-size:1.6rem;
+    color:var(--accent-yellow);
+    -webkit-text-stroke:2px #1a1030;
+    text-shadow:2px 2px 0 var(--accent-pink);
+    opacity:0;
+    pointer-events:none;
+  }
+  .pow.show{
+    animation:powPop 0.7s ease forwards;
+  }
+  @keyframes powPop{
+    0%{ opacity:0; transform:scale(0.3) rotate(-8deg); }
+    30%{ opacity:1; transform:scale(1.15) rotate(4deg); }
+    60%{ opacity:1; transform:scale(1) rotate(-2deg); }
+    100%{ opacity:0; transform:scale(1.1) translateY(-20px) rotate(0deg); }
+  }
+
+  .hpbar-label{ display:flex; justify-content:space-between; width:100%; font-size:0.68rem; color:var(--text-dim); font-weight:700; margin-bottom:3px;}
+  .hpbar-track{
+    width:100%;
+    max-width:220px;
+    height:14px;
+    background:var(--bg-panel-light);
+    border:2px solid var(--line);
+    border-radius:999px;
+    overflow:hidden;
+    margin-bottom:10px;
+  }
+  .hpbar-fill{
+    height:100%;
+    background:linear-gradient(90deg, var(--accent-pink), #ff8a65);
+    transition:width 0.3s ease;
+  }
+
+  .hearts{
+    display:flex;
+    gap:6px;
+    justify-content:center;
+    margin-bottom:14px;
+  }
+  .heart{ font-size:1.2rem; filter:drop-shadow(0 2px 0 rgba(0,0,0,0.3)); }
+  .heart.lost{ opacity:0.25; filter:grayscale(1); }
+
+  .question-card{
+    background:var(--bg-panel-light);
+    border:2px solid var(--line);
+    border-radius:16px;
+    padding:16px;
+    text-align:center;
+    margin-bottom:14px;
+    position:relative;
+  }
+  .question-card::before{
+    content:"";
+    position:absolute;
+    left:50%;
+    bottom:-11px;
+    transform:translateX(-50%);
+    width:0; height:0;
+    border-left:10px solid transparent;
+    border-right:10px solid transparent;
+    border-top:11px solid var(--bg-panel-light);
+  }
+  .question-text{
+    font-size:2.1rem;
+    font-weight:800;
+    color:var(--text-light);
+    letter-spacing:1px;
+  }
+  .combo-tag{
+    display:inline-block;
+    margin-top:6px;
+    font-size:0.75rem;
+    font-weight:800;
+    color:var(--bg-deep);
+    background:var(--accent-green);
+    border-radius:999px;
+    padding:2px 10px;
+    opacity:0;
+    transition:opacity 0.2s;
+  }
+  .combo-tag.show{ opacity:1; }
+
+  .answers{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+  }
+  .answer-btn{
+    background:var(--bg-panel);
+    border:2px solid var(--line);
+    border-radius:14px;
+    padding:14px 6px;
+    font-size:1.25rem;
+    font-weight:800;
+    color:var(--text-light);
+    cursor:pointer;
+    font-family:'Inter';
+    position:relative;
+  }
+  .answer-btn:focus-visible{ outline:3px solid var(--accent-cyan); outline-offset:2px; }
+  .answer-btn .key{
+    position:absolute;
+    top:4px; left:8px;
+    font-size:0.65rem;
+    color:var(--text-dim);
+    font-weight:700;
+  }
+  .answer-btn.correct{ background:rgba(91,220,126,0.25); border-color:var(--accent-green); }
+  .answer-btn.wrong{ background:rgba(255,82,82,0.25); border-color:var(--danger); }
+  .answer-btn:disabled{ cursor:default; }
+
+  /* ---------- OVERLAYS ---------- */
+  .overlay{
+    position:absolute;
+    inset:0;
+    background:rgba(9,11,32,0.92);
+    border-radius:19px;
+    display:none;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    padding:24px 18px;
+    z-index:5;
+  }
+  .overlay.active{ display:flex; }
+  .overlay h2{
+    font-family:'Bangers';
+    font-size:2rem;
+    margin:0 0 6px;
+    color:var(--accent-yellow);
+  }
+  .overlay p{ color:var(--text-dim); font-weight:600; margin:0 0 18px; font-size:0.9rem;}
+  .overlay .big-btn{ max-width:230px; }
+  .stat-row{
+    display:flex;
+    gap:14px;
+    margin-bottom:18px;
+    flex-wrap:wrap;
+    justify-content:center;
+  }
+  .stat{
+    background:var(--bg-panel-light);
+    border:2px solid var(--line);
+    border-radius:12px;
+    padding:8px 14px;
+    min-width:80px;
+  }
+  .stat b{ display:block; font-size:1.3rem; color:var(--accent-cyan); }
+  .stat span{ font-size:0.68rem; color:var(--text-dim); font-weight:700; }
+
+  .sr-only{ position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0,0,0,0); }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- START SCREEN -->
+  <div class="screen active card" id="screen-start">
+    <div class="hero-title comic">1×1<br>HELDENKAMPF</div>
+    <p class="hero-sub">Besiege Monster mit dem kleinen &amp; großen Einmaleins und werde zum Superhelden der Zahlen!</p>
+    <div class="badge-row">
+      <span class="badge">⏱ Zeitdruck</span>
+      <span class="badge">👾 5 Monster</span>
+      <span class="badge">🏆 5 Ränge</span>
+    </div>
+
+    <div class="mode-choice" role="group" aria-label="Trainingsbereich wählen">
+      <div class="mode-btn selected" data-mode="story" tabindex="0" role="button" aria-pressed="true">
+        Heldenreise
+        <small>Level 1 → 5, aufsteigend</small>
+      </div>
+      <div class="mode-btn" data-mode="gross" tabindex="0" role="button" aria-pressed="false">
+        Nur großes 1×1
+        <small>Faktoren bis 20</small>
+      </div>
+    </div>
+
+    <ul class="path-list">
+      <li><span class="num">1</span> Schleim — 1er, 2er, 5er, 10er</li>
+      <li><span class="num">2</span> Kobold — 3er &amp; 4er Reihe</li>
+      <li><span class="num">3</span> Ork — komplettes kleines 1×1</li>
+      <li><span class="num">4</span> Fledermausdrache — großes 1×1 (leicht)</li>
+      <li><span class="num">5</span> Drachen-Endboss — großes 1×1 gemischt</li>
+    </ul>
+    <button class="big-btn comic" id="btn-start" style="margin-top:12px;">Kampf beginnen!</button>
+  </div>
+
+  <!-- GAME SCREEN -->
+  <div class="screen card" id="screen-game">
+
+    <div class="topbar">
+      <span class="rank-pill" id="rank-pill">Rang: Matheling</span>
+      <span class="score-pill" id="score-pill">Punkte: 0</span>
+    </div>
+
+    <div class="timer-track"><div class="timer-fill" id="timer-fill"></div></div>
+
+    <div class="arena">
+      <div class="level-label comic" id="level-label">Level 1</div>
+      <div class="monster-name" id="monster-name">Schleim</div>
+      <div class="monster-wrap" id="monster-wrap">
+        <div class="pow comic" id="pow-fx">POW!</div>
+        <div id="monster-svg"></div>
+      </div>
+      <div style="width:100%; max-width:220px;">
+        <div class="hpbar-label"><span>Monster-Energie</span><span id="hp-text">6/6</span></div>
+        <div class="hpbar-track"><div class="hpbar-fill" id="hp-fill" style="width:100%;"></div></div>
+      </div>
+      <div class="hearts" id="hearts" aria-label="Deine Leben"></div>
+    </div>
+
+    <div class="question-card">
+      <div class="question-text" id="question-text">7 × 8</div>
+      <div class="combo-tag" id="combo-tag">Kombo x2!</div>
+    </div>
+
+    <div class="answers" id="answers"></div>
+
+    <!-- overlays -->
+    <div class="overlay" id="overlay-intro">
+      <h2 class="comic" id="intro-title">Level 1</h2>
+      <p id="intro-text">Der Schleim greift an! Beantworte die Aufgaben, bevor die Zeit abläuft.</p>
+      <button class="big-btn comic" id="btn-intro-continue">Los geht's!</button>
+    </div>
+
+    <div class="overlay" id="overlay-defeat">
+      <h2 class="comic">Ohnee!</h2>
+      <p id="defeat-text">Das Monster hat dich erwischt. Versuch's noch einmal!</p>
+      <button class="big-btn comic" id="btn-retry">Nochmal versuchen</button>
+    </div>
+
+    <div class="overlay" id="overlay-victory">
+      <h2 class="comic">SUPERHELD!</h2>
+      <p>Du hast alle Monster besiegt und das große Einmaleins gemeistert.</p>
+      <div class="stat-row">
+        <div class="stat"><b id="final-score">0</b><span>PUNKTE</span></div>
+        <div class="stat"><b id="final-best">0</b><span>BESTE KOMBO</span></div>
+      </div>
+      <button class="big-btn comic" id="btn-play-again">Nochmal spielen</button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------------- LEVEL DEFINITIONS ---------------- */
+  var STORY_LEVELS = [
+    { name:"Schleim", type:"slime", color:"#5bdc7e", hits:6, time:11,
+      gen:function(){ var tables=[1,2,5,10]; var a=tables[rand(0,tables.length-1)]; var b=rand(1,10); return orient(a,b); } },
+    { name:"Kobold", type:"goblin", color:"#ffd23f", hits:7, time:10,
+      gen:function(){ var tables=[3,4]; var a=tables[rand(0,tables.length-1)]; var b=rand(1,10); return orient(a,b); } },
+    { name:"Ork", type:"orc", color:"#ff8a65", hits:8, time:9,
+      gen:function(){ return orient(rand(1,10), rand(1,10)); } },
+    { name:"Fledermausdrache", type:"bat", color:"#3de0f5", hits:9, time:8,
+      gen:function(){ return orient(rand(11,15), rand(2,10)); } },
+    { name:"Drachen-Endboss", type:"dragon", color:"#ff3d77", hits:10, time:7,
+      gen:function(){
+        if(Math.random() < 0.5){ return orient(rand(11,20), rand(2,20)); }
+        return orient(rand(2,20), rand(2,20));
+      } }
+  ];
+
+  var GROSS_LEVELS = [
+    { name:"Fledermaus", type:"bat", color:"#3de0f5", hits:7, time:10,
+      gen:function(){ return orient(rand(11,15), rand(2,10)); } },
+    { name:"Steinriese", type:"orc", color:"#ffd23f", hits:8, time:9,
+      gen:function(){ return orient(rand(11,20), rand(2,12)); } },
+    { name:"Sturmdrache", type:"bat", color:"#5bdc7e", hits:9, time:8,
+      gen:function(){ return orient(rand(11,20), rand(2,20)); } },
+    { name:"Schattenork", type:"orc", color:"#ff8a65", hits:9, time:7.5,
+      gen:function(){ return orient(rand(12,20), rand(12,20)); } },
+    { name:"Drachen-Endboss", type:"dragon", color:"#ff3d77", hits:10, time:7,
+      gen:function(){ return orient(rand(11,20), rand(11,20)); } }
+  ];
+
+  var RANK_TITLES = ["Matheling","Rechen-Recrut","Zahlen-Kämpfer","Einmaleins-Krieger","Meister-Rechner","Superheld der Zahlen"];
+
+  function orient(a,b){ return Math.random()<0.5 ? [a,b] : [b,a]; }
+  function rand(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+
+  /* ---------------- STATE ---------------- */
+  var levels = STORY_LEVELS;
+  var levelIndex = 0;
+  var monsterHitsLeft = 0;
+  var monsterHitsMax = 0;
+  var hearts = 3;
+  var score = 0;
+  var combo = 0;
+  var bestCombo = 0;
+  var timeLeft = 0;
+  var timeMax = 0;
+  var timerId = null;
+  var questionActive = false;
+  var currentAnswer = null;
+
+  /* ---------------- DOM ---------------- */
+  var screenStart = document.getElementById('screen-start');
+  var screenGame = document.getElementById('screen-game');
+  var rankPill = document.getElementById('rank-pill');
+  var scorePill = document.getElementById('score-pill');
+  var timerFill = document.getElementById('timer-fill');
+  var levelLabel = document.getElementById('level-label');
+  var monsterNameEl = document.getElementById('monster-name');
+  var monsterWrap = document.getElementById('monster-wrap');
+  var monsterSvgHolder = document.getElementById('monster-svg');
+  var hpFill = document.getElementById('hp-fill');
+  var hpText = document.getElementById('hp-text');
+  var heartsEl = document.getElementById('hearts');
+  var questionText = document.getElementById('question-text');
+  var comboTag = document.getElementById('combo-tag');
+  var answersEl = document.getElementById('answers');
+  var powFx = document.getElementById('pow-fx');
+
+  var overlayIntro = document.getElementById('overlay-intro');
+  var introTitle = document.getElementById('intro-title');
+  var introText = document.getElementById('intro-text');
+  var overlayDefeat = document.getElementById('overlay-defeat');
+  var defeatText = document.getElementById('defeat-text');
+  var overlayVictory = document.getElementById('overlay-victory');
+
+  /* ---------------- MODE SELECT ---------------- */
+  document.querySelectorAll('.mode-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){ selectMode(btn); });
+    btn.addEventListener('keydown', function(e){
+      if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); selectMode(btn); }
+    });
+  });
+  function selectMode(btn){
+    document.querySelectorAll('.mode-btn').forEach(function(b){
+      b.classList.remove('selected'); b.setAttribute('aria-pressed','false');
+    });
+    btn.classList.add('selected'); btn.setAttribute('aria-pressed','true');
+    levels = btn.dataset.mode === 'gross' ? GROSS_LEVELS : STORY_LEVELS;
+  }
+
+  document.getElementById('btn-start').addEventListener('click', function(){
+    screenStart.classList.remove('active');
+    screenGame.classList.add('active');
+    score = 0; bestCombo = 0;
+    levelIndex = 0;
+    startLevel(levelIndex);
+  });
+
+  document.getElementById('btn-intro-continue').addEventListener('click', function(){
+    overlayIntro.classList.remove('active');
+    nextQuestion();
+  });
+  document.getElementById('btn-retry').addEventListener('click', function(){
+    overlayDefeat.classList.remove('active');
+    startLevel(levelIndex, true);
+  });
+  document.getElementById('btn-play-again').addEventListener('click', function(){
+    overlayVictory.classList.remove('active');
+    screenGame.classList.remove('active');
+    screenStart.classList.add('active');
+  });
+
+  /* ---------------- LEVEL FLOW ---------------- */
+  function startLevel(idx, skipIntro){
+    var lvl = levels[idx];
+    monsterHitsMax = lvl.hits;
+    monsterHitsLeft = lvl.hits;
+    hearts = 3;
+    combo = 0;
+    timeMax = lvl.time;
+
+    levelLabel.textContent = "Level " + (idx+1);
+    monsterNameEl.textContent = lvl.name;
+    monsterSvgHolder.innerHTML = monsterSVG(lvl.type, lvl.color);
+    monsterWrap.className = "monster-wrap";
+    renderHP();
+    renderHearts();
+    updateTopbar();
+
+    introTitle.textContent = "Level " + (idx+1) + ": " + lvl.name;
+    introText.textContent = levelIntroText(idx);
+    if(skipIntro){ nextQuestion(); }
+    else { overlayIntro.classList.add('active'); }
+  }
+
+  function levelIntroText(idx){
+    var texts = [
+      "Ein Schleim taucht auf! Löse die Aufgaben mit 1er-, 2er-, 5er- und 10er-Reihe.",
+      "Ein Kobold greift an! Jetzt kommen die 3er- und 4er-Reihe dazu.",
+      "Ein Ork blockiert den Weg! Das komplette kleine Einmaleins wartet auf dich.",
+      "Ein Fledermausdrache! Willkommen beim großen Einmaleins.",
+      "Der Drachen-Endboss! Zeig, dass du ein wahrer Superheld der Zahlen bist."
+    ];
+    return texts[idx] || "Ein neues Monster erscheint!";
+  }
+
+  function nextQuestion(){
+    questionActive = true;
+    clearInterval(timerId);
+    timeLeft = timeMax;
+    updateTimerBar();
+
+    var lvl = levels[levelIndex];
+    var pair = lvl.gen();
+    var a = pair[0], b = pair[1];
+    currentAnswer = a*b;
+    questionText.textContent = a + " × " + b;
+
+    renderAnswers(currentAnswer, a, b);
+
+    timerId = setInterval(function(){
+      timeLeft -= 0.1;
+      updateTimerBar();
+      if(timeLeft <= 0){
+        clearInterval(timerId);
+        registerMiss(true);
+      }
+    }, 100);
+  }
+
+  function updateTimerBar(){
+    var pct = Math.max(0, (timeLeft/timeMax)*100);
+    timerFill.style.width = pct + "%";
+    timerFill.classList.toggle('warn', pct < 35);
+  }
+
+  function makeDistractors(correct, a, b){
+    var pool = new Set();
+    pool.add(a*(b+1)); pool.add(a*(b-1));
+    pool.add((a+1)*b); pool.add((a-1)*b);
+    pool.add(correct + a); pool.add(correct - a);
+    pool.add(correct + b); pool.add(correct - b);
+    pool.add(correct + 10); pool.add(correct - 10);
+    pool.delete(correct);
+    var candidates = Array.from(pool).filter(function(n){ return n > 0 && n !== correct; });
+    // shuffle
+    for(var i=candidates.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=candidates[i]; candidates[i]=candidates[j]; candidates[j]=t; }
+    var chosen = [];
+    var seen = new Set([correct]);
+    for(var k=0;k<candidates.length && chosen.length<3;k++){
+      if(!seen.has(candidates[k])){ chosen.push(candidates[k]); seen.add(candidates[k]); }
+    }
+    while(chosen.length < 3){
+      var alt = correct + (rand(1,6) * (Math.random()<0.5?-1:1));
+      if(alt>0 && !seen.has(alt)){ chosen.push(alt); seen.add(alt); }
+    }
+    return chosen;
+  }
+
+  function renderAnswers(correct, a, b){
+    var options = makeDistractors(correct, a, b);
+    options.push(correct);
+    for(var i=options.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=options[i]; options[i]=options[j]; options[j]=t; }
+
+    answersEl.innerHTML = "";
+    options.forEach(function(val, i){
+      var btn = document.createElement('button');
+      btn.className = "answer-btn";
+      btn.innerHTML = '<span class="key">' + (i+1) + '</span>' + val;
+      btn.setAttribute('data-value', val);
+      btn.addEventListener('click', function(){ selectAnswer(this, correct); });
+      answersEl.appendChild(btn);
+    });
+  }
+
+  function selectAnswer(btn, correct){
+    if(!questionActive) return;
+    questionActive = false;
+    clearInterval(timerId);
+    var val = parseInt(btn.dataset.value, 10);
+    Array.from(answersEl.children).forEach(function(b){ b.disabled = true; });
+
+    if(val === correct){
+      btn.classList.add('correct');
+      registerHit();
+    } else {
+      btn.classList.add('wrong');
+      Array.from(answersEl.children).forEach(function(b){
+        if(parseInt(b.dataset.value,10) === correct) b.classList.add('correct');
+      });
+      registerMiss(false);
+    }
+  }
+
+  function registerHit(){
+    combo++;
+    bestCombo = Math.max(bestCombo, combo);
+    var multiplier = combo >= 5 ? 3 : (combo >= 3 ? 2 : 1);
+    score += 10 * multiplier;
+    updateTopbar();
+    showCombo(multiplier);
+
+    monsterHitsLeft--;
+    renderHP();
+    flashMonsterHit();
+
+    if(monsterHitsLeft <= 0){
+      setTimeout(defeatMonster, 500);
+    } else {
+      setTimeout(nextQuestion, 650);
+    }
+  }
+
+  function registerMiss(timedOut){
+    combo = 0;
+    comboTag.classList.remove('show');
+    hearts--;
+    renderHearts();
+
+    if(hearts <= 0){
+      defeatText.textContent = timedOut
+        ? "Die Zeit ist abgelaufen und das Monster hat zugeschlagen."
+        : "Falsche Antwort — das Monster hat zugeschlagen.";
+      setTimeout(function(){ overlayDefeat.classList.add('active'); }, 400);
+    } else {
+      setTimeout(nextQuestion, 900);
+    }
+  }
+
+  function defeatMonster(){
+    monsterWrap.classList.add('defeated');
+    setTimeout(function(){
+      levelIndex++;
+      if(levelIndex >= levels.length){
+        showVictory();
+      } else {
+        startLevel(levelIndex);
+      }
+    }, 650);
+  }
+
+  function showVictory(){
+    document.getElementById('final-score').textContent = score;
+    document.getElementById('final-best').textContent = bestCombo;
+    overlayVictory.classList.add('active');
+  }
+
+  /* ---------------- UI HELPERS ---------------- */
+  function updateTopbar(){
+    var defeatedCount = levelIndex; // how many monsters beaten so far this run
+    var rankIdx = Math.min(defeatedCount, RANK_TITLES.length - 1);
+    rankPill.textContent = "Rang: " + RANK_TITLES[rankIdx];
+    scorePill.textContent = "Punkte: " + score;
+  }
+
+  function renderHP(){
+    var pct = Math.max(0, (monsterHitsLeft/monsterHitsMax)*100);
+    hpFill.style.width = pct + "%";
+    hpText.textContent = monsterHitsLeft + "/" + monsterHitsMax;
+  }
+
+  function renderHearts(){
+    heartsEl.innerHTML = "";
+    for(var i=0;i<3;i++){
+      var span = document.createElement('span');
+      span.className = "heart" + (i >= hearts ? " lost" : "");
+      span.textContent = "❤";
+      heartsEl.appendChild(span);
+    }
+  }
+
+  function showCombo(multiplier){
+    if(multiplier > 1){
+      comboTag.textContent = "Kombo x" + multiplier + "!";
+      comboTag.classList.add('show');
+    } else {
+      comboTag.classList.remove('show');
+    }
+  }
+
+  function flashMonsterHit(){
+    monsterWrap.classList.remove('hit');
+    powFx.classList.remove('show');
+    void monsterWrap.offsetWidth;
+    monsterWrap.classList.add('hit');
+    powFx.classList.add('show');
+    setTimeout(function(){ monsterWrap.classList.remove('hit'); }, 400);
+  }
+
+  /* ---------------- KEYBOARD SHORTCUTS ---------------- */
+  document.addEventListener('keydown', function(e){
+    if(!questionActive) return;
+    var n = parseInt(e.key, 10);
+    if(n >= 1 && n <= 4){
+      var btn = answersEl.children[n-1];
+      if(btn && !btn.disabled) selectAnswer(btn, currentAnswer);
+    }
+  });
+
+  /* ---------------- MONSTER SVGS ---------------- */
+  function monsterSVG(type, color){
+    var dark = "#1a1030";
+    if(type === "slime"){
+      return '<svg viewBox="0 0 200 200"><ellipse cx="100" cy="130" rx="70" ry="55" fill="'+color+'"/>' +
+        '<path d="M30 130 Q 30 40 100 40 Q 170 40 170 130 Z" fill="'+color+'" opacity="0.9"/>' +
+        '<circle cx="75" cy="110" r="14" fill="white"/><circle cx="125" cy="110" r="14" fill="white"/>' +
+        '<circle cx="78" cy="113" r="6" fill="'+dark+'"/><circle cx="122" cy="113" r="6" fill="'+dark+'"/>' +
+        '<path d="M75 145 Q100 165 125 145" stroke="'+dark+'" stroke-width="5" fill="none" stroke-linecap="round"/>' +
+        '<circle cx="60" cy="90" r="7" fill="white" opacity="0.5"/></svg>';
+    }
+    if(type === "goblin"){
+      return '<svg viewBox="0 0 200 200"><ellipse cx="100" cy="120" rx="55" ry="60" fill="'+color+'"/>' +
+        '<path d="M55 90 L30 45 L70 70 Z" fill="'+color+'"/><path d="M145 90 L170 45 L130 70 Z" fill="'+color+'"/>' +
+        '<circle cx="80" cy="115" r="12" fill="white"/><circle cx="120" cy="115" r="12" fill="white"/>' +
+        '<circle cx="83" cy="118" r="5" fill="'+dark+'"/><circle cx="117" cy="118" r="5" fill="'+dark+'"/>' +
+        '<path d="M78 150 L88 160 L100 148 L112 160 L122 150" stroke="'+dark+'" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    }
+    if(type === "orc"){
+      return '<svg viewBox="0 0 200 200"><rect x="50" y="60" width="100" height="100" rx="26" fill="'+color+'"/>' +
+        '<rect x="35" y="50" width="26" height="26" rx="6" fill="'+color+'"/><rect x="139" y="50" width="26" height="26" rx="6" fill="'+color+'"/>' +
+        '<circle cx="80" cy="105" r="11" fill="white"/><circle cx="120" cy="105" r="11" fill="white"/>' +
+        '<circle cx="80" cy="105" r="5" fill="'+dark+'"/><circle cx="120" cy="105" r="5" fill="'+dark+'"/>' +
+        '<rect x="80" y="135" width="40" height="14" rx="4" fill="'+dark+'"/>' +
+        '<path d="M85 135 L88 148 M100 135 L100 149 M115 135 L112 148" stroke="white" stroke-width="3"/></svg>';
+    }
+    if(type === "bat"){
+      return '<svg viewBox="0 0 200 200"><path d="M100 60 C 40 40 10 90 30 130 C 55 115 70 110 85 118 L100 150 L115 118 C130 110 145 115 170 130 C 190 90 160 40 100 60 Z" fill="'+color+'"/>' +
+        '<ellipse cx="100" cy="110" rx="28" ry="34" fill="'+color+'"/>' +
+        '<circle cx="88" cy="102" r="9" fill="white"/><circle cx="112" cy="102" r="9" fill="white"/>' +
+        '<circle cx="88" cy="102" r="4" fill="'+dark+'"/><circle cx="112" cy="102" r="4" fill="'+dark+'"/>' +
+        '<path d="M85 40 L95 65 L75 62 Z" fill="'+color+'"/><path d="M115 40 L105 65 L125 62 Z" fill="'+color+'"/></svg>';
+    }
+    // dragon (boss)
+    return '<svg viewBox="0 0 200 200"><path d="M100 55 C 20 40 5 100 25 140 C 55 120 65 105 90 115 L100 150 L110 115 C135 105 145 120 175 140 C195 100 180 40 100 55 Z" fill="'+color+'"/>' +
+      '<ellipse cx="100" cy="110" rx="32" ry="38" fill="'+color+'"/>' +
+      '<circle cx="86" cy="100" r="10" fill="#fff176"/><circle cx="114" cy="100" r="10" fill="#fff176"/>' +
+      '<circle cx="86" cy="100" r="4.5" fill="'+dark+'"/><circle cx="114" cy="100" r="4.5" fill="'+dark+'"/>' +
+      '<path d="M75 45 L85 20 L95 45 Z" fill="'+color+'"/><path d="M105 45 L115 20 L125 45 Z" fill="'+color+'"/>' +
+      '<path d="M80 135 Q100 150 120 135" stroke="'+dark+'" stroke-width="5" fill="none" stroke-linecap="round"/>' +
+      '<path d="M70 150 Q60 175 45 180" stroke="'+color+'" stroke-width="10" fill="none" stroke-linecap="round"/></svg>';
+  }
+
+})();
+</script>
+</body>
+</html>
