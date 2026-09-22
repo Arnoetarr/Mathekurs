@@ -38,7 +38,7 @@
   .card{
     background:#fff; border-radius:14px; padding:14px 12px 12px;
     display:flex; flex-direction:column; align-items:center; gap:10px;
-    width:168px; cursor:pointer;
+    width:148px; cursor:pointer;
     border:4px solid var(--accent); box-shadow:0 6px 0 var(--accent-dark);
     transition:transform .1s;
   }
@@ -47,7 +47,8 @@
   .card.selected .check{ opacity:1; }
   .card.huhn{ --accent:#ffb703; --accent-dark:#c98a00; }
   .card.monster{ --accent:#2a9d8f; --accent-dark:#1b6e63; }
-  .card.blume{ --accent:#e76f51; --accent-dark:#b84e34; }
+  .card.schnecke{ --accent:#e76f51; --accent-dark:#b84e34; }
+  .card.roboter{ --accent:#6b4c9a; --accent-dark:#4a3370; }
   .card-name{ font-weight:700; font-size:15px; }
   .check{ font-size:12px; font-weight:700; color:var(--accent-dark); opacity:0; }
 
@@ -67,6 +68,8 @@
     border-radius:16px; padding:12px 16px; box-shadow:0 5px 0 #c7d6cc; margin-bottom:18px;
   }
   .hud-info{ flex:1; }
+  .hud-fig{ display:flex; flex-direction:column; align-items:center; gap:4px; }
+  .hud-fig .cap{ font-size:11px; color:#5c6b73; max-width:104px; text-align:center; line-height:1.3; }
   .hud-title{ font-weight:800; font-size:17px; }
   .hud-sub{ font-size:13px; color:#5c6b73; }
   .bar{ height:14px; background:#e8ece9; border-radius:7px; overflow:hidden; margin-top:6px; }
@@ -161,6 +164,7 @@
     <div class="panel">
       <div class="question">Deine Stationen</div>
       <div class="levels" id="levelList"></div>
+      <div id="moonBtnWrap" style="text-align:center; margin-top:16px;"></div>
     </div>
   </div>
 
@@ -176,6 +180,29 @@
     </div>
     <div class="panel" id="taskPanel"></div>
     <div id="unlockArea"></div>
+  </div>
+
+  <div id="screen-moon" class="hidden">
+    <div class="panel" style="text-align:center;">
+      <div class="question">Abflug zum Mond</div>
+      <canvas id="moonCanvas" width="640" height="300"
+        style="width:100%; max-width:640px; border-radius:12px; border:3px solid #d5e0d8; touch-action:none;"></canvas>
+      <div class="hint" id="moonMsg">—</div>
+      <div class="answer-row" style="margin-top:12px;">
+        <button class="btn ghost" id="moonUp">▲ hoch</button>
+        <button class="btn" id="moonGo">▶ vor</button>
+        <button class="btn ghost" id="moonDown">▼ runter</button>
+      </div>
+      <div class="hint">Am Computer: Pfeiltasten ▲ ▼ und ▶ gedrückt halten.</div>
+      <div id="moonWin" class="hidden" style="margin-top:16px;">
+        <div class="celebrate"><div class="big">AM MOND!</div></div>
+        <div class="answer-row">
+          <button class="btn" id="moonAgain">Nochmal fliegen</button>
+          <button class="btn ghost" id="moonBack">Zurück</button>
+        </div>
+      </div>
+      <div style="margin-top:14px;"><button class="btn ghost small" id="moonQuit">Abbrechen</button></div>
+    </div>
   </div>
 
   <div class="foot">
@@ -204,8 +231,8 @@ const LEVELS = [
   { n:1, name:'Winkel vergleichen',      sub:'Welcher Winkel ist größer?',           ziel:10 },
   { n:2, name:'Winkel messen',           sub:'Karten selbst wählen und eintragen',   ziel:5  },
   { n:3, name:'Winkel zeichnen',         sub:'Auf Papier zeichnen, selbst prüfen',   ziel:5  },
-  { n:4, name:'Winkel berechnen',        sub:'Ergänzen zu 90°, 180°, 360°',          ziel:5  },
-  { n:5, name:'Winkelarten',             sub:'Spitz, recht, stumpf, gestreckt …',    ziel:10 },
+  { n:4, name:'Winkelarten',             sub:'Spitz, recht, stumpf, gestreckt …',    ziel:10 },
+  { n:5, name:'Winkel berechnen',        sub:'Ergänzen zu 90°, 180°, 360°',          ziel:10 },
   { n:6, name:'Neben- & Scheitelwinkel', sub:'Zusatzstation — danach: Rakete!',      ziel:5  }
 ];
 const ziel = n => LEVELS[n-1].ziel;
@@ -213,126 +240,394 @@ const ziel = n => LEVELS[n-1].ziel;
 /* --------------------------- SPRITES 20x20 --------------------------- */
 const PALETTE = {
   '.':null,
-  'W':'#fdf6e3','w':'#e8dcc0',
-  'Y':'#ffd23f','y':'#e0a800','O':'#f77f00',
-  'K':'#262626','T':'#ffffff','S':'#adb5bd',
+  'N':'#1f2421',
+  'W':'#fdf6e3','w':'#e8dcc0','e':'#e0d3b0',
+  'Y':'#ffd23f','y':'#e0a800','O':'#f77f00','o':'#d96c00',
+  'K':'#262626','T':'#ffffff','S':'#adb5bd','s':'#7d8491','D':'#6c757d',
   'R':'#e63946','P':'#ff7eb6','M':'#6b4c9a',
+  'C':'#48cae4','c':'#2196b0',
   'G':'#52b788','g':'#2d6a4f','L':'#a8e6a3',
   'B':'#8b5e3c','b':'#5c3d24'
 };
 
 const SPRITES = {
 ei: [
-"....................","....................",".......WWWWWW.......",".....WWWWWWWWWW.....",
-"....WWWWWWWWWWWW....","...WWWWWWWWWWWWWW...","...WWWWWWWWWWWWWW...","..WWWWWWWWWWWWWWWW..",
-"..WWWWWWWWWWWWWWWW..","..WWWwWWWWWWWWwWWW..","..WWWWWWWWWWWWWWWW..","..WWWWWWWWWWWWWWWW..",
-"..WWWWWWWWWWWWWWWW..","..WWWWwWWWWWWwWWWW..","...WWWWWWWWWWWWWW...","...WWWWWWWWWWWWWW...",
-"....WWWWWWWWWWWW....",".....WWWWWWWWWW.....","......wwwwwwww......","...................."
+"................................","................................",
+"................................","................................",
+"............NNNNNNNN............","..........NNWWWWWWWWNN..........",
+".........NWWWWWWWWWWWWN.........","........NWWWWWWWWWWWWWWN........",
+".......NWWWWWWWWWWWWWWWWN.......","......NWWWWWWWWWWWWWWWWWWN......",
+"......NWWWWWWWWWWWWWWWWWWN......",".....NWWWWWWWWWWWWWWWWWWWWN.....",
+".....NWWWWeWWWWWWWWWWeWWWWN.....","....NWWWWWeeWWWWWWWWeeWWWWWN....",
+"....NWWWWWWWWWWWWWWWWWWWWWWN....","....NWWWWWWWWWWWWWWWWWWWWWWN....",
+"...NWWWWWWWWWWWWWWWWWWWWWWWWN...","...NWWWWWWWWWWWWWWWWWWWWWWWWN...",
+"...NWWWWWWWWWWWWWWWWWWWWWWWWN...","...NWWWWWWeWWWWWWWWWWeWWWWWWN...",
+"...NWWWWWeeeWWWWWWWWeeeWWWWWN...","...NWWWWWWWWWWWWWWWWWWWWWWWWN...",
+"....NWWWWWWWWWWWWWWWWWWWWWWN....","....NWWWWWWWWWWWWWWWWWWWWWWN....",
+"....NWWWWWWWWWWWWWWWWWWWWWWN....",".....NWWWWWWWWWWWWWWWWWWWWN.....",
+"......NWWWWWWWWWWWWWWWWWWN......",".......NWWWWWWWWWWWWWWWWN.......",
+"........NNWWWWWWWWWWWWNN........","..........NNeeWWWWeeNN..........",
+"............NNNNNNNN............","................................"
 ],
 kueken: [
-"....................",".........YY.........","........YYYY........",".......YYYYYY.......",
-"......YYYYYYYY......",".....YYYYYYYYYY.....",".....YYKYYYYKYY.....",".....YYKYYYYKYY.....",
-".....YYYYYYYYYY.....","......YYYOOYYY......",".....YYYYYYYYYY.....","....YYYYYYYYYYYY....",
-"...YYYYYYYYYYYYYY...","...YYYYYYYYYYYYYY...","...YYYYYYYYYYYYYY...","....YYYYYYYYYYYY....",
-".....YYYYYYYYYY.....",".......Y....Y.......","......OO....OO......","...................."
+"................................","................................",
+"................................","................................",
+"................................","...........NNNNNNNNNN...........",
+".........NNYYYYYYYYYYNN.........","........NYYYYYYYYYYYYYYN........",
+".......NYYYYYYYYYYYYYYYYN.......",".......NYYYYYYYYYYYYYYYYN.......",
+"......NYYKKYYYYYYYYYYKKYYN......","......NYKTKYYYYYYYYYYKTKYN......",
+"......NYKKKYYYYYYYYYYKKKYN......","......NYYYYYYYYYYYYYYYYYYN......",
+".......NYYYYYYooooYYYYYYN.......",".......NYYYYYOOOOOOYYYYYN.......",
+"........NYYYYYooooYYYYYN........",".......NYYYYYYYYYYYYYYYYN.......",
+"......NYYYYYYYYYYYYYYYYYYN......",".....NYYYYYYYYYYYYYYYYYYYYN.....",
+"....NYYYYYYYYYYYYYYYYYYYYYYN....","....NYYYYYyYYYYYYYYYYyYYYYYN....",
+"....NYYYYYYYYYYYYYYYYYYYYYYN....","....NYYYYYYYYYYYYYYYYYYYYYYN....",
+".....NYYYYYYYYYYYYYYYYYYYYN.....","......NYYYYYYYYYYYYYYYYYYN......",
+".......NNYYYYYYYYYYYYYYNN.......",".........NNYYYYYYYYYYNN.........",
+"..........OO........OO..........","..........OO........OO..........",
+"........OOOO........OOOO........","................................"
 ],
 huhnSchule: [
-"........RR..........",".......RRRR.........","......RRRRRR........",".....YYYYYYYY.......",
-"....YYYYYYYYYY......","....YYKYYYYKYY......","....YYKYYYYKYY......","....YYYYYYYYYY......",
-".....YYYOOYYY.......","....YYYYYYYYYY......","...YYYYYYYYYYYY.bb..","..YYYYYYYYYYYYYYbbb.",
-"..YYYYYYYYYYYYYYbbb.","..YYYYYYYYYYYYYYbbb.","..YYYYYYYYYYYYYY.bb.","...YYYYYYYYYYYY.....",
-"....YYYYYYYYYY......","......O....O........","......O....O........","...................."
+"................................","................................",
+"........NRRN........NRRN........",".......NRRRRN......NRRRRN.......",
+"......NRRRRRRN....NRRRRRRN......","..........NNNNNNNNNNNN..........",
+"........NNYYYYYYYYYYYYNN........",".......NYYYYYYYYYYYYYYYYN.......",
+"......NYYYYYYYYYYYYYYYYYYN......","......NYYKKYYYYYYYYYYKKYYN......",
+"......NYKTKYYYYYYYYYYKTKYN......","......NYKKKYYYYYYYYYYKKKYN......",
+"......NYYYYYYYYYYYYYYYYYYN......",".......NYYYYYooooooYYYYYN.......",
+".......NYYYYYOOOOOOYYYYYN.......","........NYYYYYooooYYYYYN........",
+"......NYYYYYYYYYYYYYYYYYYN......",".....NYYYYYYYYYYYYYYYYYYYbbbb...",
+"....NYYYYYYYYYYYYYYYYYYYYbBBb...","...NYYYYYYYYYYYYYYYYYYYYYbBBb...",
+"...NYYYYYYYYYYYYYYYYYYYYYbBBb...","...NYYYYYYwYYYYYYYYYYwYYYbbbb...",
+"...NYYYYYYYYYYYYYYYYYYYYYYbbN...","...NYYYYYYYYYYYYYYYYYYYYYYYYN...",
+"....NYYYYYYYYYYYYYYYYYYYYYYN....",".....NYYYYYYYYYYYYYYYYYYYYN.....",
+"......NNYYYYYYYYYYYYYYYYNN......","........NNYYYYYYYYYYYYNN........",
+"..........OO........OO..........","..........OO........OO..........",
+"........OOOO........OOOO........","................................"
 ],
 huhnBeruf: [
-"........RRR.........",".......RRRRR........","......RRRRRRR.......",".....YYYYYYYYY......",
-"....YYYYYYYYYYY.....","....YYKYYYYYKYY.....","....YYKYYYYYKYY.....","....YYYYYYYYYYY.....",
-".....YYYOOOYYY......","....YYYYYYYYYYY.....","...YYYYYMMYYYYY.....","..YYYYYYMMYYYYYYY...",
-"..YYYYYYMMYYYYYYY...","..YYYYYYYYYYYYYYY...","..YYYYYYYYYYYYYYY...","...YYYYYYYYYYYYY....",
-"....YYYYYYYYYYY.....","......O.....O....bbb","......O.....O....bSb",".................bbb"
+"................................","......NRRN............NRRN......",
+".....NRRRRN..........NRRRRN.....","....NRRRRRRN........NRRRRRRN....",
+"...NRRRRRRRRN......NRRRRRRRRN...","..........NNNNNNNNNNNN..........",
+"........NNYYYYYYYYYYYYNN........",".......NYYYYYYYYYYYYYYYYN.......",
+"......NYYYYYYYYYYYYYYYYYYN......","......NYYKKYYYYYYYYYYKKYYN......",
+"......NYKTKYYYYYYYYYYKTKYN......","......NYKKKYYYYYYYYYYKKKYN......",
+"......NYYYYYYYYYYYYYYYYYYN......",".......NYYYYYooooooYYYYYN.......",
+".......NYYYYYOOOOOOYYYYYN.......","........NYYYYYooooYYYYYN........",
+"......NYYYYYYYYYYYYYYYYYYN......",".....NYYYYYYYYYMMYYYYYYYYYN.....",
+"....NYYYYYYYYYYMMYYYYYYYYYYN....","...NYYYYYYYYYYYMMYYYYYYYYYYYN...",
+"...NYYYYYYYYYYYMMYYYYYYYYYYYN...","...NYYYYYYwYYYYYYYYYYwYYYYYYN...",
+"...NYYYYYYYYYYYYYYYYYYYYYYYYN...","...NYYYYYYYYYYYYYYYYYYYYYYYYN...",
+"....NYYYYYYYYYYYYYYYYYYYYYYN....",".....NYYYYYYYYYYYYYYYYYYYYN.....",
+"......NNYYYYYYYYYYYYYYYYNN......","........NNYYYYYYYYYYYYbbbbbb....",
+"..........OO........OObSSSSb....","..........OO........OObbbbbb....",
+"........OOOO........OOOO........","................................"
 ],
 huhnAlt: [
-"........RRR.........",".......RRRRR........","......RRRRRRR.......",".....WWWWWWWWW......",
-"....WWKWWWWWKWW.....","....WWKWWWWWKWW.....","....WWWWWWWWWWW.....",".....WWWOOOWWW......",
-"....WWWWWWWWWWW.....",".b..WWWWWWWWWWW...b.",".b.WWWWWWWWWWWWW..b.",".b.WWWWWWWWWWWWW..b.",
-".b.WWWWWWWWWWWWW..b.",".b..WWWWWWWWWWW...b.",".b...WWWWWWWWW....b.",".b......O.O.......b.",
-".bbbbbbbbbbbbbbbbbb.","..b..............b..","...bbb........bbb...","......bbbbbbbb......"
+"................................","......NRRN............NRRN......",
+".....NRRRRN..........NRRRRN.....","....NRRRRRRN........NRRRRRRN....",
+"...NRRRRRRRRN......NRRRRRRRRN...","..........NNNNNNNNNNNN..........",
+"........NNWWWWWWWWWWWWNN........",".......NWWWWWWWWWWWWWWWWN.......",
+"......NWWWWWWWWWWWWWWWWWWN......","......NWWKKWWWWWWWWWWKKWWN......",
+"......NWKTKWWWWWWWWWWKTKWN......","......NWKKKWWWWWWWWWWKKKWN......",
+"......NWWWWWWWWWWWWWWWWWWN......",".......NWWWWWooooooWWWWWN.......",
+".......NWWWWWOOOOOOWWWWWN.......","........NWWWWWooooWWWWWN........",
+"......NWWWWWWWWWWWWWWWWWWN......",".....NWWWWWWWWWWWWWWWWWWWWN.....",
+"....bWWWWWWWWWbWWWWWWWWWWWWN....","...NbWWWWWWWWWbWWWWWWWWWWWWWN...",
+"...NbWWWWWWWWWbWWWWWWWWWWWWWN...","...NbWWWWWwWWWbWWWWWWwWWWWWWN...",
+"...NbWWWWWWWWWbWWWWWWWWWWWWWN...","...NbbbbbbbbbbbWWWWWWWWWWWWWN...",
+"....NbWWWWWWWbWWWWWWWWWWWWWN....",".....NbbWWWbbWWWWWWWWWWWWWN.....",
+"......NNbbbWWWWWWWWWWWWWNN......","........NNWWWWWWWWWWWWNN........",
+"..........OO........OO..........","..........OO........OO..........",
+"........OOOO........OOOO........","................................"
 ],
 mon1: [
-"....................","....................","....................",".......GGGGGG.......",
-"......GGGGGGGG......",".....GGGGGGGGGG.....",".....GGTTGGTTGG.....",".....GGTKGGTKGG.....",
-".....GGGGGGGGGG.....",".....GGGGGGGGGG.....",".....GGGgggGGGG.....",".....GGGGGGGGGG.....",
-"......GGGGGGGG......",".......GGGGGG.......",".......GG..GG.......","......GG....GG......",
-"....................","....................","....................","...................."
+"................................","................................",
+"................................","................................",
+"................................","................................",
+"................................","................................",
+"................................","................................",
+"..........NNNNNNNNNNNN..........","........NNGGGGGGGGGGGGNN........",
+".......NGGGGGGGGGGGGGGGGN.......","......NGGGGGGGGGGGGGGGGGGN......",
+"......NGTTTGGGGGGGGGGTTTGN......","......NGTKTGGGGGGGGGGTKTGN......",
+"......NGTTTGGGGGGGGGGTTTGN......","......NGGGGGGGGGGGGGGGGGGN......",
+".....NGGGGGGGGGGGGGGGGGGGGN.....",".....NGGGGGGGGGGGGGGGGGGGGN.....",
+".....NGGGgggGGGGGGGGgggGGGN.....",".....NGGGGGGGGGGGGGGGGGGGGN.....",
+"......NGGGGGGGGGGGGGGGGGGN......",".......NGGGGGGGGGGGGGGGGN.......",
+"........NNGGGGGGGGGGGGNN........","..........NNGGGGGGGGNN..........",
+"..........GG........GG..........","........GGGG........GGGG........",
+"................................","................................",
+"................................","................................"
 ],
 mon2: [
-"....................",".....g........g.....",".....gg......gg.....",".....ggg....ggg.....",
-"......GGGGGGGG......",".....GGGGGGGGGG.....","....GGGGGGGGGGGG....","....GGTTGGGGTTGG....",
-"....GGTKGGGGTKGG....","....GGGGGGGGGGGG....","....GGGGGGGGGGGG....","....GGGgggggGGGG....",
-"....GGGGGGGGGGGG....",".....GGGGGGGGGG.....","......GGGGGGGG......","......GG....GG......",
-".....GG......GG.....","....................","....................","...................."
+"................................","................................",
+"................................","................................",
+"................................","....Ng....................gN....",
+"....NgN..................NgN....","...NggN..................NggN...",
+"...NggN..................NggN...","...NgggN................NgggN...",
+"....NNNNNNNNNNNNNNNNNNNNNNNN....",".....NGGGGGGGGGGGGGGGGGGGGN.....",
+"....NGGGGGGGGGGGGGGGGGGGGGGN....","....NGTTTGGGGGGGGGGGGGGTTTGN....",
+"....NGTKTGGGGGGGGGGGGGGTKTGN....","....NGTTTGGGGGGGGGGGGGGTTTGN....",
+"....NGGGGGGGGGGGGGGGGGGGGGGN....","...NGGGGGGGGGGGGGGGGGGGGGGGGN...",
+"...NGGGGGGGGGGGGGGGGGGGGGGGGN...","...NGGGgggggGGGGGGGGgggggGGGN...",
+"...NGGGGGGGGGGGGGGGGGGGGGGGGN...","...NGGGGGGGGGGGGGGGGGGGGGGGGN...",
+"....NGGGGGGGGGGGGGGGGGGGGGGN....",".....NGGGGGGGGGGGGGGGGGGGGN.....",
+"......NNGGGGGGGGGGGGGGGGNN......","........NNGGGGGGGGGGGGNN........",
+"........GG............GG........","........GG............GG........",
+"......GGGG............GGGG......","................................",
+"................................","................................"
 ],
 mon3: [
-"....................",".....g........g.....",".....gg......gg.....",".....ggg....ggg.....",
-"......GGGGGGGG......",".....GGGGGGGGGG.....","....GGGGGGGGGGGG....",".G..GGTTGGGGTTGG..G.",
-"GGG.GGTKGGGGTKGG.GGG",".GGGGGGGGGGGGGGGGGG.","..GGGGGGGGGGGGGGGG..","....GGGgggggGGGG....",
-"....GGGGGGGGGGGG....",".....GGGGGGGGGG.....","......GGGGGGGG......","......GG....GG......",
-".....GG......GG.....","....GG........GG....","....................","...................."
+"................................","................................",
+"................................","................................",
+"....Ng....................gN....","....NgN..................NgN....",
+"...NggN..................NggN...","...NggN..................NggN...",
+"...NgggN................NgggN...","....NNNNNNNNNNNNNNNNNNNNNNNN....",
+".....NGGGGGGGGGGGGGGGGGGGGN.....","....NGGGGGGGGGGGGGGGGGGGGGGN....",
+"....NGTTTGGGGGGGGGGGGGGTTTGN....","....NGTKTGGGGGGGGGGGGGGTKTGN....",
+"....NGTTTGGGGGGGGGGGGGGTTTGN....","....NGGGGGGGGGGGGGGGGGGGGGGN....",
+"NG.NGGGGGGGGGGGGGGGGGGGGGGGGN.GN","NGGNGGGGGGGGGGGGGGGGGGGGGGGGNGGN",
+"NGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGN",".NGGGGGgggggGGGGGGGGgggggGGGGGN.",
+"..NGGGGGGGGGGGGGGGGGGGGGGGGGGN..","...NGGGGGGGGGGGGGGGGGGGGGGGGN...",
+"....NGGGGGGGGGGGGGGGGGGGGGGN....",".....NGGGGGGGGGGGGGGGGGGGGN.....",
+"......NNGGGGGGGGGGGGGGGGNN......","........NNGGGGGGGGGGGGNN........",
+"........GG............GG........","........GG............GG........",
+"......GGGG............GGGG......","................................",
+"................................","................................"
 ],
 mon4: [
-"...Y..Y..YY..Y..Y...","...YYYYYYYYYYYYYY...","....YyYyYyYyYyYy....",".....g........g.....",
-".....ggg....ggg.....","......GGGGGGGG......",".....GGGGGGGGGG.....",".G..GGGTTGGTTGGG..G.",
-"GGG.GGGTKGGTKGGG.GGG",".GGGGGGGGGGGGGGGGGG.","..GGGGGGGGGGGGGGGG..","....GGGgggggGGGG....",
-"....GGGGGGGGGGGG....","....GGGGGGGGGGGG....",".....GGGGGGGGGG.....","......GGGGGGGG......",
-"......GG....GG......",".....GG......GG.....","....GG........GG....","...................."
+"................................","................................",
+"......Y.....Y......Y.....Y......","....YyYyY.YyYyY..YyYyY.YyYyY....",
+"....YYYYYYYYYYYYYYYYYYYYYYYY....","....NYYYYYYYYYYYYYYYYYYYYYYN....",
+"....Ng....................gN....","...NggN..................NggN...",
+"...NgggN................NgggN...","....NNNNNNNNNNNNNNNNNNNNNNNN....",
+".....NGGGGGGGGGGGGGGGGGGGGN.....","....NGGGGGGGGGGGGGGGGGGGGGGN....",
+"....NGTTTGGGGGGGGGGGGGGTTTGN....","....NGTKTGGGGGGGGGGGGGGTKTGN....",
+"....NGTTTGGGGGGGGGGGGGGTTTGN....","....NGGGGGGGGGGGGGGGGGGGGGGN....",
+"NG.NGGGGGGGGGGGGGGGGGGGGGGGGN.GN","NGGNGGGGGGGGGGGGGGGGGGGGGGGGNGGN",
+"NGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGN",".NGGGGGgggggGGGGGGGGgggggGGGGGN.",
+"..NGGGGGGGGGGGGGGGGGGGGGGGGGGN..","...NGGGGGGGGGGGGGGGGGGGGGGGGN...",
+"....NGGGGGGGGGGGGGGGGGGGGGGN....",".....NGGGGGGGGGGGGGGGGGGGGN.....",
+"......NNGGGGGGGGGGGGGGGGNN......","........NNGGGGGGGGGGGGNN........",
+"........GG............GG........","........GG............GG........",
+"......GGGG............GGGG......","................................",
+"................................","................................"
 ],
 mon5: [
-"...Y..Y..YY..Y..Y...","...YYYYYYYYYYYYYY...","....YyYyYyYyYyYy....",".....g........g.....",
-"M....ggg....ggg....M","MM....GGGGGGGG....MM","MMM..GGGGGGGGGG..MMM","MMMMGGGTTGGTTGGGMMMM",
-"MMMMGGGTKGGTKGGGMMMM","MMMGGGGGGGGGGGGGGMMM","MM.GGGGGGGGGGGGGG.MM","M...GGGgggggGGGG...M",
-"....GGGGGGGGGGGG....","....GGGGGGGGGGGG....",".....GGGGGGGGGG.....","......GGGGGGGG......",
-"......GG....GG......",".....GG......GG.....","....GG........GG....","...................."
+"................................","................................",
+"......Y.....Y......Y.....Y......","....YyYyY.YyYyY..YyYyY.YyYyY....",
+"....YYYYYYYYYYYYYYYYYYYYYYYY....","....NYYYYYYYYYYYYYYYYYYYYYYN....",
+"M...Ng....................gN...M","MM.NggN..................NggN.MM",
+"MMMNgggN................NgggNMMM","MMMMNNNNNNNNNNNNNNNNNNNNNNNNMMMM",
+"MMMM.NGGGGGGGGGGGGGGGGGGGGN.MMMM","MMMMNGGGGGGGGGGGGGGGGGGGGGGNMMMM",
+"MMMMNGTTTGGGGGGGGGGGGGGTTTGNMMMM","MMMMNGTKTGGGGGGGGGGGGGGTKTGNMMMM",
+"MMMMNGTTTGGGGGGGGGGGGGGTTTGNMMMM","MMMMNGGGGGGGGGGGGGGGGGGGGGGNMMMM",
+"MMMNGGGGGGGGGGGGGGGGGGGGGGGGNMMM","MMNGGGGGGGGGGGGGGGGGGGGGGGGGGNMM",
+"MNGGGGGGGGGGGGGGGGGGGGGGGGGGGGNM",".NGGGGGgggggGGGGGGGGgggggGGGGGN.",
+"..NGGGGGGGGGGGGGGGGGGGGGGGGGGN..","...NGGGGGGGGGGGGGGGGGGGGGGGGN...",
+"....NGGGGGGGGGGGGGGGGGGGGGGN....",".....NGGGGGGGGGGGGGGGGGGGGN.....",
+"......NNGGGGGGGGGGGGGGGGNN......","........NNGGGGGGGGGGGGNN........",
+"........GG............GG........","........GG............GG........",
+"......GGGG............GGGG......","................................",
+"................................","................................"
 ],
-samen: [
-"....................","....................","....................","....................",
-"....................","....................","....................","....................",
-"....................","........bbbb........",".......bBBBBb.......",".......bBBBBb.......",
-".......bBBBBb.......","........bbbb........","....................","..bbbbbbbbbbbbbbbb..",
-".bbbbbbbbbbbbbbbbbb.",".bbbbbbbbbbbbbbbbbb.","....................","...................."
+robo1: [
+"................................","................................",
+"................................","................................",
+"................................","................................",
+"................................","................................",
+"................................","................................",
+"................................","................................",
+"..........NNNNNNNNNNNN..........",".........NSSSSSSSSSSSSN.........",
+".........NSssSSSSSSssSN.........",".........NSSSSSSSSSSSSN.........",
+"..........NNSSSSSSSSNN..........","............NSSSSSSN............",
+"............NSSSSSSN............","............NsSSSSsN............",
+"............NSSSSSSN............","............NSSSSSSN............",
+"............NsSSSSsN............","............NSSSSSSN............",
+"............NNSSSSNN............","..............NNNN..............",
+"................................","................................",
+"................................","................................",
+"................................","................................"
 ],
-keimling: [
-"....................","....................","....................","....................",
-"....................","....................",".........LL.........","........LLGG........",
-".......LLLGG........",".........GG.........",".........GG.........",".........GG.........",
-".........GG.........",".........GG.........",".........GG.........","..bbbbbbbbbbbbbbbb..",
-".bbbbbbbbbbbbbbbbbb.",".bbbbbbbbbbbbbbbbbb.","....................","...................."
+robo2: [
+"................................","................................",
+"................................","................................",
+"................................","................................",
+"................................","................................",
+"................................","..........NNNNNNNNNNNN..........",
+".........NSSSSSSSSSSSSN.........",".........NSssSSSSSSssSN.........",
+".........NSSSSSSSSSSSSN.........","..........NNSSSSSSSSNN..........",
+"............NSSSSSSN............","............NsSSSSsN............",
+"............NSSSSSSN............","............NSSSSSSN............",
+".......NNNNNNSSSSSSNNNNNN.......","......NSSSSSSSSSSSSSSSSSSN......",
+"......NSSSSSSSSSSSSSSSSSSN......","......NNNNNNNNNNNNNNNNNNNN......",
+"...NNKKN................NKKNN...","..NKKKKKN..............NKKKKKN..",
+"..NKKTKKN..............NKKTKKN..","..NKKKKKN..............NKKKKKN..",
+"...NNKKN................NKKNN...","................................",
+"................................","................................",
+"................................","................................"
 ],
-stengel: [
-"....................","....................",".........GG.........",".........GG.........",
-".........GG.........","....LLL..GG.........","..LLLLLL.GG.........","...LLLL..GG.........",
-".........GG.LLLL....",".........GG.LLLLLL..",".........GG..LLLL...",".........GG.........",
-".........GG.........",".........GG.........",".........GG.........","..bbbbbbbbbbbbbbbb..",
-".bbbbbbbbbbbbbbbbbb.",".bbbbbbbbbbbbbbbbbb.","....................","...................."
+robo3: [
+"................................","................................",
+"................................","................................",
+"...............SS...............","..............NSSN..............",
+"..............NSSN..............","..........NNNNNNNNNNNN..........",
+".........NSSSSSSSSSSSSN.........","........NSSSSSSSSSSSSSSN........",
+"........NSCCSSSSSSSSCCSN........","........NSCcSSSSSSSScCSN........",
+"........NSCCSSSSSSSSCCSN........","........NSSSSSSSSSSSSSSN........",
+"........NSKKKKKKKKKKKKSN........","........NSSSSSSSSSSSSSSN........",
+".........NSSSSSSSSSSSSN.........","..........NNNNNNNNNNNN..........",
+".......NSSSSSSSSSSSSSSSSN.......","......NSSSSSSSSSSSSSSSSSSN......",
+"......NSSsSSSSSSSSSSSSsSSN......","......NSSSSSSSSSSSSSSSSSSN......",
+"......NSSSSSSSSSSSSSSSSSSN......","......NNSSSSSSSSSSSSSSSSNN......",
+".......NNNNNNSSSSSSNNNNNN.......","..........NSSSSSSSSSSN..........",
+"..........NSSSSSSSSSSN..........","..........NNSSSSSSSSNN..........",
+"........NNKKKKKKKKKKKKNN........","........NKKKKKKKKKKKKKKN........",
+"................................","................................"
 ],
-knospe: [
-"....................","........PPPP........",".......PPPPPP.......",".......PPPPPP.......",
-".......gPPPPg.......","........gPPg........",".........GG.........","....LLL..GG.........",
-"..LLLLLL.GG.........","...LLLL..GG.........",".........GG.LLLL....",".........GG.LLLLLL..",
-".........GG..LLLL...",".........GG.........",".........GG.........","..bbbbbbbbbbbbbbbb..",
-".bbbbbbbbbbbbbbbbbb.",".bbbbbbbbbbbbbbbbbb.","....................","...................."
+robo4: [
+"................................","................................",
+"................................","...............SS...............",
+"..............NSSN..............","..............NSSN..............",
+"..........NNNNNNNNNNNN..........",".........NSSSSSSSSSSSSN.........",
+"........NSSSSSSSSSSSSSSN........","........NSCCSSSSSSSSCCSN........",
+"........NSCcSSSSSSSScCSN........","........NSCCSSSSSSSSCCSN........",
+"........NSSSSSSSSSSSSSSN........","........NSKKKKKKKKKKKKSN........",
+"........NSSSSSSSSSSSSSSN........",".........NSSSSSSSSSSSSN.........",
+"..........NNNNNNNNNNNN..........","NKN....NSSSSSSSSSSSSSSSSN....NKN",
+"NKKN..NSSSSSSSSSSSSSSSSSSN..NKKN","NKKNNNSSsSSSSSSSSSSSSSSsSSNNNKKN",
+"NKKN..NSSSSSSSSSSSSSSSSSSN..NKKN","NKN....NSSSSSSSSSSSSSSSSN....NKN",
+".......NNSSSSSSSSSSSSSSNN.......",".......NNNNNNSSSSSSNNNNNN.......",
+"..........NSSSSSSSSSSN..........","..........NSSSSSSSSSSN..........",
+"..........NNSSSSSSSSNN..........","........NNKKKKKKKKKKKKNN........",
+"........NKKKKKKKKKKKKKKN........","................................",
+"................................","................................"
 ],
-bluete: [
-".....PP...PP...PP...","....PPPP.PPPP.PPPP..","....PPPPPPPPPPPPPP..",".....PPPYYYYPPPPP...",
-"..PP..PPYYYYYPPP.PP.",".PPPP.PPPYYYYPPP.PPP",".PPPP..PPPPPPPP.PPP.","..PP....PPPPPP..PP..",
-".........GG.........","....LLL..GG.........","..LLLLLL.GG.........","...LLLL..GG.........",
-".........GG.LLLL....",".........GG.LLLLLL..",".........GG..LLLL...","..bbbbbbbbbbbbbbbb..",
-".bbbbbbbbbbbbbbbbbb.",".bbbbbbbbbbbbbbbbbb.","....................","...................."
+robo5: [
+"..........R..........R..........","..........N..........N..........",
+"..........N..........N..........","........NNNNNNNNNNNNNNNN........",
+".......NSSSSSSSSSSSSSSSSN.......","......NSSSSSSSSSSSSSSSSSSN......",
+"......NSCCCSSSSSSSSSSCCCSN......","......NSCCcSSSSSSSSSScCCSN......",
+"......NSCCCSSSSSSSSSSCCCSN......","......NSSSSSSSSSSSSSSSSSSN......",
+"......NSKKKKKKKKKKKKKKKKSN......","......NSKTKTKTKKKKTKTKTKSN......",
+"......NSSSSSSSSSSSSSSSSSSN......",".......NSSSSSSSSSSSSSSSSN.......",
+"........NNNNNNNNNNNNNNNN........","NKN...NSSSSSSSSSSSSSSSSSSN...NKN",
+"NKKN.NSSSSSSSSSSSSSSSSSSSSN.NKKN","NKKNNNSSYYYYSSSSSSSSYYYYSSNNNKKN",
+"NKKNNNSSYYYYSSSSSSSSYYYYSSNNNKKN","NKKN.NSSSSSSSSSSSSSSSSSSSSN.NKKN",
+"NKN...NSSSSSSSSSSSSSSSSSSN...NKN","......NSSsSSSSSSSSSSSSsSSN......",
+"......NSSSSSSSSSSSSSSSSSSN......","......NNSSSSSSSSSSSSSSSSNN......",
+".......NNNNNSSSSSSSSNNNNN.......","..........NSSSSSSSSSSN..........",
+"..........NSSSSSSSSSSN..........","..........NNSSSSSSSSNN..........",
+"........NNKKKKKKKKKKKKNN........","........NKKKKKKKKKKKKKKN........",
+"........NKKKKKKKKKKKKKKN........","................................"
+],
+schnecke1: [
+"................................","................................",
+"................................","................................",
+"................................","................................",
+"................................","................................",
+"................................","......................K.........",
+".....................NKN...K....",".....................NGN..NKN...",
+"......................NGN.NGN...",".......................NGNNGN...",
+"........................NGGGN...","........................NGGGN...",
+".........................NGGN...","...............NNNNNNNNNNNGGGN..",
+"...........NNNGGGGGGGGGGGGGGGN..","........NNNGGGGGGGGGGGGGGGGGGN..",
+".....NNNGGGGGGGGGGGGGGGGGGGGGN..","...NNGGGGGGGGGGGGGGGGGGGGGGGN...",
+"..NGGGGGGGGGGGGGGGGGGGGGGGGN....","..NGGGGGGGGGGGGGGGGGGGGGGGN.....",
+"..NgggggggggggggggggggggggN.....","...NNNNNNNNNNNNNNNNNNNNNNN......",
+"................................","................................",
+"................................","................................",
+"................................","................................"
+],
+schnecke2: [
+"................................","................................",
+"................................","................................",
+"................................","................................",
+"......................K.........",".....................NKN...K....",
+".....................NGN..NKN...","......................NGN.NGN...",
+".......................NGNNGN...","........NNNNNN..........NGGGN...",
+"......NNBBBBBBNN........NGGGN...",".....NBBWWWWWWBBN........NGGN...",
+"....NBWWBBBBBBWWBN.......NGGGN..","....NBWBBNNNNBBWBN......NGGGGN..",
+"....NBWBNNNNNNBWBN.....NGGGGGN..","....NBWWBBBBBBWWBN...NGGGGGGGN..",
+".....NBBWWWWWWBBNNNNNGGGGGGGGN..","......NNBBBBBBNGGGGGGGGGGGGGGN..",
+"....NNNNNNNNNNGGGGGGGGGGGGGGGN..","..NNGGGGGGGGGGGGGGGGGGGGGGGGN...",
+"..NGGGGGGGGGGGGGGGGGGGGGGGGN....","..NGGGGGGGGGGGGGGGGGGGGGGGN.....",
+"..NgggggggggggggggggggggggN.....","...NNNNNNNNNNNNNNNNNNNNNNN......",
+"................................","................................",
+"................................","................................",
+"................................","................................"
+],
+schnecke3: [
+"................................","................................",
+"................................","................................",
+"................................","........NNNNNNNN................",
+"......NNBBBBBBBBNN..............",".....NBBWWWWWWWWBBN.............",
+"....NBWWBBBBBBBBWWBN............","...NBWWBBWWWWWWBBWWBN...........",
+"...NBWBBWWBBBBWWBBWBN.....K.....","..NBWBWWBBWWWWBBWWBWBN...NKN.K..",
+"..NBWBWBWBBBBBBWBWBWBN...NGN.KN.","..NBWBWBWBWWWWBWBWBWBN...NGNNGN.",
+"..NBWBWBWBBBBBBWBWBWBN...NGNNGN.","..NBWBWWBBWWWWBBWWBWBN....NGGGN.",
+"...NBWBBWWBBBBWWBBWBN.....NGGGN.","...NBWWBBWWWWWWBBWWBN......NGGN.",
+"....NBWWBBBBBBBBWWBNNNNNNNNGGGN.",".....NBBWWWWWWWWBBNGGGGGGGGGGGN.",
+"......NNBBBBBBBBNGGGGGGGGGGGGGN.","....NNNNNNNNNNNNGGGGGGGGGGGGGGN.",
+"..NNGGGGGGGGGGGGGGGGGGGGGGGGGN..","..NGGGGGGGGGGGGGGGGGGGGGGGGGN...",
+"..NGGGGGGGGGGGGGGGGGGGGGGGGN....","..NggggggggggggggggggggggggN....",
+"...NNNNNNNNNNNNNNNNNNNNNNNN.....","................................",
+"................................","................................",
+"................................","................................"
+],
+schnecke4: [
+"................................","................................",
+"................................","................................",
+"................................","........NNNNNNNN................",
+"......NNBBBBBBBBNN..............",".....NBBBBBBBBBBBBN.............",
+"....NBBCCCBBBBCCCBBN............","...NBBCCCCBBBBCCCCBBN...........",
+"...NBBCCCCBBBBCCCCBBN.....K.....","..NBBCCCCBBBBBBCCCCBBN...NKN.K..",
+"..NBBBBBBBBBBBBBBBBBBN...NGN.KN.","..NBBBBBBBBBBBBBBBBBBN...NGNNGN.",
+"..NBBBBBBbbbbBBBBBBBBN...NGNNGN.","..NBBBBBBbbbbBBBBBBBBN....NGGGN.",
+"...NBBBBBbbbbBBBBBBBN.....NGGGN.","...NBBBBBbbbbBBBBBBBN......NGGN.",
+"....NBBBBbbbbBBBBBBNNNNNNNNGGGN.",".....NBBBbbbbBBBBBNGGGGGGGGGGGN.",
+"......NNBBBBBBBBNGGGGGGGGGGGGGN.","....NNNNNNNNNNNNGGGGGGGGGGGGGGN.",
+"..NNGGGGGGGGGGGGGGGGGGGGGGGGGN..","..NGGGGGGGGGGGGGGGGGGGGGGGGGN...",
+"..NGGGGGGGGGGGGGGGGGGGGGGGGN....","..NggggggggggggggggggggggggN....",
+"...NNNNNNNNNNNNNNNNNNNNNNNN.....","................................",
+"................................","................................",
+"................................","................................"
+],
+schnecke5: [
+"................................","................................",
+"................................","......SS.......S................",
+".....SSSS.....SSS...............","....NSSSSN.....S................",
+"....NSSSSN.....S................","........NNNNNNNN................",
+"......NNBBBBBBBBNN..............",".....NBBBBBBBBBBBBN.............",
+"....NBBCCCBBBBCCCBBN............","...NBBCCCCBBBBCCCCBBN.....K.....",
+"...NBBCCCCBBBBCCCCBBN....NKN.K..","..NBBCCCCBBBBBBCCCCBBN...NGN.KN.",
+"..NBBBBBBBBBBBBBBBBBBN...NGNNGN.","..NBBBBBBbbbbBBBBBBBBN...NGNNGN.",
+"..NBBBBBBbbbbBBBBBBBBN....NGGGN.","..NBBBBBBbbbbBBBBBBBBN....NGGGN.",
+"...NBBBBBbbbbBBBBBBBN......NGGN.","...NBBBBBbbbbBBBBBBNNNNNNNNGGGN.",
+"....NBBBBbbbbBBBBBNGGGGGGGGGGGN.",".....NBBBbbbbBBBBNGGGGGGGGGGGGN.",
+"......NNBBBBBBBBNGGGGGGGGGGGGGN.","....NNNNNNNNNNNNGGGGGGGGGGGGGGN.",
+"..NNGGGGGGGGGGGGGGGGGGGGGGGGGN..","..NGGGGGGGGGGGGGGGGGGGGGGGGGN...",
+"..NGGGGGGGGGGGGGGGGGGGGGGGGN....","..NggggggggggggggggggggggggN....",
+"...NNNNNNNNNNNNNNNNNNNNNNNN.....","................................",
+"................................","................................"
 ],
 rakete: [
-".........TT.........","........TTTT........","........TRRT........",".......TTRRTT.......",
-".......TTRRTT.......",".......TRRRRT.......",".......TRRRRT.......","......RTRRRRTR......",
-".....RRTRRRRTRR.....","....RRRTRRRRTRRR....","....RRRTTTTTTRRR....","....RRR.TTTT.RRR....",
-".......TTTTTT.......","........OOOO........","........OYYO........",".........OYO........",
-".........OO.........","..........O.........","....................","...................."
+"................................","................................",
+"...............TT...............","..............NTTN..............",
+".............NTTTTN.............",".............NTRRTN.............",
+"............NTRRRRTN............","............NTRRRRTN............",
+"...........NTRRRRRRTN...........","...........NTRRRRRRTN...........",
+"..........NTRRRRRRRRTN..........","..........NTRRRRRRRRTN..........",
+".........NTRRRRRRRRRRTN.........",".........NTRRRRRRRRRRTN.........",
+"........NCCCCCCCCCCCCCCN........","........NCccccccccccccCN........",
+"........NCCCCCCCCCCCCCCN........",".........NRRRRRRRRRRRRN.........",
+"......NR.NRRRRRRRRRRRRN.RN......",".....NRRRNRRRRRRRRRRRRNRRRN.....",
+"....NRRRRNRRRRRRRRRRRRNRRRRN....","...NRRRRRNRRRRRRRRRRRRNRRRRRN...",
+"...NRRRRRNNNNNNNNNNNNNNRRRRRN...","...NNNNNNN............NNNNNNN...",
+".........OOOOOOOOOOOOOO.........","..........OOOOOOOOOOOO..........",
+"..........YYYYYYYYYYYY..........","...........YYYYYYYYYY...........",
+"............OOOOOOOO............",".............OOOOOO.............",
+"................................","................................"
 ]
 };
 
@@ -345,10 +640,14 @@ const CHARACTERS = {
     {key:'mon1',label:'Kleiner Schleim'},{key:'mon2',label:'Monster mit Hörnern'},
     {key:'mon3',label:'Monster mit Armen'},{key:'mon4',label:'Monsterkönig'},
     {key:'mon5',label:'Geflügeltes Monster'}]},
-  blume: { name:'Blume', cls:'blume', stages:[
-    {key:'samen',label:'Samenkorn'},{key:'keimling',label:'Keimling'},
-    {key:'stengel',label:'Stängel mit Blättern'},{key:'knospe',label:'Knospe'},
-    {key:'bluete',label:'Blüte in voller Pracht'}]}
+  schnecke: { name:'Schnecke', cls:'schnecke', stages:[
+    {key:'schnecke1',label:'Nacktschnecke'},{key:'schnecke2',label:'Erstes Häuschen'},
+    {key:'schnecke3',label:'Richtiges Haus'},{key:'schnecke4',label:'Haus mit Fenstern'},
+    {key:'schnecke5',label:'Haus mit Schornstein'}]},
+  roboter: { name:'Roboter', cls:'roboter', stages:[
+    {key:'robo1',label:'Einzelne Schraube'},{key:'robo2',label:'Schraube auf Rädern'},
+    {key:'robo3',label:'Kleiner Roboter'},{key:'robo4',label:'Roboter mit Greifarmen'},
+    {key:'robo5',label:'Riesenroboter'}]}
 };
 
 function spriteEl(key, px){
@@ -469,7 +768,7 @@ function crossSVG(deg, markWhich){
 }
 
 /* --------------------------- Spielstand --------------------------- */
-const SAVE_KEY='winkelquest.v2';
+const SAVE_KEY='winkelquest.v5';
 let state=null;
 const freshState = () => ({ figur:null, punkte:{1:0,2:0,3:0,4:0,5:0,6:0}, frei:1, karten:{} });
 function load(){
@@ -500,7 +799,7 @@ function buildRoster(){
   Object.entries(CHARACTERS).forEach(([id,c])=>{
     const card=document.createElement('div');
     card.className='card '+c.cls;
-    card.appendChild(spriteEl(c.stages[0].key, 6));
+    card.appendChild(spriteEl(c.stages[0].key, 4));
     const nm=document.createElement('div'); nm.className='card-name'; nm.textContent=c.name;
     card.appendChild(nm);
     const chk=document.createElement('div'); chk.className='check'; chk.textContent='✓ ausgewählt';
@@ -514,19 +813,39 @@ function buildRoster(){
   $('startBtn').onclick=()=>{ if(!chosen) return; state.figur=chosen; save(); showMap(); };
 }
 
+
+function figureBlock(el){
+  const done6 = level6Done();
+  const c = CHARACTERS[state.figur];
+  const key = done6 ? 'rakete' : c.stages[currentStageIndex()].key;
+  const label = done6 ? 'Rakete startklar' : c.stages[currentStageIndex()].label;
+  el.innerHTML='';
+  el.className='hud-fig';
+  el.appendChild(spriteEl(key, 3));
+  const cap=document.createElement('div');
+  cap.className='cap'; cap.textContent=label;
+  el.appendChild(cap);
+  return label;
+}
+
 function showMap(){
   $('screen-select').classList.add('hidden');
   $('screen-level').classList.add('hidden');
   $('screen-map').classList.remove('hidden');
 
-  const c=CHARACTERS[state.figur], done6=level6Done();
-  const key = done6 ? 'rakete' : c.stages[currentStageIndex()].key;
-  const label = done6 ? 'Rakete startklar!' : c.stages[currentStageIndex()].label;
-  const sp=$('hudSprite'); sp.innerHTML=''; sp.appendChild(spriteEl(key,3));
-  $('hudStage').textContent=label;
+  const done6=level6Done();
+  const label = figureBlock($('hudSprite'));
+  $('hudStage').textContent = done6 ? 'Alle Stationen geschafft' : 'Stufe: '+label;
   $('hudSub').textContent = done6
-    ? 'Alle Stationen geschafft — auf zum Mond.'
+    ? 'Dein Begleiter kann zum Mond starten.'
     : 'Schließe Stationen ab, damit dein Begleiter wächst.';
+  const mb=$('moonBtnWrap');
+  mb.innerHTML='';
+  if (done6){
+    const b=document.createElement('button');
+    b.className='btn'; b.textContent='Abflug zum Mond';
+    b.onclick=showMoon; mb.appendChild(b);
+  }
 
   const list=$('levelList'); list.innerHTML='';
   LEVELS.forEach(l=>{
@@ -552,9 +871,7 @@ function openLevel(n){
 }
 
 function refreshHud(){
-  const c=CHARACTERS[state.figur], done6=level6Done();
-  const key = done6 ? 'rakete' : c.stages[currentStageIndex()].key;
-  const sp=$('lvlSprite'); sp.innerHTML=''; sp.appendChild(spriteEl(key,3));
+  figureBlock($('lvlSprite'));
   const l=LEVELS[currentLevel-1], pts=state.punkte[currentLevel]||0;
   $('lvlTitle').textContent=`${l.n}. ${l.name}`;
   $('lvlPoints').textContent=`${pts} / ${l.ziel} Punkte`;
@@ -599,11 +916,16 @@ function renderUnlock(){
   if (currentLevel===6){
     const box=document.createElement('div');
     box.className='panel celebrate';
-    box.innerHTML=`<div class="big">GESCHAFFT!</div><p>Alle Stationen abgeschlossen. Deine Rakete ist startklar.</p>`;
-    const sp=spriteEl('rakete',7); sp.style.margin='0 auto'; box.appendChild(sp);
-    const b=document.createElement('button');
-    b.className='btn'; b.style.marginTop='14px'; b.textContent='Zur Übersicht'; b.onclick=showMap;
-    box.appendChild(b); area.appendChild(box); return;
+    box.innerHTML=`<div class="big">GESCHAFFT!</div><p>Alle Stationen abgeschlossen. Jetzt geht es zum Mond.</p>`;
+    const sp=spriteEl('rakete',5); sp.style.margin='0 auto'; box.appendChild(sp);
+    const row=document.createElement('div');
+    row.className='answer-row'; row.style.marginTop='14px';
+    const b1=document.createElement('button');
+    b1.className='btn'; b1.textContent='Abflug zum Mond'; b1.onclick=showMoon;
+    const b2=document.createElement('button');
+    b2.className='btn ghost'; b2.textContent='Zur Übersicht'; b2.onclick=showMap;
+    row.appendChild(b1); row.appendChild(b2); box.appendChild(row);
+    area.appendChild(box); return;
   }
 
   const nextN=currentLevel+1;
@@ -640,7 +962,7 @@ function renderUnlock(){
 function nextTask(){
   taskLocked=false;
   $('taskPanel').innerHTML='';
-  ({1:taskCompare,2:taskMeasure,3:taskDraw,4:taskCalc,5:taskTypes,6:taskAdvanced}[currentLevel])();
+  ({1:taskCompare,2:taskMeasure,3:taskDraw,4:taskTypes,5:taskCalc,6:taskAdvanced}[currentLevel])();
   renderUnlock();
 }
 function head(t){ const d=document.createElement('div'); d.className='question'; d.textContent=t; return d; }
@@ -806,44 +1128,71 @@ function taskDraw(){
 /* --- Station 4: Berechnen (mit Bildern) --- */
 const SCHLUESSEL = [45, 90, 180, 270, 360];
 
+function choiceRow(p, richtig, alle, extra){
+  const opts=document.createElement('div');
+  opts.className='options'; opts.style.marginTop='14px';
+  alle.forEach(v=>{
+    const b=document.createElement('button');
+    b.className='opt'; b.textContent=v+'°';
+    b.onclick=()=>{
+      document.querySelectorAll('.opt').forEach(o=>o.disabled=true);
+      const ok = v===richtig;
+      award(ok, ok?`Richtig! ${extra}`:`Nicht ganz. Richtig ist: ${extra}`);
+    };
+    opts.appendChild(b);
+  });
+  p.appendChild(opts);
+}
+
+function ablenker(richtig, max){
+  const set=new Set([richtig]);
+  const kandidaten=[richtig+10, richtig-10, richtig+20, richtig-20, richtig+5, richtig-5, max-richtig];
+  for (const k of kandidaten){
+    if (set.size>=4) break;
+    if (k>0 && k<=max && !set.has(k)) set.add(k);
+  }
+  let v=5;
+  while (set.size<4){ if (!set.has(v) && v<=max) set.add(v); v+=5; }
+  return [...set].sort((a,b)=>a-b);
+}
+
 function taskCalc(){
   const p=$('taskPanel');
-  const typ=pick(['zu90','zu180','zu360','schluessel','schluessel']);
+  const pts=state.punkte[currentLevel]||0;
+  const mc = pts < 6;                      // erst Auswahl, ab Aufgabe 7 freie Eingabe
 
-  if (typ==='schluessel'){
+  if (mc && Math.random()<0.35){
     const deg=pick(SCHLUESSEL);
     p.appendChild(head('Wie groß ist dieser Winkel?'));
     const row=document.createElement('div'); row.className='figure-row';
     const fig=document.createElement('div'); fig.className='figure-box';
     fig.innerHTML=angleSVG(deg,{size:210, base:0});
     row.appendChild(fig); p.appendChild(row);
-
-    const opts=document.createElement('div'); opts.className='options';
-    SCHLUESSEL.forEach(v=>{
-      const b=document.createElement('button'); b.className='opt'; b.textContent=v+'°';
-      b.onclick=()=>{
-        document.querySelectorAll('.opt').forEach(o=>o.disabled=true);
-        const ok = v===deg;
-        award(ok, ok?`Richtig, das sind ${deg}°.`:`Nicht ganz — das sind ${deg}°.`);
-      };
-      opts.appendChild(b);
-    });
-    p.appendChild(opts);
+    choiceRow(p, deg, SCHLUESSEL.slice(), `das sind ${deg}°`);
     p.appendChild(hint('Die wichtigsten Winkel: 45° halber rechter · 90° rechter · 180° gestreckter · 270° Dreiviertel · 360° volle Drehung.'));
     return;
   }
 
+  const typ = pick(['zu90','zu180','zu360']);
   const total = typ==='zu90' ? 90 : typ==='zu180' ? 180 : 360;
   const a = typ==='zu90' ? rnd5(10,80) : typ==='zu180' ? rnd5(15,165) : rnd5(30,330);
   const loesung = total - a;
   const titel = { 90:'einem rechten Winkel (90°)', 180:'einem gestreckten Winkel (180°)', 360:'einer ganzen Drehung (360°)' }[total];
+  const extra = `${total}° − ${a}° = ${loesung}°`;
 
   p.appendChild(head(`Wie groß ist der fehlende Winkel bis zu ${titel}?`));
   const row=document.createElement('div'); row.className='figure-row';
   const fig=document.createElement('div'); fig.className='figure-box';
   fig.innerHTML=splitSVG(total, a, {size:240});
   row.appendChild(fig); p.appendChild(row);
-  numericAnswer(p, loesung, `${total}° − ${a}° = ${loesung}°`);
+
+  if (mc){
+    choiceRow(p, loesung, ablenker(loesung, total), extra);
+    p.appendChild(hint('Wähle den passenden Wert aus.'));
+  } else {
+    numericAnswer(p, loesung, extra);
+    p.appendChild(hint('Jetzt ohne Auswahl: rechne selbst und trage das Ergebnis ein.'));
+  }
 }
 
 /* --- Station 5: Winkelarten --- */
@@ -928,12 +1277,179 @@ function taskAdvanced(){
   }
 }
 
+
+/* --------------------------- Mondflug-Minispiel --------------------------- */
+let moonGame = null;
+
+function drawSprite(ctx, key, x, y, px){
+  const rows=SPRITES[key];
+  for (let r=0;r<rows.length;r++){
+    for (let c=0;c<rows[r].length;c++){
+      const col=PALETTE[rows[r][c]];
+      if (col){ ctx.fillStyle=col; ctx.fillRect(x+c*px, y+r*px, px, px); }
+    }
+  }
+}
+
+function showMoon(){
+  $('screen-map').classList.add('hidden');
+  $('screen-level').classList.add('hidden');
+  $('screen-moon').classList.remove('hidden');
+  startMoon();
+}
+
+function stopMoon(){
+  if (moonGame){ cancelAnimationFrame(moonGame.raf); moonGame.alive=false; moonGame=null; }
+}
+
+function leaveMoon(){ stopMoon(); $('screen-moon').classList.add('hidden'); showMap(); }
+
+function startMoon(){
+  stopMoon();
+  const cv=$('moonCanvas'), ctx=cv.getContext('2d');
+  const W=cv.width, H=cv.height;
+  const c=CHARACTERS[state.figur];
+  const heldKey=c.stages[4].key;
+  const sprPx=3, sprSize=32*sprPx;
+
+  const sterne=[];
+  for(let i=0;i<60;i++) sterne.push({x:Math.random()*W, y:Math.random()*H, r:Math.random()<0.3?2:1, s:0.3+Math.random()*0.7});
+
+  const g={
+    alive:true, raf:0,
+    y:H/2, vy:0, fortschritt:0, speed:0,
+    kometen:[], t:0, blink:0, status:'flug',
+    tasten:{oben:false, unten:false, vor:false}
+  };
+  moonGame=g;
+
+  const setMsg = t => { $('moonMsg').textContent=t; };
+  setMsg('Halte »Vor« gedrückt und weiche den Kometen aus.');
+
+  function spawn(){
+    const y=30+Math.random()*(H-90);
+    g.kometen.push({ x:W+20, y:y, v:2.2+Math.random()*1.6+g.fortschritt/60 });
+  }
+
+  function step(){
+    if (!g.alive) return;
+    g.t++;
+
+    if (g.status==='flug'){
+      if (g.tasten.oben)  g.vy-=0.55;
+      if (g.tasten.unten) g.vy+=0.55;
+      g.vy*=0.90;
+      g.y+=g.vy;
+      if (g.y<10){ g.y=10; g.vy=0; }
+      if (g.y>H-sprSize-10){ g.y=H-sprSize-10; g.vy=0; }
+
+      g.speed = g.tasten.vor ? 0.30 : 0.04;
+      g.fortschritt=Math.min(100, g.fortschritt+g.speed);
+
+      if (g.t%Math.max(26, 64-Math.floor(g.fortschritt/3))===0) spawn();
+
+      for (const k of g.kometen) k.x-=k.v;
+      g.kometen=g.kometen.filter(k=>k.x>-40);
+
+      if (g.blink>0) g.blink--;
+      else {
+        for (const k of g.kometen){
+          const dx=(60+sprSize/2)-(k.x+10), dy=(g.y+sprSize/2)-(k.y+10);
+          if (Math.abs(dx)<sprSize/2+10 && Math.abs(dy)<sprSize/2+10){
+            g.blink=45;
+            g.fortschritt=Math.max(0, g.fortschritt-9);
+            setMsg('Autsch! Ein Komet — weiter geht\'s.');
+            break;
+          }
+        }
+      }
+      if (g.fortschritt>=100){ g.status='gelandet'; g.landen=0; setMsg('Geschafft — du bist am Mond!'); }
+    } else {
+      g.landen++;
+    }
+
+    // Zeichnen
+    ctx.fillStyle='#0b1026'; ctx.fillRect(0,0,W,H);
+    for (const s of sterne){
+      s.x-=s.s*(0.6+g.speed*3);
+      if (s.x<0){ s.x=W; s.y=Math.random()*H; }
+      ctx.fillStyle='#ffffff'; ctx.globalAlpha=0.5+0.5*Math.sin((g.t+s.x)/20);
+      ctx.fillRect(s.x, s.y, s.r, s.r);
+    }
+    ctx.globalAlpha=1;
+
+    // Mond rechts, kommt näher
+    const mondX=W-40+ (100-g.fortschritt)*3.4;
+    const mr=46;
+    ctx.fillStyle='#e9e5d6'; ctx.beginPath(); ctx.arc(mondX, H/2, mr, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle='#cfc8b4';
+    [[-16,-12,9],[10,6,12],[-4,18,7],[18,-18,6]].forEach(k=>{
+      ctx.beginPath(); ctx.arc(mondX+k[0], H/2+k[1], k[2], 0, Math.PI*2); ctx.fill();
+    });
+
+    for (const k of g.kometen){
+      ctx.fillStyle='#f77f00'; ctx.fillRect(k.x+18, k.y+6, 22, 3);
+      ctx.fillStyle='#ffd23f'; ctx.fillRect(k.x+18, k.y+11, 14, 3);
+      ctx.fillStyle='#8b5e3c'; ctx.fillRect(k.x, k.y, 20, 20);
+      ctx.fillStyle='#5c3d24'; ctx.fillRect(k.x+4, k.y+4, 6, 6); ctx.fillRect(k.x+12, k.y+11, 5, 5);
+    }
+
+    let px_=60, py_=g.y;
+    if (g.status==='gelandet'){
+      px_ = 60 + Math.min(1, g.landen/80)*(mondX-70-60);
+      py_ = g.y + (H/2-16*sprPx - g.y)*Math.min(1, g.landen/80);
+    }
+    if (!(g.blink>0 && Math.floor(g.t/4)%2===0)){
+      ctx.fillStyle='#f77f00';
+      const fl = 10+Math.random()*10*(g.tasten.vor?1:0.3);
+      ctx.fillRect(px_-fl, py_+sprSize/2-5, fl, 10);
+      ctx.fillStyle='#ffd23f';
+      ctx.fillRect(px_-fl*0.55, py_+sprSize/2-3, fl*0.55, 6);
+      drawSprite(ctx, heldKey, px_, py_, sprPx);
+    }
+
+    ctx.fillStyle='#1f2421'; ctx.fillRect(14, H-22, W-28, 10);
+    ctx.fillStyle='#52b788'; ctx.fillRect(14, H-22, (W-28)*g.fortschritt/100, 10);
+    ctx.fillStyle='#ffffff'; ctx.font='12px sans-serif';
+    ctx.fillText(Math.floor(g.fortschritt)+' %', 16, H-26);
+
+    if (g.status==='gelandet' && g.landen>90){
+      g.alive=false;
+      $('moonWin').classList.remove('hidden');
+      return;
+    }
+    g.raf=requestAnimationFrame(step);
+  }
+  $('moonWin').classList.add('hidden');
+  step();
+
+  const map={ArrowUp:'oben', ArrowDown:'unten', ArrowRight:'vor', w:'oben', s:'unten', d:'vor'};
+  function key(e, an){
+    const k=map[e.key];
+    if (k){ g.tasten[k]=an; e.preventDefault(); }
+  }
+  g.onDown=e=>key(e,true); g.onUp=e=>key(e,false);
+  window.addEventListener('keydown', g.onDown);
+  window.addEventListener('keyup', g.onUp);
+
+  [['moonUp','oben'],['moonDown','unten'],['moonGo','vor']].forEach(([id,t])=>{
+    const b=$(id);
+    const on=e=>{ g.tasten[t]=true; e.preventDefault(); };
+    const off=e=>{ g.tasten[t]=false; e.preventDefault(); };
+    b.onmousedown=on; b.onmouseup=off; b.onmouseleave=off;
+    b.ontouchstart=on; b.ontouchend=off; b.ontouchcancel=off;
+  });
+}
+
 /* --------------------------- Start --------------------------- */
 load();
 buildRoster();
 if (state.figur && CHARACTERS[state.figur]) showMap();
 
 $('backBtn').onclick=showMap;
+$('moonQuit').onclick=leaveMoon;
+$('moonBack').onclick=leaveMoon;
+$('moonAgain').onclick=startMoon;
 $('resetBtn').onclick=()=>{
   if (!confirm('Wirklich allen Fortschritt löschen und neu starten?')) return;
   state=freshState(); save(); location.reload();
