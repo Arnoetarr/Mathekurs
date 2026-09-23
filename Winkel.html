@@ -223,8 +223,8 @@ const CONFIG = {
 
 // Station 2: Papierkarten. Nummer -> Winkel in Grad.
 const CARDS = {
-  pflicht: { 1:35, 2:70, 3:115, 4:150, 5:25 },
-  zusatz:  { 6:48, 7:112, 8:23, 9:137, 10:164, 11:61, 12:88, 13:126, 14:39, 15:153 }
+  pflicht: { 1:35, 2:70, 3:115, 4:150, 5:25, 6:50, 7:100, 8:10, 9:130,},
+  zusatz:  { 10:168, 11:210, 12:99, 13:126, 14:39, 15:153 }
 };
 
 const LEVELS = [
@@ -1027,11 +1027,11 @@ function taskMeasure(){
   const p=$('taskPanel');
   p.appendChild(head('Miss die Karten mit dem Geodreieck.'));
   p.appendChild(hint(`Such dir selbst aus, welche Karte du zuerst misst. Trage dein Ergebnis ein und prüfe es.<br>
-    Für die Station brauchst du die <b>${ziel(2)} Pflichtkarten</b>. Abweichung bis ±${CONFIG.messToleranz}° zählt als richtig.`));
+    Für die Station brauchst du <b>${ziel(2)} richtig gemessene Karten</b>. Abweichungen beim Messen bis ±${CONFIG.messToleranz}° zählent als richtig.`));
 
   const build = (titel, obj, isZusatz) => {
     const h=document.createElement('div'); h.className='tablehead';
-    h.innerHTML = titel + (isZusatz?' <span class="zusatz-tag">Zusatz — schwerer</span>':'');
+    h.innerHTML = titel + (isZusatz?' <span class="zusatz-tag">Zusatz</span>':'');
     p.appendChild(h);
 
     const tab=document.createElement('table'); tab.className='cardtable';
@@ -1061,9 +1061,7 @@ function taskMeasure(){
         if (diff<=CONFIG.messToleranz){
           if (!state.karten[num]){
             state.karten[num]=true;
-            if (!isZusatz){
-              state.punkte[2]=(state.punkte[2]||0)+1;
-            }
+            state.punkte[2]=(state.punkte[2]||0)+1;
             save(); refreshHud(); renderUnlock();
           }
           setDone();
@@ -1084,8 +1082,8 @@ function taskMeasure(){
     p.appendChild(tab);
   };
 
-  build('Pflichtkarten', CARDS.pflicht, false);
-  build('Zusatzkarten', CARDS.zusatz, true);
+  build('Leichtere Karten', CARDS.pflicht, false);
+  build('herausfordernde Karten', CARDS.zusatz, true);
 
   const bonus=Object.keys(CARDS.zusatz).filter(n=>state.karten[n]).length;
   p.appendChild(hint(`Zusatzkarten geschafft: <b>${bonus} / ${Object.keys(CARDS.zusatz).length}</b>`));
