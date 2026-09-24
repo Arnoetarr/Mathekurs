@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Würfeln und auswerten</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#FBFCFE; --grid:#E4EBF5; --sheet:#FFFFFF; --ink:#1F3A93; --ink-soft:#E1E7F8;
+  --red:#C8312B; --text:#232830; --muted:#5B6472; --line:#C9D3E3;
+  --die:#FFFDF7; --pip:#1E2430; --bar:#1F3A93; --on-ink:#FFFFFF;
+  color-scheme:light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#141922; --grid:#1C2330; --sheet:#1A2029; --ink:#9DB2FF; --ink-soft:#26314F;
+    --red:#FF7D70; --text:#E6E9EF; --muted:#A3ABB8; --line:#354052;
+    --die:#EDE8DC; --pip:#1E2430; --bar:#8FA6FF; --on-ink:#10151E; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#141922; --grid:#1C2330; --sheet:#1A2029; --ink:#9DB2FF; --ink-soft:#26314F;
+  --red:#FF7D70; --text:#E6E9EF; --muted:#A3ABB8; --line:#354052;
+  --die:#EDE8DC; --pip:#1E2430; --bar:#8FA6FF; --on-ink:#10151E; color-scheme:dark;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+[hidden]{display:none !important}
+body{
+  margin:0; color:var(--text);
+  background-color:var(--paper);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:24px 24px;
+  font-family:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  font-size:clamp(16px,0.55vw + 11px,21px); line-height:1.4;
+}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--red);outline-offset:2px}
+
+/* Kopfzeile */
+.top{padding:1rem 1.5rem .5rem;display:flex;flex-wrap:wrap;gap:.8rem 2rem;align-items:flex-end}
+h1{margin:0 1rem 0 0;font-size:1.7rem;line-height:1.1;color:var(--ink);letter-spacing:-.01em}
+.ctrls{display:flex;flex-wrap:wrap;gap:.8rem 1.5rem}
+.grp{display:flex;flex-direction:column;gap:.25rem}
+.gl{font-size:.8rem;color:var(--muted)}
+.seg{display:inline-flex;border:2px solid var(--ink);border-radius:10px;overflow:hidden;background:var(--sheet)}
+.seg button{border:0;background:transparent;color:var(--ink);padding:.35em .85em;min-height:44px;cursor:pointer;font-weight:700}
+.seg button+button{border-left:2px solid var(--ink)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--on-ink)}
+.seg.sm button{min-height:36px;padding:.2em .7em;font-size:.85rem}
+.showrow{padding:0 1.5rem 1rem}
+.chips{display:flex;flex-wrap:wrap;gap:.4rem}
+.chip{border:2px solid var(--line);background:var(--sheet);border-radius:999px;padding:.25em .9em .25em .7em;min-height:40px;cursor:pointer;color:var(--muted)}
+.chip::before{content:"";display:inline-block;width:.8em;height:.8em;border:2px solid currentColor;border-radius:3px;margin-right:.45em;vertical-align:-.05em}
+.chip[aria-pressed="true"]{border-color:var(--ink);color:var(--ink);background:var(--ink-soft);font-weight:700}
+.chip[aria-pressed="true"]::before{background:var(--ink);box-shadow:inset 0 0 0 2px var(--sheet)}
+
+/* Layout */
+.wrap{display:grid;grid-template-columns:minmax(250px,300px) minmax(0,1fr);gap:1.25rem;padding:0 1.5rem 1.5rem;align-items:start}
+@media (max-width:900px){.wrap{grid-template-columns:minmax(0,1fr)}}
+.desk,.work{display:flex;flex-direction:column;gap:1.25rem;min-width:0}
+.blk{background:var(--sheet);border:1.5px solid var(--line);border-radius:14px;padding:1rem 1.2rem}
+h2{font-size:1.05rem;margin:0 0 .6rem}
+.hint{margin:0 0 .7rem;color:var(--muted);font-size:.9rem}
+
+/* Würfelbereich */
+.stage{display:flex;justify-content:center;gap:1rem;min-height:110px;align-items:center}
+.die{width:96px;height:96px}
+.die rect{fill:var(--die);stroke:var(--pip);stroke-width:3}
+.die circle{fill:var(--pip)}
+.die.empty rect{fill:none;stroke:var(--line);stroke-dasharray:8 6}
+.rolling .die{animation:wob .12s linear infinite alternate}
+@keyframes wob{from{transform:rotate(-9deg)}to{transform:rotate(9deg)}}
+@media (prefers-reduced-motion: reduce){.rolling .die{animation:none}}
+.stage-cap{text-align:center;margin:.4rem 0 .9rem;min-height:1.4em;font-weight:700}
+.rolls{display:grid;grid-template-columns:1fr 1fr;gap:.5rem}
+.btn{border:2px solid var(--ink);background:var(--sheet);color:var(--ink);border-radius:10px;min-height:48px;padding:.3em .8em;font-weight:700;cursor:pointer}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.primary{background:var(--ink);color:var(--on-ink)}
+.btn.ghost{border-color:var(--line);color:var(--text);font-weight:400}
+.btn.danger{border-color:var(--line);color:var(--red);font-weight:400}
+.btn.danger.armed{background:var(--red);border-color:var(--red);color:#fff;font-weight:700}
+.free{display:flex;gap:.5rem;margin-top:.6rem;align-items:center}
+.free label{color:var(--muted);font-size:.9rem}
+.free input{width:6.5em;min-height:48px;border:2px solid var(--line);border-radius:10px;padding:0 .5em;background:var(--sheet);font-variant-numeric:tabular-nums}
+.free .btn{flex:1}
+.col{display:flex;flex-direction:column;gap:.5rem;margin-top:.8rem}
+.msg{color:var(--red);font-size:.9rem;margin:.5rem 0 0;min-height:1.2em}
+
+/* Tabelle */
+.thead{display:flex;justify-content:space-between;align-items:baseline;gap:1rem;flex-wrap:wrap}
+.n{margin:0;font-size:1.25rem;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums}
+.tbl-wrap{overflow-x:auto;margin-top:.3rem}
+.t{border-collapse:collapse;font-variant-numeric:tabular-nums;background:var(--sheet)}
+.t th,.t td{border:1.5px solid var(--line);padding:.45em .55em;text-align:center;vertical-align:middle}
+.t.lin{width:100%}
+.t.lin tbody th,.t.lin thead th:first-child{text-align:left;color:var(--muted);font-weight:400;white-space:nowrap;font-size:.9rem}
+.t .oc{color:var(--ink);font-size:1.25em;font-weight:700;min-width:2.6em}
+.t .tot{color:var(--muted);font-size:.9rem;min-width:4.5em}
+.t .theo{color:var(--red)}
+.hit{cursor:pointer}
+.hit:hover{background:var(--ink-soft)}
+body.del .hit:hover{background:color-mix(in srgb,var(--red) 18%,var(--sheet))}
+.t td.tl{height:2.4em}
+.tally{display:inline-flex;flex-wrap:wrap;gap:2px 5px;justify-content:center;max-width:6.4em;vertical-align:middle}
+.ty{display:block}
+.ty path{stroke:var(--ink);stroke-width:2.4;stroke-linecap:round;fill:none}
+.ty-more{color:var(--ink);font-weight:700}
+.frac{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:1.1;font-size:.9em}
+.frac>span:first-child{border-bottom:1.5px solid currentColor;padding:0 .2em}
+.muted{color:var(--muted)}
+.t.pair td{min-width:5.4em;height:4.2em;line-height:1.15}
+.t.pair td b{font-size:1.15em}
+.t.pair .tally{max-width:5.2em}
+.t.pair .ty{width:22px;height:19px}
+.cell{display:flex;flex-direction:column;align-items:center;gap:.15em}
+.corner{font-size:.72rem;color:var(--muted);font-weight:400;line-height:1.2;text-align:left !important}
+.corner span{display:block;white-space:nowrap}
+.note{margin:.6rem 0 0;color:var(--muted);font-size:.88rem}
+.note:empty{display:none}
+
+/* Diagramme */
+.charts{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:1.25rem}
+.charts.one{grid-template-columns:minmax(0,1fr)}
+@media (max-width:1250px){.charts{grid-template-columns:minmax(0,1fr)}}
+.chead{display:flex;justify-content:space-between;align-items:center;gap:.8rem;flex-wrap:wrap;margin-bottom:.4rem}
+.chead h2{margin:0}
+.sel{color:var(--muted);font-size:.9rem}
+.sel select{min-height:40px;border:2px solid var(--ink);border-radius:8px;background:var(--sheet);color:var(--ink);font-weight:700;padding:0 .4em;margin-left:.3em}
+.chart svg{width:100%;height:auto;display:block}
+.chart text{fill:var(--muted);font-family:inherit}
+.chart .axt{fill:var(--text);font-weight:700}
+.chart .ax{stroke:var(--text);stroke-width:1.5}
+.chart .gl{stroke:var(--line);stroke-width:1}
+.chart .bar{fill:var(--bar)}
+.chart .pm{stroke:var(--red);stroke-width:3.5;stroke-linecap:round}
+.chart .pl{stroke:var(--red);stroke-width:2.5;stroke-dasharray:9 6}
+.chart .rl{stroke:var(--ink);stroke-width:2.5;fill:none;stroke-linejoin:round}
+.chart .rt{fill:var(--red);font-weight:700}
+.chart .vt{fill:var(--ink);font-weight:700}
+.empty-msg{color:var(--muted);text-align:center;padding:2.5rem 1rem;margin:0}
+.legend{margin:.4rem 0 0;font-size:.85rem;color:var(--muted);display:flex;gap:1.2rem;flex-wrap:wrap}
+.sw{display:inline-block;width:1.1em;height:.75em;vertical-align:-.05em;margin-right:.35em;background:var(--bar);border-radius:2px}
+.sw.r{background:none;border-top:3px solid var(--red);height:0;vertical-align:.25em}
+.sw.rd{background:none;border-top:3px dashed var(--red);height:0;vertical-align:.25em}
+.sw.l{background:none;border-top:3px solid var(--ink);height:0;vertical-align:.25em}
+</style>
+</head>
+<body>
+<header class="top">
+  <h1>Würfeln und auswerten</h1>
+  <div class="ctrls">
+    <div class="grp"><span class="gl">Anzahl der Würfel</span>
+      <div class="seg" data-set="dice"><button data-v="1">1 Würfel</button><button data-v="2">2 Würfel</button></div></div>
+    <div class="grp" id="viewGrp"><span class="gl">Auswerten nach</span>
+      <div class="seg" data-set="view"><button data-v="sum">Augensumme</button><button data-v="pair">Augenpaaren</button></div></div>
+    <div class="grp"><span class="gl">Relative Häufigkeit als</span>
+      <div class="seg" data-set="fmt"><button data-v="bruch">Bruch</button><button data-v="dez">Dezimalzahl</button><button data-v="proz">Prozent</button></div></div>
+  </div>
+</header>
+<div class="showrow grp"><span class="gl">Anzeigen</span>
+  <div class="chips">
+    <button class="chip" data-show="tally">Strichliste</button>
+    <button class="chip" data-show="abs">absolute Häufigkeit</button>
+    <button class="chip" data-show="rel">relative Häufigkeit</button>
+    <button class="chip" data-show="theo">Wahrscheinlichkeit</button>
+    <button class="chip" data-show="bar">Säulendiagramm</button>
+    <button class="chip" data-show="line">Verlauf</button>
+  </div>
+</div>
+
+<div class="wrap">
+  <aside class="desk">
+    <section class="blk">
+      <h2>Zufällig würfeln</h2>
+      <div class="stage" id="stage" aria-live="polite"></div>
+      <p class="stage-cap" id="stageCap"></p>
+      <div class="rolls">
+        <button class="btn primary" data-roll="1">1-mal</button>
+        <button class="btn" data-roll="10">10-mal</button>
+        <button class="btn" data-roll="100">100-mal</button>
+        <button class="btn" data-roll="1000">1000-mal</button>
+      </div>
+      <div class="free">
+        <label for="freeN">Anzahl</label>
+        <input id="freeN" type="number" min="1" max="100000" value="500" inputmode="numeric">
+        <button class="btn" id="freeGo">würfeln</button>
+      </div>
+      <p class="msg" id="msg"></p>
+    </section>
+    <section class="blk">
+      <h2>Strichliste von Hand</h2>
+      <p class="hint">Tippe in der Tabelle auf ein Ergebnis, um einen Strich zu setzen. Die Striche kommen zu den Zufallswürfen dazu.</p>
+      <div class="seg" data-set="edit"><button data-v="add">+ Strich setzen</button><button data-v="del">− Strich entfernen</button></div>
+      <div class="col">
+        <button class="btn ghost" id="undo">Letzten Eintrag zurücknehmen</button>
+        <button class="btn danger" id="reset">Alle Daten löschen</button>
+      </div>
+    </section>
+  </aside>
+
+  <main class="work">
+    <section class="blk">
+      <div class="thead"><h2 id="tTitle">Häufigkeitstabelle</h2><p class="n" id="nInfo"></p></div>
+      <div class="tbl-wrap" id="tbl"></div>
+      <p class="note" id="note"></p>
+    </section>
+    <div class="charts" id="charts">
+      <section class="blk" id="barP">
+        <div class="chead"><h2>Säulendiagramm</h2>
+          <div class="seg sm" data-set="barMode"><button data-v="rel">relativ</button><button data-v="abs">absolut</button></div></div>
+        <div class="chart" id="bar"></div>
+        <p class="legend" id="barLeg"></p>
+      </section>
+      <section class="blk" id="lineP">
+        <div class="chead"><h2>Verlauf der relativen Häufigkeit</h2>
+          <label class="sel">Ergebnis <select id="lineK"></select></label></div>
+        <div class="chart" id="line"></div>
+        <p class="legend" id="lineLeg"></p>
+      </section>
+    </div>
+  </main>
+</div>
+
+<script>
+(function(){
+"use strict";
+const LS = "wuerfel-auswertung-v1";
+const MAX = 500000;
+const S = {
+  dice:1, view:"sum", fmt:"bruch", barMode:"rel", edit:"add", lineK:0,
+  show:{tally:true, abs:true, rel:true, theo:false, bar:true, line:true},
+  data:{1:[],2:[]}, last:{1:null,2:null}
+};
+try{
+  const raw = localStorage.getItem(LS);
+  if(raw){
+    const o = JSON.parse(raw);
+    ["dice","view","fmt","barMode","edit","lineK"].forEach(k=>{ if(o[k]!==undefined) S[k]=o[k]; });
+    Object.assign(S.show, o.show||{});
+    if(o.data){ S.data[1]=Array.isArray(o.data[1])?o.data[1]:[]; S.data[2]=Array.isArray(o.data[2])?o.data[2]:[]; }
+    if(o.last){ S.last = Object.assign({1:null,2:null}, o.last); }
+  }
+}catch(e){}
+function save(){ try{ localStorage.setItem(LS, JSON.stringify(S)); }catch(e){} }
+
+const $ = id => document.getElementById(id);
+const de = (x,d) => x.toFixed(d).replace(".", ",");
+const fmtInt = x => x.toLocaleString("de-DE");
+const mode = () => S.dice===1 ? "single" : S.view;
+
+/* Ergebnisse je Ansicht; Ereignis-Codes:
+   1 Würfel: 0..5 | 2 Würfel: Paar (a-1)*6+(b-1) = 0..35, nur Summe notiert: 100+Summe */
+function outcomes(m){
+  if(m==="single") return Array.from({length:6},(_,k)=>({k,label:String(k+1),num:1,den:6}));
+  if(m==="sum") return Array.from({length:11},(_,k)=>{const s=k+2;return {k,label:String(s),num:6-Math.abs(s-7),den:36};});
+  return Array.from({length:36},(_,k)=>({k,a:Math.floor(k/6)+1,b:k%6+1,label:(Math.floor(k/6)+1)+"|"+(k%6+1),num:1,den:36}));
+}
+function classify(m,e){
+  if(m==="single") return e;
+  if(m==="sum") return e>=100 ? e-102 : Math.floor(e/6)+e%6;
+  return e>=100 ? -1 : e;
+}
+function stats(m,O){
+  const counts = new Array(O.length).fill(0); let n=0, ex=0;
+  for(const e of S.data[S.dice]){ const c=classify(m,e); if(c<0){ex++;continue;} counts[c]++; n++; }
+  return {counts,n,ex};
+}
+
+/* Zufall */
+const buf = new Uint32Array(1);
+function rnd6(){
+  if(window.crypto && crypto.getRandomValues){
+    let x; do{ crypto.getRandomValues(buf); x=buf[0]; }while(x>=4294967292);
+    return x%6;
+  }
+  return Math.floor(Math.random()*6);
+}
+
+/* Formatierung */
+function frac(a,b){ return '<span class="frac"><span>'+a+'</span><span>'+b+'</span></span>'; }
+function fmtRel(a,n){
+  if(!n) return '<span class="muted">–</span>';
+  if(S.fmt==="bruch") return frac(a,n);
+  if(S.fmt==="dez") return de(a/n,3);
+  return de(100*a/n,1)+"&nbsp;%";
+}
+function fmtP(num,den){
+  const p=num/den;
+  if(S.fmt==="bruch") return frac(num,den);
+  if(S.fmt==="dez"){ const exact=Math.abs(Math.round(p*1000)/1000-p)<1e-12; return (exact?"":"≈&nbsp;")+de(p,3); }
+  const exact=Math.abs(Math.round(p*1000)/10-p*100)<1e-9; return (exact?"":"≈&nbsp;")+de(p*100,1)+"&nbsp;%";
+}
+
+/* Strichliste als Zeichnung */
+function tally(c, lim){
+  if(!c) return "";
+  const shown=Math.min(c,lim); let out="";
+  const groups=Math.ceil(shown/5);
+  for(let g=0; g<groups; g++){
+    const inG=Math.min(5,shown-g*5); let p="";
+    for(let i=0;i<Math.min(inG,4);i++){
+      const x=5+i*6, j=(((g*7+i*3)%5)-2)*0.5;
+      p+="M"+(x+j)+" 3L"+(x-j)+" 21";
+    }
+    if(inG===5) p+="M1 17L27 6";
+    out+='<svg class="ty" viewBox="0 0 28 24" width="28" height="24" aria-hidden="true"><path d="'+p+'"/></svg>';
+  }
+  if(c>lim) out+='<span class="ty-more">…</span>';
+  return '<span class="tally">'+out+'</span>';
+}
+
+/* Tabellen */
+function tableLinear(m,O,st){
+  const head = m==="single" ? "Augenzahl" : "Augensumme";
+  let h='<table class="t lin"><thead><tr><th scope="row">'+head+'</th>';
+  O.forEach(o=>{ h+='<th scope="col" class="oc hit" data-k="'+o.k+'" tabindex="0" role="button" aria-label="Strich bei '+o.label+'">'+o.label+'</th>'; });
+  h+='<th scope="col" class="tot">gesamt</th></tr></thead><tbody>';
+  const row=(title,fn,tot,cls)=>{
+    h+='<tr><th scope="row">'+title+'</th>';
+    O.forEach(o=>{ h+='<td class="hit '+(cls||"")+'" data-k="'+o.k+'">'+fn(o)+'</td>'; });
+    h+='<td class="tot '+(cls||"")+'">'+tot+'</td></tr>';
+  };
+  if(S.show.tally) row("Strichliste", o=>tally(st.counts[o.k],40), "", "tl");
+  if(S.show.abs) row("absolute Häufigkeit", o=>fmtInt(st.counts[o.k]), fmtInt(st.n));
+  if(S.show.rel) row("relative Häufigkeit", o=>fmtRel(st.counts[o.k],st.n), st.n?fmtRel(st.n,st.n):"");
+  if(S.show.theo) row("Wahrscheinlichkeit", o=>fmtP(o.num,o.den), S.fmt==="proz"?"100&nbsp;%":"1", "theo");
+  return h+'</tbody></table>';
+}
+function tablePair(O,st){
+  const max=Math.max(1,...st.counts);
+  let h='<table class="t pair"><thead><tr><th scope="col" class="corner"><span>1. Würfel ↓</span><span>2. Würfel →</span></th>';
+  for(let b=1;b<=6;b++) h+='<th scope="col" class="oc">'+b+'</th>';
+  h+='</tr></thead><tbody>';
+  for(let a=1;a<=6;a++){
+    h+='<tr><th scope="row" class="oc">'+a+'</th>';
+    for(let b=1;b<=6;b++){
+      const k=(a-1)*6+(b-1), c=st.counts[k];
+      const heat = st.n ? Math.round(c/max*32) : 0;
+      let inner="";
+      if(S.show.tally && c<=15) inner+=tally(c,15);
+      if(S.show.abs) inner+='<b>'+fmtInt(c)+'</b>';
+      if(S.show.rel) inner+='<span>'+fmtRel(c,st.n)+'</span>';
+      if(S.show.theo) inner+='<span class="theo">'+fmtP(1,36)+'</span>';
+      h+='<td class="hit" data-k="'+k+'" tabindex="0" role="button" aria-label="Paar '+a+' und '+b+', '+c+' mal" style="background:color-mix(in srgb,var(--ink) '+heat+'%,var(--sheet))"><div class="cell">'+inner+'</div></td>';
+    }
+    h+='</tr>';
+  }
+  return h+'</tbody></table>';
+}
+
+/* Diagramm-Hilfen */
+function nice(v, integer){
+  if(!(v>0)) v=integer?5:0.2;
+  const e=Math.pow(10,Math.floor(Math.log10(v))), f=v/e;
+  let step=(f<=1?0.2:f<=2?0.5:f<=5?1:2)*e;
+  if(integer) step=Math.max(1,Math.round(step));
+  return {max:Math.ceil(v/step-1e-9)*step, step};
+}
+function decs(step){ let d=Math.max(0,-Math.floor(Math.log10(step)+1e-9)); if(Math.abs(Math.round(step*Math.pow(10,d))-step*Math.pow(10,d))>1e-9) d++; return d; }
+function relTick(t,step){
+  if(S.fmt==="proz") return de(t*100,decs(step*100))+" %";
+  return de(t,decs(step));
+}
+
+function barChart(m,O,st){
+  if(!st.n) return '<p class="empty-msg">Noch keine Würfe. Würfle oder setze Striche in der Tabelle.</p>';
+  const W=820,H=380,ml=74,mr=14,mt=14,mb=m==="pair"?78:58, pw=W-ml-mr, ph=H-mt-mb;
+  const rel=S.barMode==="rel";
+  const vals=O.map(o=> rel? st.counts[o.k]/st.n : st.counts[o.k]);
+  const th=O.map(o=> rel? o.num/o.den : st.n*o.num/o.den);
+  const top=Math.max(...vals, ...(S.show.theo?th:[0]));
+  const sc=nice(top*1.06, !rel);
+  const Y=v=>mt+ph-v/sc.max*ph;
+  let s='<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Säulendiagramm der '+(rel?'relativen':'absoluten')+' Häufigkeiten">';
+  for(let t=0;t<=sc.max+1e-9;t+=sc.step){
+    const y=Y(t).toFixed(1);
+    s+='<line class="gl" x1="'+ml+'" x2="'+(W-mr)+'" y1="'+y+'" y2="'+y+'"/>';
+    s+='<text x="'+(ml-8)+'" y="'+y+'" dy="5" text-anchor="end" font-size="15">'+(rel?relTick(t,sc.step):fmtInt(Math.round(t)))+'</text>';
+  }
+  const slot=pw/O.length, bw=slot*(m==="pair"?0.7:0.6);
+  O.forEach((o,i)=>{
+    const x=ml+i*slot+(slot-bw)/2, y=Y(vals[i]);
+    s+='<rect class="bar" x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+(mt+ph-y).toFixed(1)+'"/>';
+    if(S.show.theo){ const ty=Y(th[i]).toFixed(1); s+='<line class="pm" x1="'+(x-3).toFixed(1)+'" x2="'+(x+bw+3).toFixed(1)+'" y1="'+ty+'" y2="'+ty+'"/>'; }
+    const cx=(x+bw/2).toFixed(1);
+    if(m==="pair") s+='<text x="'+cx+'" y="'+(mt+ph+12)+'" font-size="12" text-anchor="end" transform="rotate(-60 '+cx+' '+(mt+ph+12)+')">'+o.label+'</text>';
+    else s+='<text x="'+cx+'" y="'+(mt+ph+22)+'" font-size="17" text-anchor="middle" class="axt">'+o.label+'</text>';
+  });
+  s+='<line class="ax" x1="'+ml+'" x2="'+(W-mr)+'" y1="'+(mt+ph)+'" y2="'+(mt+ph)+'"/>';
+  s+='<line class="ax" x1="'+ml+'" x2="'+ml+'" y1="'+mt+'" y2="'+(mt+ph)+'"/>';
+  const xt = m==="single"?"Augenzahl":m==="sum"?"Augensumme":"Augenpaar";
+  s+='<text x="'+(ml+pw/2)+'" y="'+(H-6)+'" text-anchor="middle" font-size="15">'+xt+'</text>';
+  s+='<text transform="translate(16 '+(mt+ph/2)+') rotate(-90)" text-anchor="middle" font-size="15">'+(rel?'relative Häufigkeit':'absolute Häufigkeit')+'</text>';
+  return s+'</svg>';
+}
+
+function lineChart(m,O,st){
+  if(!st.n) return '<p class="empty-msg">Noch keine Würfe. Der Verlauf erscheint nach dem ersten Wurf.</p>';
+  const k=Math.min(S.lineK,O.length-1), o=O[k], p=o.num/o.den, N=st.n;
+  const step=Math.max(1,Math.floor(N/700)); const pts=[]; let hits=0,n=0;
+  for(const e of S.data[S.dice]){
+    const c=classify(m,e); if(c<0) continue; n++; if(c===k) hits++;
+    if(n<=50 || n%step===0 || n===N) pts.push([n,hits/n]);
+  }
+  const W=820,H=380,ml=74,mr=70,mt=14,mb=58,pw=W-ml-mr,ph=H-mt-mb;
+  let mv=S.show.theo?p:0; const from=Math.min(20,N);
+  pts.forEach(q=>{ if(q[0]>=from && q[1]>mv) mv=q[1]; });
+  const ys=nice(Math.min(1,Math.max(mv*1.1, S.show.theo?p*1.6:0.05)));
+  const yMax=Math.min(1,ys.max), ystep=ys.step;
+  const xs=nice(Math.max(N,10),true);
+  const X=v=>ml+v/xs.max*pw, Y=v=>mt+ph-v/yMax*ph;
+  let s='<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Verlauf der relativen Häufigkeit von '+o.label+'"><defs><clipPath id="cp"><rect x="'+ml+'" y="'+mt+'" width="'+pw+'" height="'+ph+'"/></clipPath></defs>';
+  for(let t=0;t<=yMax+1e-9;t+=ystep){
+    const y=Y(t).toFixed(1);
+    s+='<line class="gl" x1="'+ml+'" x2="'+(ml+pw)+'" y1="'+y+'" y2="'+y+'"/>';
+    s+='<text x="'+(ml-8)+'" y="'+y+'" dy="5" text-anchor="end" font-size="15">'+relTick(t,ystep)+'</text>';
+  }
+  const xticks=Math.round(xs.max/xs.step); const every=xticks>6?Math.ceil(xticks/6):1;
+  for(let i=0;i<=xticks;i+=every){
+    const t=i*xs.step, x=X(t).toFixed(1);
+    s+='<text x="'+x+'" y="'+(mt+ph+22)+'" text-anchor="middle" font-size="15">'+fmtInt(t)+'</text>';
+  }
+  if(S.show.theo){
+    const y=Y(p).toFixed(1);
+    s+='<line class="pl" x1="'+ml+'" x2="'+(ml+pw)+'" y1="'+y+'" y2="'+y+'"/>';
+    s+='<text class="rt" x="'+(ml+pw+6)+'" y="'+y+'" dy="5" font-size="15">'+relTick(p,S.fmt==="proz"?0.001:0.001)+'</text>';
+  }
+  let d=""; pts.forEach((q,i)=>{ d+=(i?"L":"M")+X(q[0]).toFixed(1)+" "+Y(q[1]).toFixed(1); });
+  s+='<path class="rl" d="'+d+'" clip-path="url(#cp)"/>';
+  const lastV=pts[pts.length-1][1];
+  const ly=Math.max(mt+10,Math.min(mt+ph,Y(lastV)));
+  s+='<text class="vt" x="'+(ml+pw+6)+'" y="'+ly.toFixed(1)+'" dy="'+(S.show.theo && Math.abs(Y(lastV)-Y(p))<18 ? (Y(lastV)<Y(p)?-10:20) : 5)+'" font-size="15">'+relTick(lastV,0.001)+'</text>';
+  s+='<line class="ax" x1="'+ml+'" x2="'+(ml+pw)+'" y1="'+(mt+ph)+'" y2="'+(mt+ph)+'"/>';
+  s+='<line class="ax" x1="'+ml+'" x2="'+ml+'" y1="'+mt+'" y2="'+(mt+ph)+'"/>';
+  s+='<text x="'+(ml+pw/2)+'" y="'+(H-6)+'" text-anchor="middle" font-size="15">Anzahl der Würfe n</text>';
+  s+='<text transform="translate(16 '+(mt+ph/2)+') rotate(-90)" text-anchor="middle" font-size="15">relative Häufigkeit</text>';
+  return s+'</svg>';
+}
+
+/* Würfelbild */
+const PIPS={1:[[50,50]],2:[[28,28],[72,72]],3:[[28,28],[50,50],[72,72]],4:[[28,28],[72,28],[28,72],[72,72]],5:[[28,28],[72,28],[50,50],[28,72],[72,72]],6:[[28,26],[72,26],[28,50],[72,50],[28,74],[72,74]]};
+function die(v){
+  if(!v) return '<svg class="die empty" viewBox="0 0 100 100" aria-hidden="true"><rect x="4" y="4" width="92" height="92" rx="18"/></svg>';
+  return '<svg class="die" viewBox="0 0 100 100" role="img" aria-label="Würfel zeigt '+v+'"><rect x="4" y="4" width="92" height="92" rx="18"/>'+PIPS[v].map(q=>'<circle cx="'+q[0]+'" cy="'+q[1]+'" r="9"/>').join("")+'</svg>';
+}
+function renderStage(vals){
+  const v = vals || S.last[S.dice];
+  const cnt=S.dice;
+  $("stage").innerHTML = Array.from({length:cnt},(_,i)=>die(v?v[i]:0)).join("");
+  let cap="";
+  if(v && !vals) cap = cnt===1 ? "Augenzahl "+v[0] : v[0]+" und "+v[1]+", Augensumme "+(v[0]+v[1]);
+  if(!v) cap = '<span class="muted">Noch nicht gewürfelt</span>';
+  $("stageCap").innerHTML = vals ? "&nbsp;" : cap;
+}
+
+/* Gesamtdarstellung */
+function render(){
+  const m=mode(), O=outcomes(m), st=stats(m,O);
+  document.querySelectorAll(".seg[data-set]").forEach(g=>{
+    const key=g.dataset.set;
+    g.querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed", String(String(S[key])===b.dataset.v)));
+  });
+  document.querySelectorAll(".chip").forEach(c=>c.setAttribute("aria-pressed", String(!!S.show[c.dataset.show])));
+  $("viewGrp").hidden = S.dice===1;
+  document.body.classList.toggle("del", S.edit==="del");
+
+  $("tTitle").textContent = "Häufigkeitstabelle der " + (m==="single"?"Augenzahl":m==="sum"?"Augensumme":"Augenpaare");
+  $("nInfo").textContent = "n = " + fmtInt(st.n) + (st.n===1?" Wurf":" Würfe");
+  $("tbl").innerHTML = m==="pair" ? tablePair(O,st) : tableLinear(m,O,st);
+
+  let note="";
+  if(m==="pair"){
+    const parts=[];
+    if(S.show.abs) parts.push("absolute Häufigkeit (fett)");
+    if(S.show.rel) parts.push("relative Häufigkeit");
+    if(S.show.theo) parts.push("Wahrscheinlichkeit (rot)");
+    if(parts.length) note+="Jedes Feld zeigt von oben nach unten: "+parts.join(", ")+". Je dunkler das Feld, desto häufiger kam das Paar vor. ";
+    if(S.show.tally) note+="Striche werden bis 15 pro Feld gezeichnet. ";
+    if(st.ex) note+=fmtInt(st.ex)+(st.ex===1?" Eintrag wurde":" Einträge wurden")+" von Hand nur als Augensumme notiert und fehlt deshalb in dieser Ansicht.";
+  }
+  $("note").textContent = note.trim();
+
+  $("barP").hidden = !S.show.bar; $("lineP").hidden = !S.show.line;
+  $("charts").hidden = !S.show.bar && !S.show.line;
+  $("charts").classList.toggle("one", !(S.show.bar && S.show.line));
+
+  if(S.show.bar){
+    $("bar").innerHTML = barChart(m,O,st);
+    const rel=S.barMode==="rel";
+    $("barLeg").innerHTML = st.n ? '<span><i class="sw"></i>gewürfelt</span>' + (S.show.theo ? '<span><i class="sw r"></i>'+(rel?'Wahrscheinlichkeit':'erwartete Anzahl n · p')+'</span>' : '') : '';
+  }
+  if(S.show.line){
+    S.lineK=Math.min(S.lineK,O.length-1);
+    const sel=$("lineK");
+    sel.innerHTML=O.map(o=>'<option value="'+o.k+'"'+(o.k===S.lineK?" selected":"")+'>'+o.label+'</option>').join("");
+    $("line").innerHTML = lineChart(m,O,st);
+    $("lineLeg").innerHTML = st.n ? '<span><i class="sw l"></i>relative Häufigkeit von '+O[S.lineK].label+'</span>' + (S.show.theo ? '<span><i class="sw rd"></i>Wahrscheinlichkeit</span>' : '') : '';
+  }
+  renderStage();
+  save();
+}
+
+/* Aktionen */
+let busy=false;
+function setBusy(b){ busy=b; document.querySelectorAll("[data-roll],#freeGo").forEach(x=>x.disabled=b); }
+function doRoll(count){
+  const seq=S.data[S.dice];
+  $("msg").textContent="";
+  if(seq.length>=MAX){ $("msg").textContent="Speichergrenze von "+fmtInt(MAX)+" Würfen erreicht. Lösche die Daten, um weiterzuwürfeln."; return; }
+  if(seq.length+count>MAX){ count=MAX-seq.length; $("msg").textContent="Nur "+fmtInt(count)+" Würfe möglich, dann ist die Grenze erreicht."; }
+  let a=0,b=0;
+  for(let i=0;i<count;i++){
+    a=rnd6();
+    if(S.dice===1) seq.push(a);
+    else { b=rnd6(); seq.push(a*6+b); }
+  }
+  S.last[S.dice] = S.dice===1 ? [a+1] : [a+1,b+1];
+  render();
+}
+function roll(count){
+  if(busy) return;
+  count=Math.max(1,Math.min(100000,Math.floor(count)||0));
+  const reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if(count!==1 || reduce){ doRoll(count); return; }
+  setBusy(true);
+  const st=$("stage"); st.classList.add("rolling");
+  let f=0;
+  const iv=setInterval(()=>{
+    renderStage(Array.from({length:S.dice},()=>rnd6()+1));
+    if(++f>=7){ clearInterval(iv); st.classList.remove("rolling"); setBusy(false); doRoll(1); }
+  },65);
+}
+function manual(k){
+  const m=mode(), seq=S.data[S.dice];
+  if(S.edit==="add"){
+    if(seq.length>=MAX) return;
+    seq.push(m==="sum" ? 100+k+2 : k);
+  } else {
+    for(let i=seq.length-1;i>=0;i--){ if(classify(m,seq[i])===k){ seq.splice(i,1); break; } }
+  }
+  render();
+}
+
+document.addEventListener("click",e=>{
+  const segBtn=e.target.closest(".seg[data-set] button");
+  if(segBtn){
+    const key=segBtn.parentElement.dataset.set, v=segBtn.dataset.v;
+    S[key] = key==="dice" ? Number(v) : v;
+    render(); return;
+  }
+  const chip=e.target.closest(".chip");
+  if(chip){ S.show[chip.dataset.show]=!S.show[chip.dataset.show]; render(); return; }
+  const rb=e.target.closest("[data-roll]");
+  if(rb){ roll(Number(rb.dataset.roll)); return; }
+  const hit=e.target.closest(".hit[data-k]");
+  if(hit){ manual(Number(hit.dataset.k)); return; }
+});
+document.addEventListener("keydown",e=>{
+  if((e.key==="Enter"||e.key===" ") && e.target.matches && e.target.matches(".hit[data-k]")){ e.preventDefault(); manual(Number(e.target.dataset.k)); }
+});
+$("freeGo").addEventListener("click",()=>roll(Number($("freeN").value)));
+$("freeN").addEventListener("keydown",e=>{ if(e.key==="Enter") roll(Number($("freeN").value)); });
+$("lineK").addEventListener("change",e=>{ S.lineK=Number(e.target.value); render(); });
+$("undo").addEventListener("click",()=>{ S.data[S.dice].pop(); render(); });
+let armT=null;
+$("reset").addEventListener("click",()=>{
+  const b=$("reset");
+  if(!b.classList.contains("armed")){
+    b.classList.add("armed"); b.textContent="Wirklich alles löschen?";
+    clearTimeout(armT); armT=setTimeout(()=>{ b.classList.remove("armed"); b.textContent="Alle Daten löschen"; },3500);
+    return;
+  }
+  clearTimeout(armT); b.classList.remove("armed"); b.textContent="Alle Daten löschen";
+  S.data[S.dice]=[]; S.last[S.dice]=null; $("msg").textContent="";
+  render();
+});
+
+render();
+})();
+</script>
+</body>
+</html>
