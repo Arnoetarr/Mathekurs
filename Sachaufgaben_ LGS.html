@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sachaufgaben: Lineare Gleichungssysteme</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F7F9FA; --grid:#DCE6EE; --sheet:#FFFFFF; --ink:#1D3F8F; --ink-soft:#E8EEFA;
+  --text:#262B33; --muted:#59626E; --line:#C8D2DC; --red:#B3302A; --red-soft:#FBEBE9;
+  --green:#2B7244; --green-soft:#E5F2E9; --violet:#88389E; --margin:#E6A09A;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#122033; --grid:#1B2D45; --sheet:#17273E; --ink:#9CBAFF; --ink-soft:#22365A;
+    --text:#E3E8EF; --muted:#A3AEBC; --line:#2E4462; --red:#FF8E83; --red-soft:#3B2331;
+    --green:#86D8A1; --green-soft:#1C3A2F; --violet:#DCA2EF; --margin:#6E3B47;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#122033; --grid:#1B2D45; --sheet:#17273E; --ink:#9CBAFF; --ink-soft:#22365A;
+  --text:#E3E8EF; --muted:#A3AEBC; --line:#2E4462; --red:#FF8E83; --red-soft:#3B2331;
+  --green:#86D8A1; --green-soft:#1C3A2F; --violet:#DCA2EF; --margin:#6E3B47;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{
+  margin:0; color:var(--text);
+  font-family:"Atkinson Hyperlegible","Segoe UI",Roboto,system-ui,sans-serif;
+  font-size:18px; line-height:1.5; font-variant-numeric:tabular-nums;
+  background-color:var(--paper);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:22px 22px;
+}
+.wrap{max-width:800px;margin:0 auto;padding:22px 16px 72px}
+header h1{font-size:1.75rem;line-height:1.15;margin:.1em 0 .25em;color:var(--ink);letter-spacing:-.01em}
+.sub{color:var(--muted);margin:0 0 16px;font-size:1rem;max-width:62ch}
+.controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:8px}
+.seg{display:inline-flex;border:1.5px solid var(--ink);border-radius:10px;overflow:hidden;background:var(--sheet)}
+.seg button{border:0;background:transparent;color:var(--ink);padding:9px 12px;font:inherit;font-size:.95rem;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--sheet);font-weight:700}
+select{font:inherit;font-size:.95rem;padding:9px 10px;border:1.5px solid var(--line);border-radius:10px;background:var(--sheet);color:var(--text);max-width:100%}
+.btn{font:inherit;font-size:1rem;font-weight:700;padding:10px 16px;border-radius:10px;border:1.5px solid var(--ink);background:var(--ink);color:var(--sheet);cursor:pointer}
+.btn.ghost{background:var(--sheet);color:var(--ink)}
+.btn:disabled{opacity:.5;cursor:default}
+.stats{font-size:.95rem;color:var(--muted);margin:4px 0 16px}
+.stats button{font:inherit;font-size:.9rem;background:none;border:0;color:var(--muted);text-decoration:underline;cursor:pointer;padding:0 0 0 8px}
+.sheet{background:var(--sheet);border:1px solid var(--line);border-radius:6px;padding:20px 58px 20px 22px;position:relative}
+.sheet::after{content:"";position:absolute;top:0;bottom:0;right:36px;width:2px;background:var(--margin);opacity:.8}
+.kind{color:var(--muted);font-size:.92rem;margin:0 0 4px}
+.task p{margin:.35em 0}
+.task .frage{font-weight:700}
+ol.steps{list-style:none;padding:0;margin:16px 0 0;display:flex;flex-direction:column;gap:14px}
+.step-head{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+.num{width:34px;height:34px;border-radius:50%;border:2px solid var(--ink);color:var(--ink);display:grid;place-items:center;font-weight:700;flex:none}
+.step.done .num{background:var(--green);border-color:var(--green);color:var(--sheet)}
+.step h3{margin:0;font-size:1.15rem}
+.intro{margin:0 0 10px;color:var(--muted)}
+.opts{display:grid;gap:8px}
+.opt{text-align:left;font:inherit;color:var(--text);background:var(--sheet);border:1.5px solid var(--line);border-radius:10px;padding:10px 14px;cursor:pointer}
+.opt:hover:not(:disabled){border-color:var(--ink)}
+.opt.ok{border-color:var(--green);background:var(--green-soft)}
+.opt.bad{border-color:var(--red);background:var(--red-soft)}
+.opt:disabled{cursor:default}
+.opt:disabled:not(.ok):not(.bad){opacity:.5}
+.vardef{display:block}
+.sys{display:inline-flex;flex-direction:column;border-left:2px solid currentColor;padding-left:10px;gap:2px}
+.sys .l{white-space:nowrap}
+.fb{margin-top:10px;padding:8px 12px;border-left:4px solid transparent}
+.fb:empty{display:none}
+.fb.bad{border-color:var(--red);color:var(--red);background:var(--red-soft)}
+.fb.good{border-color:var(--green);color:var(--green);background:var(--green-soft)}
+.fb.near{border-color:var(--ink);color:var(--ink);background:var(--ink-soft)}
+.hints{margin-top:10px}
+.hint{margin:6px 0;padding:8px 12px;background:var(--ink-soft);border-radius:8px}
+.linkbtn{font:inherit;background:none;border:0;color:var(--ink);text-decoration:underline;padding:6px 0;cursor:pointer}
+.linkbtn:disabled{color:var(--muted);text-decoration:none;cursor:default}
+.eqin{display:grid;grid-template-columns:auto 1fr;gap:8px 10px;align-items:center;margin:6px 0}
+.eqin b{color:var(--ink)}
+input.txt{font:inherit;font-size:1.1rem;padding:9px 11px;border:1.5px solid var(--line);border-radius:8px;background:var(--sheet);color:var(--text);width:100%;min-width:0}
+input.txt:focus{border-color:var(--ink)}
+.example{font-size:.95rem;color:var(--muted);margin:4px 0 0}
+.keys{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+.keys button{min-width:46px;min-height:44px;font:inherit;font-weight:700;border:1.5px solid var(--line);background:var(--sheet);color:var(--ink);border-radius:8px;cursor:pointer}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:10px}
+.given{margin:0 0 10px}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 12px}
+.tabs button{font:inherit;font-size:.95rem;padding:8px 13px;border-radius:999px;border:1.5px solid var(--ink);background:var(--sheet);color:var(--ink);cursor:pointer}
+.tabs button[aria-pressed="true"]{background:var(--ink);color:var(--sheet);font-weight:700}
+.panel p{margin:.3em 0}
+svg.graph{width:100%;height:auto;max-width:660px;display:block;touch-action:none;user-select:none;-webkit-user-select:none;cursor:crosshair}
+.legend{display:flex;flex-wrap:wrap;gap:4px 18px;margin:6px 0;font-size:1rem}
+.legend span::before{content:"";display:inline-block;width:22px;height:3px;vertical-align:middle;margin-right:6px;background:var(--c)}
+.readout{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:6px 0}
+.readout output{font-weight:700;color:var(--ink)}
+.note{font-size:.95rem;color:var(--muted)}
+ol.worked{margin:8px 0 0;padding-left:1.4em}
+ol.worked li{margin:5px 0}
+.sol{display:flex;flex-wrap:wrap;gap:10px 22px;align-items:center;margin-top:14px}
+.sol label{display:flex;align-items:center;gap:6px;font-weight:700}
+.sol input.txt{width:7em}
+.unit{font-weight:400;color:var(--muted)}
+.finish{margin-top:14px;padding:14px 16px;border:2px solid var(--green);border-radius:10px;background:var(--green-soft)}
+.finish h3{margin:0 0 4px;color:var(--green)}
+.finish p{margin:0 0 10px}
+.levels{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:12px}
+.level{display:flex;gap:14px;align-items:center}
+.level .ltxt{flex:1;min-width:0}
+.level h2{margin:0;font-size:1.15rem}
+.level p{margin:.15em 0}
+.level .btn{flex:none}
+.lstate{font-size:.95rem;color:var(--muted)}
+.level.done .num{background:var(--green);border-color:var(--green);color:var(--sheet)}
+.level.done .lstate{color:var(--green);font-weight:700}
+.level.locked{opacity:.62}
+.level.locked .num{border-style:dashed;border-color:var(--muted);color:var(--muted)}
+.bar{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;margin-bottom:12px}
+.lvtitle{margin:0;font-size:1.25rem;color:var(--ink);flex:1;min-width:12ch}
+.dots{display:flex;gap:6px;align-items:center}
+.dots .dot{width:15px;height:15px;border-radius:50%;border:2px solid var(--green)}
+.dots .dot.on{background:var(--green)}
+.dtxt{font-size:.9rem;color:var(--muted);margin-left:4px}
+.merk{border:1.5px solid var(--ink);border-radius:8px;padding:8px 12px;margin:4px 0 12px;background:var(--ink-soft)}
+.merk ol{margin:4px 0 0;padding-left:1.3em}
+.foot{margin-top:30px;display:flex;flex-wrap:wrap;gap:4px 20px;font-size:.9rem}
+.foot .linkbtn{color:var(--muted)}
+@media (max-width:560px){ .level{flex-wrap:wrap} .level .btn{width:100%} }
+.headrow{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:space-between}
+.overlay{position:fixed;inset:0;z-index:20;overflow:auto;background-color:var(--paper);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:22px 22px;
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+.overlay[hidden]{display:none}
+body.noscroll{overflow:hidden}
+.hsecs{display:flex;flex-direction:column;gap:14px}
+.hsec h3{margin:0 0 6px;color:var(--ink);font-size:1.2rem}
+.hsec p{margin:.4em 0}
+.how{padding-left:1.3em;margin:.4em 0}
+.how li{margin:3px 0}
+.calc{background:var(--ink-soft);border-radius:8px;padding:10px 14px;margin:10px 0;overflow-x:auto}
+.calc div{white-space:nowrap;margin:2px 0}
+.calc .gap{margin-top:10px}
+.calc .c{color:var(--muted);font-size:.9rem;margin-left:14px}
+.hint svg.graph{margin-top:6px}
+:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+@media (prefers-reduced-motion:no-preference){
+  .step.new{animation:enter .22s ease-out}
+  @keyframes enter{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+}
+@media (max-width:560px){
+  body{font-size:17px}
+  header h1{font-size:1.45rem}
+  .sheet{padding:16px 14px}
+  .sheet::after{display:none}
+  .seg button{padding:8px 9px;font-size:.9rem}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="headrow"><h1>Sachaufgaben mit linearen Gleichungssystemen</h1>
+    <button type="button" class="btn ghost" id="helpBtn">Hilfe: Lösungsverfahren</button></div>
+    <p class="sub" id="sub"></p>
+  </header>
+  <main id="view"></main>
+  <div class="overlay" id="help" hidden role="dialog" aria-modal="true" aria-labelledby="helpTitle">
+   <div class="wrap">
+    <div class="bar"><h2 class="lvtitle" id="helpTitle">Hilfe: Gleichungssysteme lösen</h2><button type="button" class="btn" id="helpClose">Schließen</button></div>
+    <nav class="tabs" aria-label="Abschnitte">
+      <button type="button" data-go="h-idee">Worum geht es?</button>
+      <button type="button" data-go="h-grafisch">Grafisch</button>
+      <button type="button" data-go="h-einsetzung">Einsetzungsverfahren</button>
+      <button type="button" data-go="h-gleichsetzung">Gleichsetzungsverfahren</button>
+      <button type="button" data-go="h-wahl">Welches Verfahren?</button>
+      <button type="button" data-go="h-sach">Sachaufgaben</button>
+    </nav>
+    <div class="hsecs">
+    <section class="sheet hsec" id="h-idee">
+      <h3>Worum geht es?</h3>
+      <p>Ein lineares Gleichungssystem besteht aus zwei Gleichungen mit den Variablen x und y. Gesucht ist das Zahlenpaar (x | y), das <b>beide Gleichungen gleichzeitig</b> erfüllt.</p>
+      <p>Jede der beiden Gleichungen beschreibt eine Gerade. Die Lösung ist der Punkt, der auf beiden Geraden liegt: ihr <b>Schnittpunkt</b>.</p>
+      <p>In allen Beispielen auf dieser Seite ist die Lösung x = 2 und y = 5.</p>
+    </section>
+    <section class="sheet hsec" id="h-grafisch">
+      <h3>Grafisch lösen</h3>
+      <ol class="how">
+        <li>Beide Gleichungen nach y auflösen: y = m·x + n.</li>
+        <li>Jede Gerade zeichnen: beim y-Achsenabschnitt n beginnen, dann mit der Steigung m weiter (1 nach rechts, m nach oben oder unten).</li>
+        <li>Den Schnittpunkt ablesen.</li>
+        <li>Probe: die abgelesenen Werte in beide Gleichungen einsetzen. Grafisch kann man oft nur ungefähr ablesen.</li>
+      </ol>
+      <div class="calc"><div>(I)&nbsp;&nbsp; y = 2x + 1 <span class="c">Start bei 1, je 1 nach rechts 2 nach oben</span></div><div>(II)&nbsp; y = −x + 7 <span class="c">Start bei 7, je 1 nach rechts 1 nach unten</span></div></div>
+      <div id="helpGraph"></div>
+      <p>Die Geraden schneiden sich in S(2 | 5). Also ist x = 2 und y = 5.</p>
+    </section>
+    <section class="sheet hsec" id="h-einsetzung">
+      <h3>Einsetzungsverfahren</h3>
+      <ol class="how">
+        <li>Eine Gleichung nach x oder y auflösen, falls das noch nicht der Fall ist. Am einfachsten nach einer Variablen ohne Faktor.</li>
+        <li>Den entstandenen Term in die <b>andere</b> Gleichung einsetzen. Klammern nicht vergessen.</li>
+        <li>Die Gleichung mit nur einer Variablen lösen.</li>
+        <li>Den Wert in die aufgelöste Gleichung einsetzen und die zweite Variable berechnen.</li>
+        <li>Probe in beiden Gleichungen.</li>
+      </ol>
+      <div class="calc">
+        <div>(I)&nbsp;&nbsp; y = 2x + 1</div><div>(II)&nbsp; 3x + 2y = 16</div>
+        <div class="gap">3x + 2·(2x + 1) = 16 <span class="c">(I) in (II) einsetzen</span></div>
+        <div>3x + 4x + 2 = 16 <span class="c">Klammer auflösen</span></div>
+        <div>7x + 2 = 16 <span class="c">zusammenfassen</span></div>
+        <div>7x = 14 <span class="c">− 2</span></div>
+        <div>x = 2 <span class="c">: 7</span></div>
+        <div class="gap">y = 2·2 + 1 = 5 <span class="c">x in (I) einsetzen</span></div>
+        <div class="gap">Probe in (II): 3·2 + 2·5 = 6 + 10 = 16 ✓</div>
+      </div>
+      <p>Steht noch keine Variable allein, zuerst umformen. Beispiel: x + 3y = 11 wird zu x = 11 − 3y.</p>
+    </section>
+    <section class="sheet hsec" id="h-gleichsetzung">
+      <h3>Gleichsetzungsverfahren</h3>
+      <ol class="how">
+        <li>Beide Gleichungen nach derselben Variablen auflösen, zum Beispiel nach y.</li>
+        <li>Die rechten Seiten gleichsetzen.</li>
+        <li>Die Gleichung mit nur einer Variablen lösen.</li>
+        <li>Den Wert in eine der beiden Gleichungen einsetzen und die zweite Variable berechnen.</li>
+        <li>Probe in beiden Gleichungen.</li>
+      </ol>
+      <div class="calc">
+        <div>(I)&nbsp;&nbsp; y = 2x + 1</div><div>(II)&nbsp; y = −x + 7</div>
+        <div class="gap">2x + 1 = −x + 7 <span class="c">rechte Seiten gleichsetzen</span></div>
+        <div>3x + 1 = 7 <span class="c">+ x</span></div>
+        <div>3x = 6 <span class="c">− 1</span></div>
+        <div>x = 2 <span class="c">: 3</span></div>
+        <div class="gap">y = 2·2 + 1 = 5 <span class="c">x in (I) einsetzen</span></div>
+        <div class="gap">Probe in (II): −2 + 7 = 5 ✓</div>
+      </div>
+    </section>
+    <section class="sheet hsec" id="h-wahl">
+      <h3>Welches Verfahren passt?</h3>
+      <ul class="how">
+        <li><b>Beide Gleichungen</b> sind schon nach derselben Variablen aufgelöst (y = … und y = …): Gleichsetzungsverfahren.</li>
+        <li><b>Eine Gleichung</b> ist schon nach einer Variablen aufgelöst oder lässt sich leicht auflösen: Einsetzungsverfahren.</li>
+        <li>Du willst den Zusammenhang <b>sehen</b> oder dein Ergebnis kontrollieren: grafisch. Für genaue Werte reicht das oft nicht.</li>
+      </ul>
+    </section>
+    <section class="sheet hsec" id="h-sach">
+      <h3>Sachaufgaben in fünf Schritten</h3>
+      <ol class="how">
+        <li><b>Variablen festlegen:</b> Welche zwei Größen sind gesucht? Schreibe auf, wofür x und y stehen, mit Einheit.</li>
+        <li><b>Gleichungen aufstellen:</b> Jede Information im Text, die beide Größen verbindet, ergibt eine Gleichung.</li>
+        <li><b>Lösen</b> mit einem der drei Verfahren.</li>
+        <li><b>Probe am Text:</b> Passen die Werte zu allen Angaben der Aufgabe?</li>
+        <li><b>Antwortsatz:</b> Beantworte die Frage aus dem Text, mit Einheiten.</li>
+      </ol>
+    </section>
+    </div>
+   </div>
+  </div>
+  <footer class="foot">
+    <button type="button" class="linkbtn" id="unlockAll">Alle Stufen freischalten (für Lehrkräfte)</button>
+    <button type="button" class="linkbtn" id="resetAll">Fortschritt zurücksetzen</button>
+  </footer>
+</div>
+
+<script>
+(function(){
+'use strict';
+
+/* ---------- Hilfsfunktionen ---------- */
+const R = (a,b,st=1) => a + st*Math.floor(Math.random()*(Math.floor((b-a)/st+1e-9)+1));
+const pick = a => a[Math.floor(Math.random()*a.length)];
+const shuffle = a => { a=a.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; };
+const r6 = v => Math.round(v*1e6)/1e6;
+const cap = s => s.charAt(0).toUpperCase()+s.slice(1);
+const nice = v => Math.abs(v*100-Math.round(v*100))<1e-6;
+function fmt(v){ v=r6(v); if(Object.is(v,-0)) v=0; return v.toLocaleString('de-DE',{maximumFractionDigits:4,useGrouping:false}).replace('-','−'); }
+function euro(v){ return r6(v).toLocaleString('de-DE',{minimumFractionDigits:2,maximumFractionDigits:2,useGrouping:false})+' €'; }
+function ct(c){ return c<100 ? c+' Cent' : euro(c/100); }
+function clk(min){ min=Math.round(min); const h=Math.floor(min/60)%24, m=min%60; return h+':'+String(m).padStart(2,'0'); }
+function dur(t){ const tot=Math.round(t*60), h=Math.floor(tot/60), m=tot%60; if(!h) return m+' Minuten'; const hs = h===1?'1 Stunde':h+' Stunden'; return m? hs+' '+m+' Minuten' : hs; }
+
+function linStr(parts){
+  let s='';
+  for(const [c,v] of parts){
+    if(Math.abs(c)<1e-12) continue;
+    const neg=c<0, a=Math.abs(c);
+    const t = v ? (Math.abs(a-1)<1e-12 ? v : fmt(a)+v) : fmt(a);
+    if(!s) s=(neg?'−':'')+t; else s+=(neg?' − ':' + ')+t;
+  }
+  return s||'0';
+}
+function E(a,b,c,d,form){ return {a:r6(a),b:r6(b),c:r6(c),d:d||(linStr([[a,'x'],[b,'y']])+' = '+fmt(c)),form:form||''}; }
+function yEq(m,n,d){ return E(-m,1,n,d||('y = '+linStr([[m,'x'],[n,'']])),'y'); }
+const vx = (x,y) => `<span class="vardef"><b>x</b>: ${x}</span><span class="vardef"><b>y</b>: ${y}</span>`;
+const sysHtml = eqs => `<span class="sys"><span class="l">(I)&nbsp;&nbsp;&nbsp;${eqs[0].d}</span><span class="l">(II)&nbsp;&nbsp;${eqs[1].d}</span></span>`;
+const varOpts = (c,w) => [{html:c,ok:true,fb:'Passt. Genau diese beiden Größen sind gesucht.'},...w.map(z=>({html:z[0],ok:false,fb:z[1]}))];
+
+/* ---------- Aufgabengeneratoren ---------- */
+const TARIF=[
+ {pl:'Minuten',plD:'Minuten',e1:'Minute',gShort:'Grundgebühr',gNom:'die Grundgebühr',
+  beiA:'bei „Smart“',beiB:'bei „Vielredner“',nomA:'der Tarif „Smart“',nomB:'der Tarif „Vielredner“',
+  gA:[300,900,50],pB:[4,9,1],d:[3,6,1],xs:[60,200,10],
+  text:(A,B)=>`Lena vergleicht zwei Handytarife. Beim Tarif „Smart“ zahlt sie eine monatliche Grundgebühr von ${euro(A.g/100)} und ${ct(A.p)} pro Gesprächsminute. Beim Tarif „Vielredner“ beträgt die Grundgebühr ${euro(B.g/100)}, jede Minute kostet ${ct(B.p)}.`,
+  frage:'Bei wie vielen Gesprächsminuten im Monat kosten beide Tarife gleich viel? Welcher Tarif lohnt sich für wen?'},
+ {pl:'Kilometer',plD:'Kilometern',e1:'Kilometer',gShort:'Grundpreis',gNom:'der Grundpreis',
+  beiA:'bei „CityCab“',beiB:'bei „Taxi Blitz“',nomA:'„CityCab“',nomB:'„Taxi Blitz“',
+  gA:[300,450,50],pB:[170,210,10],d:[20,50,10],xs:[4,14,1],
+  text:(A,B)=>`In einer Stadt gibt es zwei Taxiunternehmen. „CityCab“ verlangt einen Grundpreis von ${euro(A.g/100)} und ${ct(A.p)} pro gefahrenem Kilometer. Bei „Taxi Blitz“ beträgt der Grundpreis ${euro(B.g/100)}, jeder Kilometer kostet ${ct(B.p)}.`,
+  frage:'Bei welcher Fahrstrecke kosten beide Taxis gleich viel? Welches Taxi lohnt sich für wen?'},
+ {pl:'Kilometer',plD:'Kilometern',e1:'Kilometer',gShort:'Tagesgebühr',gNom:'die Tagesgebühr',
+  beiA:'bei „Flinkfahrt“',beiB:'bei „Rollmobil“',nomA:'„Flinkfahrt“',nomB:'„Rollmobil“',
+  gA0:true,pB:[18,30,1],d:[6,14,1],xs:[50,150,10],
+  text:(A,B)=>`Familie Krause will für einen Tag ein Auto leihen. „Flinkfahrt“ verlangt keine Tagesgebühr, sondern nur ${ct(A.p)} pro gefahrenem Kilometer. „Rollmobil“ verlangt eine Tagesgebühr von ${euro(B.g/100)} und ${ct(B.p)} pro Kilometer.`,
+  frage:'Bei wie vielen gefahrenen Kilometern kosten beide Anbieter gleich viel? Welcher Anbieter lohnt sich für wen?'},
+ {pl:'Besuche',plD:'Besuchen',e1:'Besuch',gShort:'Preis der Saisonkarte',gNom:'der Preis der Saisonkarte',
+  beiA:'beim Einzeleintritt',beiB:'mit Saisonkarte',nomA:'der Einzeleintritt',nomB:'die Saisonkarte',
+  gA0:true,pB:[150,250,50],d:[200,300,50],xs:[8,25,1],
+  text:(A,B)=>`Das Freibad bietet zwei Möglichkeiten an. Ohne Karte kostet jeder Besuch ${ct(A.p)}. Wer die Saisonkarte für ${euro(B.g/100)} kauft, zahlt pro Besuch nur noch ${ct(B.p)}.`,
+  frage:'Bei wie vielen Besuchen kosten beide Möglichkeiten gleich viel? Für wen lohnt sich die Saisonkarte?'},
+];
+function genTarif(){
+  const C=pick(TARIF);
+  const pB=R(...C.pB), d=R(...C.d), xs=R(...C.xs), pA=pB+d;
+  const gA=C.gA0?0:R(...C.gA), gB=gA+d*xs;
+  const mA=pA/100,nA=gA/100,mB=pB/100,nB=gB/100, ys=r6(nA+mA*xs);
+  const e1=yEq(mA,nA), e2=yEq(mB,nB);
+  const pay=`Bei ${xs} ${C.plD} kostet beides ${euro(ys)}.`;
+  return {
+    text:C.text({g:gA,p:pA},{g:gB,p:pB}), frage:C.frage,
+    vars:varOpts(vx(`Anzahl der ${C.pl}`,'Kosten in €'),[
+      [vx(`Kosten ${C.beiA} in €`,`Kosten ${C.beiB} in €`),`Beide Kosten hängen von derselben Größe ab: der Anzahl der ${C.pl}. Diese Anzahl ist x, die Kosten sind y.`],
+      [vx(`${C.gShort} in €`,`Preis pro ${C.e1} in €`),`Diese Werte stehen schon im Text. Gesucht ist die Anzahl der ${C.pl}, bei der beides gleich viel kostet, und dieser Betrag.`]]),
+    sys:[e1,e2],
+    dis:[
+      {eqs:[e1,yEq(mB,0)],fb:`${cap(C.beiB)}: ${cap(C.gNom)} fehlt. Sie wird immer bezahlt, auch bei 0 ${C.plD}.`.replace('Sie wird',C.gNom.startsWith('der')?'Er wird':'Sie wird')},
+      {eqs:[e1,yEq(nB,mB)],fb:`${cap(C.beiB)}: ${cap(C.gNom)} und der Preis pro ${C.e1} sind vertauscht. Mit x multipliziert wird der Preis pro ${C.e1}.`},
+      {eqs:[yEq(mB,nA),yEq(mA,nB)],fb:'Die Preise pro Einheit gehören jeweils zum anderen Angebot.'},
+      {eqs:[e1,yEq(pB,nB)],fb:`Cent und Euro sind gemischt. Rechne alles in Euro: ${pB} Cent = ${euro(mB)}.`}],
+    sol:{x:xs,y:ys}, ux:C.pl, uy:'€', gx:C.pl, gy:'Kosten in €',
+    hints2:[`Für beide Angebote gilt: Kosten = ${C.gShort} + Preis pro ${C.e1} · Anzahl der ${C.pl}.`,
+            `${cap(C.beiA)}: <b>${e1.d}</b>. Stelle die Gleichung ${C.beiB} genauso auf.`],
+    deut:[
+      {html:`${pay} Bei mehr als ${xs} ${C.plD} ist ${C.nomB} günstiger, bei weniger ${C.plD} ${C.nomA}.`,ok:true,fb:'Genau. Rechts vom Schnittpunkt liegt die flachere Gerade unten: Dort zählt der kleinere Preis pro Einheit.'},
+      {html:`${pay} Bei mehr als ${xs} ${C.plD} ist ${C.nomA} günstiger, bei weniger ${C.plD} ${C.nomB}.`,fb:`Umgekehrt: ${cap(C.nomB)} hat den kleineren Preis pro ${C.e1}. Je mehr ${C.pl}, desto stärker wirkt sich das aus.`},
+      {html:`Bei ${fmt(ys)} ${C.plD} kostet beides ${euro(xs)}.`,fb:`x und y sind vertauscht: x ist die Anzahl der ${C.pl}, y sind die Kosten.`},
+      {html:`${cap(C.nomB)} ist immer günstiger, weil der Preis pro ${C.e1} kleiner ist.`,fb:`Nicht immer: Bei wenigen ${C.plD} fällt ${C.gNom} stärker ins Gewicht als der kleinere Preis pro ${C.e1}.`}]
+  };
+}
+
+const EINTRITT=[
+ {ort:'Im Zoo',k:'Kinderkarte',e:'Erwachsenenkarte',pk:[400,700,50],add:[300,600,50],day:'An einem Samstag'},
+ {ort:'Im Kino',k:'Kinderkarte',e:'Erwachsenenkarte',pk:[500,700,50],add:[200,400,50],day:'Bei der Nachmittagsvorstellung'},
+ {ort:'Beim Schulkonzert',k:'Schülerkarte',e:'Erwachsenenkarte',pk:[200,400,50],add:[200,500,50],day:'Am Konzertabend'},
+ {ort:'Im Freibad',k:'Kinderkarte',e:'Erwachsenenkarte',pk:[250,400,50],add:[150,300,50],day:'An einem heißen Julitag'}];
+function genEintritt(){
+  const C=pick(EINTRITT);
+  const pK=R(...C.pk), pE=pK+R(...C.add), x=R(20,90), y=R(15,80);
+  const n=x+y, Rv=(pK*x+pE*y)/100, a=pK/100, b=pE/100;
+  const e1=E(1,1,n), e2=E(a,b,Rv);
+  return {
+    text:`${C.ort} kostet eine ${C.k} ${euro(a)} und eine ${C.e} ${euro(b)}. ${C.day} wurden insgesamt ${n} Karten verkauft. Die Einnahmen betrugen ${euro(Rv)}.`,
+    frage:`Wie viele ${C.k}n und wie viele ${C.e}n wurden verkauft?`,
+    vars:varOpts(vx(`Anzahl der ${C.k}n`,`Anzahl der ${C.e}n`),[
+      [vx(`Preis einer ${C.k} in €`,`Preis einer ${C.e} in €`),'Die Preise stehen schon im Text. Gesucht ist, wie viele Karten jeder Sorte verkauft wurden.'],
+      [vx('Anzahl aller Karten','Einnahmen in €'),`Beides ist bekannt: ${n} Karten und ${euro(Rv)}.`]]),
+    sys:[e1,e2],
+    dis:[
+      {eqs:[e1,E(b,a,Rv)],fb:`Die Preise sind vertauscht. x zählt die ${C.k}n, also gehört ${euro(a)} zu x.`},
+      {eqs:[e1,E(a,b,n)],fb:'Links stehen Geldbeträge. Rechts muss deshalb die Einnahme stehen, nicht die Anzahl der Karten.'},
+      {eqs:[E(1,1,Rv),e2],fb:'x + y zählt Karten. Das Ergebnis ist die Anzahl aller Karten, nicht die Einnahme.'},
+      {eqs:[e1,E(a,b,Rv*100)],fb:`Cent und Euro sind gemischt. Die Einnahme beträgt ${fmt(Rv)} €, nicht ${fmt(Rv*100)} €.`}],
+    sol:{x,y}, ux:`${C.k}n`, uy:`${C.e}n`, gx:`${C.k}n`, gy:`${C.e}n`,
+    hints2:['Eine Gleichung zählt die Karten, die andere rechnet mit Geld.',
+            `Karten: <b>${e1.d}</b>. Für das Geld gilt: Preis · Anzahl + Preis · Anzahl = Einnahme.`],
+    deut:[
+      {html:`Es wurden ${x} ${C.k}n und ${y} ${C.e}n verkauft.`,ok:true,fb:`Richtig. Probe: ${x} + ${y} = ${n} Karten.`},
+      {html:`Es wurden ${y} ${C.k}n und ${x} ${C.e}n verkauft.`,fb:`Vertauscht: x steht für die ${C.k}n.`},
+      {html:`Es wurden ${x} Karten für insgesamt ${euro(y)} verkauft.`,fb:'y ist eine Anzahl von Karten, kein Geldbetrag.'}]
+  };
+}
+
+const EINKAUF=[
+ {laden:'In der Bäckerei',s1:'Brötchen',p1:'Brötchen',g1:'ein',a1:'ein',s2:'Brezel',p2:'Brezeln',g2:'eine',a2:'eine',r1:[30,55,5],r2:[60,110,5],who:['Frau Ahmadi','Herr Lehmann']},
+ {laden:'Am Schulkiosk',s1:'Flasche Wasser',p1:'Flaschen Wasser',g1:'eine',a1:'eine',s2:'Müsliriegel',p2:'Müsliriegel',g2:'ein',a2:'einen',r1:[60,100,10],r2:[70,120,10],who:['Jonas','Emily']},
+ {laden:'In der Eisdiele',s1:'Kugel Eis',p1:'Kugeln Eis',g1:'eine',a1:'eine',s2:'Portion Sahne',p2:'Portionen Sahne',g2:'eine',a2:'eine',r1:[120,180,10],r2:[40,80,10],who:['Familie Weber','Familie Braun']},
+ {laden:'Im Hofladen',s1:'Glas Honig',p1:'Gläser Honig',g1:'ein',a1:'ein',s2:'Packung Eier',p2:'Packungen Eier',g2:'eine',a2:'eine',r1:[450,700,50],r2:[250,400,10],who:['Herr Nowak','Frau Richter']}];
+function genEinkauf(){
+  const C=pick(EINKAUF);
+  let x,y; do{ x=R(...C.r1); y=R(...C.r2); }while(x===y);
+  const k1=R(2,5), l1=1; let k2,l2; do{ k2=R(1,3); l2=R(2,4); }while(k2===l2);
+  const c1=(k1*x+l1*y)/100, c2=(k2*x+l2*y)/100; x/=100; y/=100;
+  const n1=n=>n===1?`${C.a1} ${C.s1}`:`${n} ${C.p1}`, n2=n=>n===1?`${C.a2} ${C.s2}`:`${n} ${C.p2}`;
+  const e1=E(k1,l1,c1), e2=E(k2,l2,c2);
+  return {
+    text:`${C.laden} kauft ${C.who[0]} ${n1(k1)} und ${n2(l1)} und bezahlt ${euro(c1)}. ${C.who[1]} kauft ${n1(k2)} und ${n2(l2)} und bezahlt ${euro(c2)}.`,
+    frage:`Was kostet ${C.g1} ${C.s1}, was kostet ${C.g2} ${C.s2}?`,
+    vars:varOpts(vx(`Preis für ${C.a1} ${C.s1} in €`,`Preis für ${C.a2} ${C.s2} in €`),[
+      [vx(`Anzahl der ${C.p1}`,`Anzahl der ${C.p2}`),'Die Anzahlen stehen schon im Text. Gesucht sind die Preise.'],
+      [vx(`Betrag, den ${C.who[0]} bezahlt`,`Betrag, den ${C.who[1]} bezahlt`),'Diese Beträge stehen schon im Text. Gesucht sind die Preise der einzelnen Waren.']]),
+    sys:[e1,e2],
+    dis:[
+      {eqs:[e1,E(l2,k2,c2)],fb:`In (II) gehören die Anzahlen zur jeweils anderen Ware. x ist der Preis für ${C.a1} ${C.s1}.`},
+      {eqs:[e1,E(k2,l2,k2+l2)],fb:'Rechts steht der bezahlte Betrag, nicht die Anzahl der gekauften Waren.'},
+      {eqs:[E(k1,l1,c1*100),e2],fb:`Cent und Euro sind gemischt: ${C.who[0]} bezahlt ${fmt(c1)} €, nicht ${fmt(c1*100)} €.`},
+      {eqs:[E(1,1,c1),e2],fb:`${C.who[0]} kauft ${n1(k1)}. Die Anzahl gehört als Faktor vor x.`}],
+    sol:{x,y}, ux:'€', uy:'€', gx:`Preis ${C.s1} in €`, gy:`Preis ${C.s2} in €`,
+    graphNote:'Preise lassen sich grafisch nur ungefähr ablesen. Rechne zur Kontrolle nach.',
+    hints2:['Jeder Einkauf ergibt eine Gleichung: Anzahl · Preis + Anzahl · Preis = bezahlter Betrag.',
+            `Einkauf von ${C.who[0]}: <b>${e1.d}</b>. Stelle die Gleichung für ${C.who[1]} genauso auf.`],
+    deut:[
+      {html:`${cap(C.g1)} ${C.s1} kostet ${euro(x)}, ${C.g2} ${C.s2} kostet ${euro(y)}.`,ok:true,fb:'Richtig.'},
+      {html:`${cap(C.g1)} ${C.s1} kostet ${euro(y)}, ${C.g2} ${C.s2} kostet ${euro(x)}.`,fb:`Vertauscht: x ist der Preis für ${C.a1} ${C.s1}.`},
+      {html:`${C.who[0]} bezahlt ${euro(x)} für ${n1(k1)}.`,fb:`x ist der Preis für ${C.a1} ${C.s1}, nicht für den ganzen Einkauf.`}]
+  };
+}
+
+function genEntgegen(){
+  const C=pick([
+    {A:'Anna',B:'Ben',oA:'Kleinbach',oB:'Großwalde',mode:'mit dem Fahrrad',v1:[12,20],v2:[12,20],ts:[0.5,0.75,1,1.25,1.5],start:14*60},
+    {A:'Frau Petersen',B:'Herr Yilmaz',oA:'Seeburg',oB:'Talheim',mode:'zu Fuß',v1:[3,6],v2:[3,6],ts:[1,1.5,2,2.5],start:9*60}]);
+  let v1,v2,t,d; do{ v1=R(...C.v1); v2=R(...C.v2); t=pick(C.ts); d=r6((v1+v2)*t); }while(!Number.isInteger(d)||v1===v2);
+  const s=r6(v1*t);
+  const e1=yEq(v1,0), e2=E(v2,1,d,`y = ${d} − ${v2}x`,'y');
+  return {
+    text:`${C.A} und ${C.B} wohnen ${d} km voneinander entfernt: ${C.A} in ${C.oA}, ${C.B} in ${C.oB}. Um ${clk(C.start)} Uhr machen sich beide gleichzeitig ${C.mode} auf den Weg zueinander. ${C.A} schafft durchschnittlich ${v1} km/h, ${C.B} ${v2} km/h.`,
+    frage:'Wann und wo treffen sich die beiden?',
+    vars:varOpts(vx('Zeit in Stunden seit dem Start',`Entfernung von ${C.oA} in km`),[
+      [vx('Zeit in Minuten seit dem Start',`Entfernung von ${C.oA} in m`),'Die Geschwindigkeiten sind in km/h angegeben. Rechne deshalb mit Stunden und Kilometern.'],
+      [vx(`Geschwindigkeit von ${C.A}`,`Geschwindigkeit von ${C.B}`),'Die Geschwindigkeiten sind gegeben. Gesucht sind Zeitpunkt und Ort des Treffens.']]),
+    sys:[e1,e2],
+    dis:[
+      {eqs:[e1,E(-v2,1,d,`y = ${d} + ${v2}x`,'y')],fb:`${C.B} bewegt sich auf ${C.oA} zu. Die Entfernung von ${C.oA} wird also kleiner: ${d} − ${v2}x.`},
+      {eqs:[e1,yEq(v2,0)],fb:`So würde ${C.B} ebenfalls in ${C.oA} starten. ${C.B} startet aber ${d} km von ${C.oA} entfernt.`},
+      {eqs:[e1,E(v1,1,d,`y = ${d} − ${v1}x`,'y')],fb:`Für ${C.B} gilt die eigene Geschwindigkeit: ${v2} km/h.`}],
+    sol:{x:t,y:s}, ux:'h', uy:'km', gx:'Zeit in h', gy:`Entfernung von ${C.oA} in km`,
+    hints2:[`Beschreibe für beide die Entfernung von ${C.oA} nach x Stunden. Beim Treffen sind beide gleich weit von ${C.oA} entfernt.`,
+            `${C.A} startet in ${C.oA}: <b>${e1.d}</b>. ${C.B} startet bei ${d} km und kommt pro Stunde ${v2} km näher.`],
+    deut:[
+      {html:`Sie treffen sich nach ${dur(t)}, also um ${clk(C.start+t*60)} Uhr, ${fmt(s)} km von ${C.oA} entfernt.`,ok:true,fb:'Richtig.'},
+      {html:`Sie treffen sich nach ${dur(t)}, also um ${clk(C.start+t*60)} Uhr, ${fmt(s)} km von ${C.oB} entfernt.`,fb:`y ist die Entfernung von ${C.oA}. Von ${C.oB} aus sind es ${fmt(d-s)} km.`},
+      {html:`Sie treffen sich nach ${fmt(t)} Minuten, ${fmt(s)} km von ${C.oA} entfernt.`,fb:`x ist in Stunden angegeben: ${fmt(t)} h = ${dur(t)}.`}]
+  };
+}
+
+function genEinholen(){
+  const C=pick([
+    {A:'Tom',Aakk:'ihren Bruder',B:'Mia',since:'Toms Start',v1:[12,18],vmax:25,hs:[0.5,1],ks:[0.5,1,1.5,2],start:9*60,
+     text:(v1,v2,h)=>`Tom startet um 9:00 Uhr mit dem Fahrrad zu einer Tour und fährt durchschnittlich ${v1} km/h. ${cap(hTxt(h))} später startet seine Schwester Mia am selben Ort und fährt ihm mit dem E-Bike auf derselben Strecke hinterher, durchschnittlich ${v2} km/h.`,
+     frage:'Wann und wie weit vom Start entfernt holt Mia ihren Bruder ein?'},
+    {A:'die Klasse',Aakk:'die Klasse',B:'Frau Berger',since:'dem Start der Klasse',v1:[4,5],vmax:20,hs:[1,1.5,2],ks:[0.25,0.5,0.75,1],start:8*60+30,
+     text:(v1,v2,h)=>`Die Klasse 10b startet um 8:30 Uhr zu einer Wanderung und geht durchschnittlich ${v1} km/h. Frau Berger muss noch etwas erledigen. Sie fährt ${hTxt(h)} später mit dem Fahrrad auf demselben Weg hinterher, durchschnittlich ${v2} km/h.`,
+     frage:'Wann und wie weit vom Start entfernt holt Frau Berger die Klasse ein?'}]);
+  let v1,v2,h,k,t; do{ v1=R(...C.v1); h=pick(C.hs); k=pick(C.ks); t=h+k; v2=r6(v1*t/k); }while(!Number.isInteger(v2)||v2>C.vmax||v2<v1+3);
+  const s=r6(v1*t);
+  const e1=yEq(v1,0), e2=E(-v2,1,-v2*h,`y = ${v2}·(x − ${fmt(h)})`,'y');
+  const Bc=cap(C.B);
+  return {
+    text:C.text(v1,v2,h), frage:C.frage,
+    vars:varOpts(vx(`Zeit in Stunden seit ${C.since}`,'zurückgelegte Strecke in km'),[
+      [vx(`Geschwindigkeit von ${cap(C.A)}`,`Geschwindigkeit von ${C.B}`),'Die Geschwindigkeiten sind gegeben. Gesucht sind Zeitpunkt und Ort des Einholens.'],
+      [vx('Zeit in Minuten','Strecke in m'),'Die Geschwindigkeiten sind in km/h angegeben. Rechne deshalb mit Stunden und Kilometern.']]),
+    sys:[e1,e2],
+    dis:[
+      {eqs:[e1,E(-v2,1,-h,`y = ${v2}x − ${fmt(h)}`,'y')],fb:`${Bc} ist x − ${fmt(h)} Stunden unterwegs. Diese ganze Fahrzeit wird mit ${v2} multipliziert: ${v2}·(x − ${fmt(h)}).`},
+      {eqs:[e1,E(-v2,1,v2*h,`y = ${v2}·(x + ${fmt(h)})`,'y')],fb:`${Bc} startet später und ist deshalb kürzer unterwegs: x − ${fmt(h)}, nicht x + ${fmt(h)}.`},
+      {eqs:[e1,yEq(v2,0)],fb:`So wären beide gleichzeitig gestartet. ${Bc} startet aber ${fmt(h)} h später.`}],
+    sol:{x:t,y:s}, ux:'h', uy:'km', gx:`Zeit in h seit ${C.since}`, gy:'Strecke in km',
+    hints2:['Beim Einholen haben beide dieselbe Strecke zurückgelegt. Für beide gilt: Strecke = Geschwindigkeit · Fahrzeit.',
+            `${cap(C.A)}: <b>${e1.d}</b>. ${Bc} ist ${fmt(h)} h weniger unterwegs, also x − ${fmt(h)} Stunden.`],
+    deut:[
+      {html:`${Bc} holt ${C.Aakk} um ${clk(C.start+t*60)} Uhr ein, ${fmt(s)} km vom Start entfernt.`,ok:true,fb:'Richtig.'},
+      {html:`${Bc} holt ${C.Aakk} um ${clk(C.start+(t+h)*60)} Uhr ein, ${fmt(s)} km vom Start entfernt.`,fb:`x zählt die Zeit ab ${C.since} um ${clk(C.start)} Uhr, nicht ab dem Start von ${C.B}.`},
+      {html:`${Bc} holt ${C.Aakk} nach ${fmt(s)} Stunden ein, ${fmt(t)} km vom Start entfernt.`,fb:'x und y sind vertauscht: x ist die Zeit, y die Strecke.'}]
+  };
+}
+function hTxt(h){ return {0.5:'eine halbe Stunde',1:'eine Stunde',1.5:'anderthalb Stunden',2:'zwei Stunden'}[h]; }
+
+function genZahl(easy){
+  const W={1:'',2:'das Doppelte',3:'das Dreifache',4:'das Vierfache'};
+  let a,b,x,y,D; do{ a=easy?R(2,3):R(2,4); b=easy?1:R(1,3); x=R(10,40); y=R(3,35); D=a*x-b*y; }while(a===b||x===y||D<=0);
+  const S=x+y;
+  const first=`${cap(W[a])} der ersten Zahl`, second = b===1?'die zweite Zahl':`${W[b]} der zweiten Zahl`;
+  const e1=E(1,1,S), e2=E(a,-b,D);
+  return {
+    text:`Die Summe zweier Zahlen ist ${S}. ${first} vermindert um ${second} ergibt ${D}.`,
+    frage:'Wie heißen die beiden Zahlen?',
+    vars:varOpts(vx('erste Zahl','zweite Zahl'),[
+      [vx('Summe der Zahlen','Differenz der Zahlen'),`Die Summe ist schon bekannt: ${S}. Gesucht sind die beiden Zahlen selbst.`],
+      [vx('erste Zahl','Summe der beiden Zahlen'),'Die Summe steht im Text. Gesucht ist die zweite Zahl.']]),
+    sys:[e1,e2],
+    dis:[
+      {eqs:[e1,E(b,-a,D)],fb:'Die Vielfachen gehören zu den falschen Zahlen. Das Vielfache der ersten Zahl gehört zu x.'},
+      {eqs:[E(1,-1,S),e2],fb:'Summe bedeutet addieren: x + y.'},
+      {eqs:[e1,E(a,b,D)],fb:'„vermindert um“ bedeutet subtrahieren.'}],
+    sol:{x,y}, ux:'', uy:'', gx:'erste Zahl', gy:'zweite Zahl',
+    hints2:['Übersetze jeden Satz einzeln: Summe → +, vermindert um → −, das Dreifache → 3·.',
+            `Erster Satz: <b>${e1.d}</b>.`],
+    deut:[
+      {html:`Die erste Zahl ist ${x}, die zweite ist ${y}.`,ok:true,fb:`Richtig. Probe: ${x} + ${y} = ${S} und ${a}·${x} − ${b===1?'':b+'·'}${y} = ${D}.`},
+      {html:`Die erste Zahl ist ${y}, die zweite ist ${x}.`,fb:'Vertauscht: x ist die erste Zahl. Mach die Probe im zweiten Satz.'},
+      {html:`Die beiden Zahlen sind ${S} und ${D}.`,fb:'Das sind die gegebenen Werte aus dem Text, nicht die gesuchten Zahlen.'}]
+  };
+}
+
+function genRechteck(B){
+  const C=pick([
+    {obj:'Gemüsebeet',art:'Das',u:'m',y:[3,10],k:[1,5],st:1},
+    {obj:'Spielfeld auf dem Schulhof',art:'Das',u:'m',y:[8,20],k:[2,10],st:1},
+    {obj:'Plakat',art:'Das',u:'cm',y:[30,60],k:[10,30],st:5},
+    {obj:'Bilderrahmen',art:'Der',u:'cm',y:[15,40],k:[5,20],st:5}]);
+  let y,k,x; do{ y=R(C.y[0],C.y[1],C.st); k=R(C.k[0],C.k[1],C.st); x=B?2*y-k:y+k; }while(x<=y);
+  const U=2*x+2*y, u=C.u;
+  const e1=E(2,2,U), e2 = B ? E(1,-2,-k,`x = 2y − ${k}`,'x') : E(1,-1,k,`x = y + ${k}`,'x');
+  const dis=[{eqs:[E(1,1,U),e2],fb:'Im Umfang kommen Länge und Breite je zweimal vor: 2x + 2y.'}];
+  if(B){
+    dis.push({eqs:[e1,E(1,-2,-2*k,`x = 2·(y − ${k})`,'x')],fb:`Erst verdoppeln, dann ${k} abziehen: x = 2y − ${k}.`});
+    dis.push({eqs:[e1,E(2,-1,-k,`2x = y − ${k}`)],fb:'Das Doppelte gehört zur Breite, nicht zur Länge.'});
+  } else {
+    dis.push({eqs:[e1,E(-1,1,k,`y = x + ${k}`,'y')],fb:`Die Länge ist größer. Also muss zur Breite etwas addiert werden: x = y + ${k}.`});
+    dis.push({eqs:[e1,E(1,1,k)],fb:`„um ${k} ${u} größer“ ist ein Unterschied: x − y = ${k}.`});
+  }
+  const al=C.art.toLowerCase();
+  return {
+    text:`${C.art} rechteckige ${C.obj} hat einen Umfang von ${U} ${u}. `+(B?`Die Länge ist um ${k} ${u} kleiner als das Doppelte der Breite.`:`Die Länge ist um ${k} ${u} größer als die Breite.`),
+    frage:`Wie lang und wie breit ist ${al} ${C.obj}?`,
+    vars:varOpts(vx(`Länge in ${u}`,`Breite in ${u}`),[
+      [vx(`Umfang in ${u}`,`Flächeninhalt in ${u}²`),'Der Umfang ist gegeben, der Flächeninhalt ist nicht gefragt. Gesucht sind Länge und Breite.'],
+      [vx(`Länge in ${u}`,`Umfang in ${u}`),`Der Umfang ist schon bekannt: ${U} ${u}. Gesucht ist die Breite.`]]),
+    sys:[e1,e2], dis,
+    sol:{x,y}, ux:u, uy:u, gx:`Länge in ${u}`, gy:`Breite in ${u}`,
+    hints2:['Eine Gleichung beschreibt den Umfang, die andere den Zusammenhang zwischen Länge und Breite.',
+            `Umfang: <b>${e1.d}</b>.`],
+    deut:[
+      {html:`${C.art} ${C.obj} ist ${x} ${u} lang und ${y} ${u} breit.`,ok:true,fb:`Richtig. Probe: 2·${x} + 2·${y} = ${U}.`},
+      {html:`${C.art} ${C.obj} ist ${y} ${u} lang und ${x} ${u} breit.`,fb:'Vertauscht: x ist die Länge.'},
+      {html:`Länge und Breite sind zusammen ${U} ${u}.`,fb:`${U} ${u} ist der Umfang, also 2·(Länge + Breite). Gefragt sind Länge und Breite einzeln.`}]
+  };
+}
+
+function prep(t){
+  const same=(A,B)=>A.every((e,i)=>equiv(e,B[i]))||A.every((e,i)=>equiv(e,B[1-i]));
+  t.dis=t.dis.filter(d=>!same(d.eqs,t.sys));
+  return t;
+}
+const TYPES={
+  tarif:{name:'Tarife vergleichen',gen:genTarif},
+  eintritt:{name:'Eintrittskarten',gen:genEintritt},
+  einkauf:{name:'Einkauf: Preise gesucht',gen:genEinkauf},
+  entgegen:{name:'Bewegung: aufeinander zu',gen:genEntgegen},
+  einholen:{name:'Bewegung: einholen',gen:genEinholen},
+  zahl:{name:'Zahlenrätsel',gen:genZahl},
+  rechteck:{name:'Rechteck und Umfang',gen:genRechteck}
+};
+
+const GEN={zahl1:()=>genZahl(true),zahl:()=>genZahl(false),rechteck1:()=>genRechteck(false),rechteck2:()=>genRechteck(true),
+  eintritt:genEintritt,einkauf:genEinkauf,tarif:genTarif,entgegen:genEntgegen,einholen:genEinholen};
+const KIND={zahl1:'Zahlenrätsel',zahl:'Zahlenrätsel',rechteck1:'Rechteck und Umfang',rechteck2:'Rechteck und Umfang',
+  eintritt:'Eintrittskarten',einkauf:'Einkauf: Preise gesucht',tarif:'Tarife vergleichen',entgegen:'Bewegung: aufeinander zu',einholen:'Bewegung: einholen'};
+
+function genRep(method){
+  const x=R(1,8), y=R(1,8);
+  let sys;
+  if(method==='grafisch'||method==='gleichsetzung'){
+    const ms = method==='grafisch' ? [-2,-1,-0.5,0.5,1,2,3] : [-3,-2,-1,1,2,3,4];
+    let m1,m2; do{ m1=pick(ms); m2=pick(ms); }while(m1===m2);
+    sys=[yEq(m1,y-m1*x),yEq(m2,y-m2*x)];
+  } else {
+    if(Math.random()<0.5){ const m=pick([-3,-2,-1,1,2,3]); sys=[yEq(m,y-m*x)]; }
+    else { const m=pick([-2,-1,1,2]), n=x-m*y; sys=[E(1,-m,n,'x = '+linStr([[m,'y'],[n,'']]),'x')]; }
+    let a,b; do{ a=pick([1,2,3,4,-1,-2]); b=pick([1,2,3,-1,-2]); }while(Math.abs(sys[0].a*b-sys[0].b*a)<1e-9);
+    sys.push(E(a,b,a*x+b*y));
+    if(Math.random()<0.5) sys.reverse();
+  }
+  return {sys,sol:{x,y},ux:'',uy:'',gx:'',gy:'',
+    range: method==='grafisch' ? {xmax:10,ymax:10,xstep:1,ystep:1,xsnap:0.5,ysnap:0.5} : null};
+}
+
+/* ---------- Rechenwege ---------- */
+const NAMES=['(I)','(II)'];
+const coef=(e,v)=>v==='x'?e.a:e.b;
+function solvedFor(e,v){ return v==='y'?{m:-e.a/e.b,n:e.c/e.b}:{m:-e.b/e.a,n:e.c/e.a}; }
+
+function stepsEinsetzung(S){
+  let best=null;
+  for(const i of [0,1]) for(const v of ['y','x']){
+    const e=S[i], c=coef(e,v); if(Math.abs(c)<1e-12) continue;
+    const {m,n}=solvedFor(e,v); if(!nice(m)||!nice(n)) continue;
+    const sc=(e.form===v?0:2)+(Math.abs(Math.abs(c)-1)<1e-12?0:1);
+    if(!best||sc<best.sc) best={i,v,m,n,sc};
+  }
+  if(!best) return null;
+  const {i,v,m,n}=best, j=1-i, w=v==='x'?'y':'x', ej=S[j], ex=linStr([[m,w],[n,'']]);
+  const c0=coef(S[i],v);
+  const out=[S[i].form===v?`Nutze ${NAMES[i]}: Sie ist schon nach ${v} aufgelöst. Setze den Term für ${v} in ${NAMES[j]} ein.`
+    :`Löse ${NAMES[i]} nach ${v} auf${Math.abs(Math.abs(c0)-1)<1e-12?` (dort steht ${v} ohne Faktor)`:''} und setze den Term in ${NAMES[j]} ein.`];
+  if(S[i].form!==v) out.push(`${NAMES[i]} nach ${v} aufgelöst: <b>${v} = ${ex}</b>`);
+  let K,Rv;
+  if(ej.form===v){
+    const o=solvedFor(ej,v);
+    out.push(`Nach dem Einsetzen in ${NAMES[j]}: <b>${ex} = ${linStr([[o.m,w],[o.n,'']])}</b>`);
+    K=m-o.m; Rv=o.n-n;
+    out.push(`Alle ${w} nach links, alle Zahlen nach rechts: <b>${linStr([[K,w]])} = ${fmt(Rv)}</b>`);
+  } else {
+    const p=coef(ej,w), q=coef(ej,v), qa=Math.abs(q);
+    const qs=(Math.abs(qa-1)<1e-12?'':fmt(qa)+'·')+'('+ex+')';
+    let left=p?linStr([[p,w]]):'';
+    left = left ? left+(q<0?' − ':' + ')+qs : (q<0?'−':'')+qs;
+    out.push(`Nach dem Einsetzen in ${NAMES[j]}: <b>${left} = ${fmt(ej.c)}</b>`);
+    K=p+q*m; const cst=q*n; Rv=ej.c-cst;
+    out.push(`Klammer auflösen und zusammenfassen: <b>${linStr([[K,w],[cst,'']])} = ${fmt(ej.c)}</b>`);
+    out.push(`Zahlen auf die rechte Seite: <b>${linStr([[K,w]])} = ${fmt(Rv)}</b>`);
+  }
+  const wv=r6(Rv/K), vv=r6(m*wv+n);
+  if(Math.abs(K-1)>1e-12) out.push(`Teile durch ${fmt(K)}: <b>${w} = ${fmt(wv)}</b>`);
+  out.push(`Setze ${w} = ${fmt(wv)} in ${v} = ${ex} ein und berechne ${v}. Mach danach die Probe mit (I) und (II).`);
+  return out;
+}
+function stepsGleichsetzung(S){
+  let best=null;
+  for(const v of ['y','x']){
+    if(Math.abs(coef(S[0],v))<1e-12||Math.abs(coef(S[1],v))<1e-12) continue;
+    const o1=solvedFor(S[0],v), o2=solvedFor(S[1],v);
+    if(![o1.m,o1.n,o2.m,o2.n].every(nice)) continue;
+    const sc=(S[0].form===v?0:1)+(S[1].form===v?0:1);
+    if(!best||sc<best.sc) best={v,o1,o2,sc};
+  }
+  if(!best) return null;
+  const {v,o1,o2}=best, w=v==='x'?'y':'x';
+  const t1=linStr([[o1.m,w],[o1.n,'']]), t2=linStr([[o2.m,w],[o2.n,'']]);
+  const both=S[0].form===v&&S[1].form===v;
+  const out=[both?`Beide Gleichungen sind schon nach ${v} aufgelöst. Setze die rechten Seiten gleich.`:`Löse beide Gleichungen nach ${v} auf und setze dann die rechten Seiten gleich.`];
+  if(!both) out.push(`Nach ${v} aufgelöst:<br><b>(I) ${v} = ${t1}</b><br><b>(II) ${v} = ${t2}</b>`);
+  out.push(`Nach dem Gleichsetzen: <b>${t1} = ${t2}</b>`);
+  const K=o1.m-o2.m, Rv=o2.n-o1.n;
+  out.push(`Alle ${w} nach links, alle Zahlen nach rechts: <b>${linStr([[K,w]])} = ${fmt(Rv)}</b>`);
+  const wv=r6(Rv/K), vv=r6(o1.m*wv+o1.n);
+  if(Math.abs(K-1)>1e-12) out.push(`Teile durch ${fmt(K)}: <b>${w} = ${fmt(wv)}</b>`);
+  out.push(`Setze ${w} = ${fmt(wv)} in (I) ein und berechne ${v}. Mach danach die Probe mit (I) und (II).`);
+  return out;
+}
+
+/* ---------- Gleichungen einlesen (Stufe 2) ---------- */
+function parseLin(s){
+  let i=0;
+  const peek=()=>s[i];
+  const add=(p,q)=>({x:p.x+q.x,y:p.y+q.y,c:p.c+q.c});
+  const sc=(p,k)=>({x:p.x*k,y:p.y*k,c:p.c*k});
+  const isVar=p=>Math.abs(p.x)>1e-12||Math.abs(p.y)>1e-12;
+  const mul=(p,q)=>{ if(isVar(p)&&isVar(q)) throw 'Nur lineare Gleichungen: kein x·y und kein x².'; return isVar(p)?sc(p,q.c):sc(q,p.c); };
+  function expr(){ let v=term(); while(peek()==='+'||peek()==='-'){ const op=s[i++]; const t=term(); v=op==='+'?add(v,t):add(v,sc(t,-1)); } return v; }
+  function term(){ let v=unary(); for(;;){ const ch=peek();
+      if(ch==='*'){ i++; v=mul(v,unary()); }
+      else if(ch==='/'){ i++; const d=unary(); if(isVar(d)) throw 'Teilen geht hier nur durch Zahlen.'; if(Math.abs(d.c)<1e-12) throw 'Teilen durch 0 geht nicht.'; v=sc(v,1/d.c); }
+      else if(ch!==undefined && /[0-9.xy(]/.test(ch)){ v=mul(v,atom()); }
+      else break; }
+    return v; }
+  function unary(){ if(peek()==='-'){ i++; return sc(unary(),-1); } if(peek()==='+'){ i++; return unary(); } return atom(); }
+  function atom(){ const ch=peek();
+    if(ch==='('){ i++; const v=expr(); if(peek()!==')') throw 'Eine Klammer ist nicht geschlossen.'; i++; return v; }
+    if(ch==='x'){ i++; return {x:1,y:0,c:0}; }
+    if(ch==='y'){ i++; return {x:0,y:1,c:0}; }
+    const m=s.slice(i).match(/^(\d+(\.\d+)?|\.\d+)/);
+    if(m){ i+=m[0].length; return {x:0,y:0,c:parseFloat(m[0])}; }
+    if(ch===undefined) throw 'Die Gleichung ist unvollständig.';
+    throw `Das Zeichen „${ch}“ kann ich nicht lesen. Nutze nur Zahlen, x, y, + − · / ( ).`; }
+  if(!s) throw 'Auf einer Seite des Gleichheitszeichens fehlt etwas.';
+  const v=expr(); if(i<s.length) throw `Das Zeichen „${s[i]}“ passt hier nicht.`;
+  return v;
+}
+function parseEq(str){
+  const s=str.replace(/\s+/g,'').replace(/[−–]/g,'-').replace(/[·×⋅]/g,'*').replace(/,/g,'.').replace(/:/g,'/').replace(/€/g,'').toLowerCase();
+  if(!s) throw 'Das Feld ist noch leer.';
+  const parts=s.split('=');
+  if(parts.length!==2) throw 'Eine Gleichung braucht genau ein Gleichheitszeichen.';
+  const L=parseLin(parts[0]), Rr=parseLin(parts[1]);
+  const e={a:L.x-Rr.x,b:L.y-Rr.y,c:Rr.c-L.c};
+  if(Math.abs(e.a)<1e-12&&Math.abs(e.b)<1e-12) throw 'In der Gleichung kommt kein x und kein y vor.';
+  return e;
+}
+function equiv(e,s){
+  const m=Math.max(Math.abs(e.a),Math.abs(e.b),Math.abs(e.c),Math.abs(s.a),Math.abs(s.b),Math.abs(s.c),1);
+  const tol=1e-7*m*m;
+  return Math.abs(e.a*s.b-e.b*s.a)<tol && Math.abs(e.a*s.c-e.c*s.a)<tol && Math.abs(e.b*s.c-e.c*s.b)<tol;
+}
+const sat=(e,x,y)=>Math.abs(e.a*x+e.b*y-e.c)<1e-6*Math.max(1,Math.abs(e.c));
+
+/* ---------- Koordinatensystem ---------- */
+function niceStep(max,target){ const raw=max/target, p=Math.pow(10,Math.floor(Math.log10(raw))); for(const k of [1,2,2.5,5,10]) if(k*p>=raw-1e-12) return k*p; return 10*p; }
+function graphRange(t){
+  if(t.range) return t.range;
+  const sx=t.sol.x, sy=t.sol.y;
+  const xraw=sx*1.8, xstep=niceStep(xraw,8), xmax=Math.ceil(xraw/xstep-1e-9)*xstep;
+  let ymx=sy*1.5;
+  for(const e of t.sys){ if(Math.abs(e.b)<1e-12) continue; for(const x of [0,xmax]){ const y=(e.c-e.a*x)/e.b; if(y>0) ymx=Math.max(ymx,Math.min(y,sy*3)); } }
+  const ystep=niceStep(ymx,8), ymax=Math.ceil(ymx/ystep-1e-9)*ystep;
+  return {xmax,ymax,xstep,ystep,xsnap:niceStep(xmax,60),ysnap:niceStep(ymax,60)};
+}
+function staticGraph(t,mark){
+  const g=graphRange(t), W=660,H=440,ml=58,mr=16,mt=16,mb=52;
+  const X=v=>ml+v/g.xmax*(W-ml-mr), Y=v=>H-mb-v/g.ymax*(H-mt-mb);
+  const cols=['var(--ink)','var(--violet)'];
+  let s=`<div class="legend"><span style="--c:var(--ink)">(I)&nbsp; ${t.sys[0].d}</span><span style="--c:var(--violet)">(II)&nbsp; ${t.sys[1].d}</span></div>`;
+  s+=`<svg class="graph" viewBox="0 0 ${W} ${H}" role="img" aria-label="Die Geraden (I) und (II) im Koordinatensystem" xmlns="http://www.w3.org/2000/svg">`;
+  const cid='c'+Math.random().toString(36).slice(2,8);
+  s+=`<defs><clipPath id="${cid}"><rect x="${ml}" y="${mt}" width="${W-ml-mr}" height="${H-mt-mb}"/></clipPath></defs>`;
+  s+=`<rect x="${ml}" y="${mt}" width="${W-ml-mr}" height="${H-mt-mb}" fill="var(--sheet)"/>`;
+  const mx=g.xstep/2, my=g.ystep/2;
+  for(let v=0; v<=g.xmax+1e-9; v+=mx){ const major=Math.abs(v/g.xstep-Math.round(v/g.xstep))<1e-6; s+=`<line x1="${X(v)}" y1="${Y(0)}" x2="${X(v)}" y2="${Y(g.ymax)}" stroke="var(--grid)" stroke-width="${major?1.2:.6}"/>`; if(major) s+=`<text x="${X(v)}" y="${Y(0)+20}" text-anchor="middle" font-size="14" fill="var(--muted)">${fmt(v)}</text>`; }
+  for(let v=0; v<=g.ymax+1e-9; v+=my){ const major=Math.abs(v/g.ystep-Math.round(v/g.ystep))<1e-6; s+=`<line x1="${X(0)}" y1="${Y(v)}" x2="${X(g.xmax)}" y2="${Y(v)}" stroke="var(--grid)" stroke-width="${major?1.2:.6}"/>`; if(major&&v>0) s+=`<text x="${X(0)-8}" y="${Y(v)+5}" text-anchor="end" font-size="14" fill="var(--muted)">${fmt(v)}</text>`; }
+  s+=`<line x1="${X(0)}" y1="${Y(0)}" x2="${X(g.xmax)}" y2="${Y(0)}" stroke="var(--text)" stroke-width="1.6"/>`;
+  s+=`<line x1="${X(0)}" y1="${Y(0)}" x2="${X(0)}" y2="${Y(g.ymax)}" stroke="var(--text)" stroke-width="1.6"/>`;
+  s+=`<text x="${X(g.xmax)}" y="${H-8}" text-anchor="end" font-size="14" fill="var(--text)">x${t.gx?': '+t.gx:''}</text>`;
+  s+=`<text x="${ml+6}" y="${mt+16}" font-size="14" fill="var(--text)">y${t.gy?': '+t.gy:''}</text>`;
+  t.sys.forEach((e,k)=>{
+    const p=Math.abs(e.b)<1e-12?[[e.c/e.a,0],[e.c/e.a,g.ymax]]:[[0,e.c/e.b],[g.xmax,(e.c-e.a*g.xmax)/e.b]];
+    s+=`<line clip-path="url(#${cid})" x1="${X(p[0][0])}" y1="${Y(p[0][1])}" x2="${X(p[1][0])}" y2="${Y(p[1][1])}" stroke="${cols[k]}" stroke-width="3" stroke-linecap="round"/>`;
+  });
+  if(mark){
+    s+=`<circle cx="${X(mark[0])}" cy="${Y(mark[1])}" r="6" fill="var(--red)"/>`;
+    s+=`<text x="${X(mark[0])+10}" y="${Y(mark[1])-10}" font-size="16" font-weight="700" fill="var(--red)">S(${fmt(mark[0])} | ${fmt(mark[1])})</text>`;
+  }
+  return s+'</svg>';
+}
+
+/* ---------- Oberfläche ---------- */
+if(typeof document==='undefined'){ window.__LGS={staticGraph,prep,TYPES,GEN,genRep,stepsEinsetzung,stepsGleichsetzung,parseEq,equiv,graphRange}; return; }
+
+const $=q=>document.querySelector(q);
+const el=(tag,cls,html)=>{ const n=document.createElement(tag); if(cls) n.className=cls; if(html!=null) n.innerHTML=html; return n; };
+const reduced=!!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+const top=()=>window.scrollTo({top:0,behavior:reduced?'auto':'smooth'});
+function btn(label,fn,ghost){ const b=el('button','btn'+(ghost?' ghost':''),label); b.type='button'; b.onclick=fn; return b; }
+
+const LEVELS=[
+ {name:'Wiederholung',kind:'rep',need:3,desc:'Gleichungssysteme ohne Sachkontext lösen. Die allgemeine Hilfe erklärt die drei Verfahren mit Beispiel.'},
+ {name:'Einstieg',types:['zahl1','rechteck1'],sys:'mc',need:3,desc:'Zahlenrätsel und Rechtecke. Du wählst das passende Gleichungssystem aus Vorschlägen aus.'},
+ {name:'Alltag',types:['eintritt','einkauf'],sys:'mc',need:3,desc:'Eintrittskarten und Einkäufe. Du wählst das passende Gleichungssystem aus Vorschlägen aus.'},
+ {name:'Selbst aufstellen',types:['zahl','rechteck1','eintritt','einkauf'],sys:'input',need:3,desc:'Die bekannten Aufgabentypen. Jetzt stellst du die Gleichungen selbst auf.'},
+ {name:'Tarife und Treffpunkte',types:['tarif','entgegen'],sys:'input',need:3,desc:'Tarifvergleiche und Bewegungen aufeinander zu. Du stellst die Gleichungen selbst auf.'},
+ {name:'Profi',types:['einholen','rechteck2','tarif','entgegen','einkauf','zahl'],sys:'input',need:3,hintMax:1,stepMax:2,desc:'Einholen, knifflige Rechtecke und alles gemischt. Weniger Tipps: einer pro Schritt, zwei beim Lösen.'}];
+const lvName=i=>i===0?'Wiederholung':`Stufe ${i}: ${LEVELS[i].name}`;
+
+
+const KEY='lgs-sachaufgaben-stufen-v1';
+let prog={solved:LEVELS.map(()=>0),unlocked:0};
+try{ const o=JSON.parse(localStorage.getItem(KEY)||'null'); if(o&&Array.isArray(o.solved)&&o.solved.length===LEVELS.length&&typeof o.unlocked==='number') prog=o; }catch(_){}
+function save(){ try{ localStorage.setItem(KEY,JSON.stringify(prog)); }catch(_){} }
+
+const st={lv:null,task:null,hints:0,errs:0,method:null,last:null,repIdx:0};
+
+/* Übersicht */
+function showMap(){
+  st.lv=null;
+  $('#sub').textContent='Arbeite dich von Stufe zu Stufe. Eine Stufe ist geschafft, wenn du drei Aufgaben gelöst hast. Dann wird die nächste Stufe frei. Geschaffte Stufen kannst du jederzeit wiederholen.';
+  const v=$('#view'); v.innerHTML='';
+  const ol=el('ol','levels');
+  LEVELS.forEach((L,i)=>{
+    const open=i<=prog.unlocked, done=prog.solved[i]>=L.need;
+    const li=el('li','sheet level'+(open?'':' locked')+(done?' done':''));
+    const state=!open?`Gesperrt. Schaffe zuerst ${i===1?'die Wiederholung':'Stufe '+(i-1)}.`
+      : done?`Geschafft (${prog.solved[i]} Aufgaben gelöst)` : `${prog.solved[i]} von ${L.need} Aufgaben gelöst`;
+    li.innerHTML=`<span class="num" aria-hidden="true">${i===0?'W':i}</span><div class="ltxt"><h2>${lvName(i)}</h2><p>${L.desc}</p><p class="lstate">${state}</p></div>`;
+    if(open) li.append(btn(done?'Wiederholen':(prog.solved[i]?'Weitermachen':'Starten'),()=>startLevel(i),done));
+    ol.append(li);
+  });
+  v.append(ol);
+  window.scrollTo(0,0);
+}
+
+/* Übungsansicht */
+function startLevel(i){
+  st.lv=i; st.last=null; st.repIdx=0;
+  $('#sub').textContent=LEVELS[i].desc;
+  const v=$('#view'); v.innerHTML='';
+  const bar=el('div','bar');
+  const dots=el('div','dots'); dots.id='dots';
+  bar.append(btn('Zur Übersicht',showMap,true),el('h2','lvtitle',lvName(i)),dots);
+  const sheet=el('section','sheet task'); sheet.setAttribute('aria-live','polite');
+  sheet.innerHTML='<p class="kind" id="kind"></p><div id="taskText"></div>';
+  const ol=el('ol','steps'); ol.id='steps';
+  v.append(bar,sheet,ol);
+  drawDots(); newTask(); window.scrollTo(0,0);
+}
+function drawDots(){
+  const L=LEVELS[st.lv], n=prog.solved[st.lv], d=$('#dots'); d.innerHTML='';
+  for(let k=0;k<L.need;k++) d.append(el('span','dot'+(k<n?' on':'')));
+  d.append(el('span','dtxt',n>=L.need?'geschafft':`${n} von ${L.need}`));
+}
+function newTask(){
+  const L=LEVELS[st.lv];
+  st.hints=0; st.errs=0; st.method=null;
+  $('#steps').innerHTML='';
+  if(L.kind==='rep'){
+    const m=['einsetzung','gleichsetzung','grafisch'][st.repIdx++%3];
+    st.task=genRep(m); st.task.range=null;
+    $('#kind').textContent='Wiederholung';
+    $('#taskText').innerHTML=`<p class="frage">Löse das Gleichungssystem.</p><div class="given">${sysHtml(st.task.sys)}</div>`;
+    solveStep(1,{rep:true,onDone:li=>finish(li)});
+    return;
+  }
+  const pool=L.types.length>1?L.types.filter(z=>z!==st.last):L.types, k=pick(pool);
+  st.last=k; st.task=prep(GEN[k]());
+  $('#kind').textContent=KIND[k];
+  $('#taskText').innerHTML=`<p>${st.task.text}</p><p class="frage">${st.task.frage}</p>`;
+  step1();
+}
+
+function shell(n,title,intro){
+  const li=el('li','sheet step'+(n>1&&!reduced?' new':''));
+  li.innerHTML=`<div class="step-head"><span class="num" aria-hidden="true">${n}</span><h3>${title}</h3></div>`;
+  if(intro) li.append(el('p','intro',intro));
+  $('#steps').append(li);
+  if(n>1) li.scrollIntoView({behavior:reduced?'auto':'smooth',block:'nearest'});
+  return li;
+}
+function feedback(){ const f=el('div','fb'); f.setAttribute('aria-live','polite'); return f; }
+function say(f,cls,html){ f.className='fb '+cls; f.innerHTML=html; }
+
+function mc(li,opts,onOk){
+  const box=el('div','opts'), f=feedback(); let done=false;
+  shuffle(opts).forEach(o=>{
+    const b=el('button','opt',o.html); b.type='button';
+    b.onclick=()=>{
+      if(done) return;
+      if(o.ok){ done=true; b.classList.add('ok'); box.querySelectorAll('button').forEach(x=>x.disabled=true); say(f,'good',o.fb||'Richtig.'); onOk(); }
+      else { b.classList.add('bad'); b.disabled=true; st.errs++; say(f,'bad',o.fb); }
+    };
+    box.append(b);
+  });
+  li.append(box,f);
+}
+function hintBox(li,hints,endText){
+  const wrap=el('div','hints'), b=el('button','linkbtn'); b.type='button'; let i=0;
+  const upd=()=>{ b.textContent = i<hints.length ? (hints.length>1?`Tipp anzeigen (${i+1} von ${hints.length})`:'Tipp anzeigen') : (endText||'Keine weiteren Tipps'); b.disabled=i>=hints.length; };
+  b.onclick=()=>{ if(i>=hints.length) return; const h=hints[i++]; const isObj=typeof h==='object'; wrap.insertBefore(el('p','hint',isObj?h.html:h),b); if(isObj&&h.run) h.run(); st.hints++; upd(); };
+  upd(); wrap.append(b); li.append(wrap); return wrap;
+}
+
+function limit(h){ const L=LEVELS[st.lv]; return L.hintMax?h.slice(0,L.hintMax):h; }
+function step1(){
+  const li=shell(1,'Variablen festlegen','Wofür stehen x und y? Wähle die passende Festlegung.');
+  let hb=null;
+  mc(li,st.task.vars,()=>{ li.classList.add('done'); if(hb) hb.remove(); step2(); });
+  hb=hintBox(li,limit(['Lies die Frage am Ende des Textes. Die beiden Größen, nach denen gefragt ist, werden zu x und y.',
+    'Größen, deren Werte schon im Text stehen, sind nicht gesucht.']));
+}
+
+function step2(){
+  const t=st.task, L=LEVELS[st.lv];
+  const hints=limit(t.hints2);
+  if(L.sys==='mc'){
+    const li=shell(2,'Gleichungssystem aufstellen','Welches Gleichungssystem beschreibt die Aufgabe?');
+    const opts=[{html:sysHtml(t.sys),ok:true,fb:'Richtig. Beide Informationen aus dem Text stecken im System.'},
+      ...shuffle(t.dis).slice(0,3).map(d=>({html:sysHtml(d.eqs),ok:false,fb:d.fb}))];
+    let hb=null;
+    mc(li,opts,()=>{ li.classList.add('done'); if(hb) hb.remove(); solveStep(3,{onDone:()=>step4()}); });
+    hb=hintBox(li,hints);
+    return;
+  }
+  const li=shell(2,'Gleichungssystem aufstellen','Stelle zu jeder Information aus dem Text eine Gleichung auf. Benutze x und y so, wie du sie festgelegt hast.');
+  const grid=el('div','eqin');
+  const inp=[0,1].map(k=>{ const i=el('input','txt'); i.type='text'; i.autocomplete='off'; i.spellcheck=false; i.setAttribute('autocapitalize','off'); i.setAttribute('aria-label',`Gleichung ${NAMES[k]}`); grid.append(el('b','',NAMES[k]),i); return i; });
+  li.append(grid, el('p','example','Schreibweise zum Beispiel: <b>y = 0,5x + 3</b> oder <b>2x + 3y = 12</b> oder <b>y = 4·(x − 1)</b>'));
+  let focus=inp[0]; inp.forEach(i=>i.addEventListener('focus',()=>focus=i));
+  const keys=el('div','keys');
+  ['x','y','=','+','−','·','(',')',','].forEach(k=>{
+    const b=el('button','',k); b.type='button'; b.setAttribute('aria-label',`${k} einfügen`);
+    b.addEventListener('pointerdown',ev=>ev.preventDefault());
+    b.onclick=()=>{ const i=focus, a=i.selectionStart??i.value.length, z=i.selectionEnd??a; i.value=i.value.slice(0,a)+k+i.value.slice(z); i.focus(); i.setSelectionRange(a+k.length,a+k.length); };
+    keys.append(b);
+  });
+  li.append(keys);
+  const row=el('div','row'), chk=el('button','btn','Gleichungen prüfen'); chk.type='button'; row.append(chk); li.append(row);
+  const f=feedback(); li.append(f);
+  const hb=hintBox(li,hints);
+  const disEqs=[]; t.dis.forEach(d=>d.eqs.forEach(e=>{ if(!t.sys.some(s=>equiv(e,s))) disEqs.push({e,fb:d.fb}); }));
+  const run=()=>{
+    const eqs=[];
+    for(let k=0;k<2;k++){ try{ eqs.push(parseEq(inp[k].value)); }catch(err){ say(f,'bad',`${NAMES[k]}: ${err}`); inp[k].focus(); return; } }
+    const m=eqs.map(e=>t.sys.findIndex(s=>equiv(e,s)));
+    if(m[0]>=0&&m[1]>=0&&m[0]!==m[1]){
+      t.sys=[t.sys[m[0]],t.sys[m[1]]];
+      say(f,'good','Richtig. Beide Informationen aus dem Text stecken in deinem System.');
+      inp.forEach(i=>i.disabled=true); chk.disabled=true; keys.remove(); hb.remove();
+      li.classList.add('done'); solveStep(3,{onDone:()=>step4()}); return;
+    }
+    st.errs++;
+    if(m[0]>=0&&m[0]===m[1]){ say(f,'bad','Beide Gleichungen sagen dasselbe aus. Im Text steckt noch eine zweite Information.'); return; }
+    const k=m[0]<0?0:1, e=eqs[k], d=disEqs.find(z=>equiv(e,z.e));
+    say(f,'bad',`Gleichung ${NAMES[k]} passt noch nicht. `+(d?d.fb:(sat(e,t.sol.x,t.sol.y)?'Sie stimmt zwar für die Lösung, gibt aber keine Information aus dem Text direkt wieder.':'Lies den Text noch einmal: Welche Größen hängen wie zusammen?')));
+  };
+  chk.onclick=run;
+  inp.forEach(i=>i.addEventListener('keydown',ev=>{ if(ev.key==='Enter') run(); }));
+}
+
+function solveTips(t){
+  const E1=stepsEinsetzung(t.sys), G1=stepsGleichsetzung(t.sys);
+  const bothSolved=['x','y'].some(v=>t.sys.every(e=>e.form===v));
+  let name, steps;
+  if(G1&&(bothSolved||!E1)){ name='Gleichsetzungsverfahren'; steps=G1; } else { name='Einsetzungsverfahren'; steps=E1; }
+  const tips=[`Passendes Verfahren: <b>${name}</b>. ${steps[0]}`,...steps.slice(1)];
+  tips.push({html:'Zur Kontrolle: So sehen die beiden Geraden aus. Die Lösung ist ihr Schnittpunkt.'+staticGraph(t)});
+  return tips;
+}
+function solveStep(n,opts){
+  const t=st.task, L=LEVELS[st.lv];
+  const li=shell(n,opts.rep?'Lösung eintragen':'Gleichungssystem lösen','Rechne im Heft und trage die Lösung ein. Tipps gibt es nur, wenn du sie brauchst.');
+  if(!opts.rep) li.append(el('div','given',sysHtml(t.sys)));
+  const ix=el('input','txt'), iy=el('input','txt');
+  [ix,iy].forEach(i=>{ i.type='text'; i.inputMode='decimal'; i.autocomplete='off'; });
+  const sol=el('div','sol');
+  const lx=el('label','','x = '), ly=el('label','','y = ');
+  lx.append(ix,el('span','unit',t.ux)); ly.append(iy,el('span','unit',t.uy));
+  const chk=el('button','btn','Lösung prüfen'); chk.type='button';
+  sol.append(lx,ly,chk); li.append(sol);
+  const f=feedback(); li.append(f);
+  let tips=solveTips(t); if(L.stepMax) tips=tips.slice(0,L.stepMax);
+  const hb=hintBox(li,tips,L.stepMax?'In dieser Stufe gibt es nur wenige Tipps.':undefined);
+  const gen=el('button','linkbtn','Allgemeine Hilfe: die drei Verfahren mit Beispiel'); gen.type='button'; gen.onclick=()=>openHelp('h-einsetzung',gen);
+  hb.append(el('br'),gen);
+  const num=v=>{ const s=v.trim().replace(/[−–]/g,'-').replace(',','.'); return s===''?NaN:Number(s); };
+  const run=()=>{
+    const x=num(ix.value), y=num(iy.value), sx=t.sol.x, sy=t.sol.y, ok=(a,b)=>Math.abs(a-b)<0.006;
+    if(isNaN(x)||isNaN(y)){ say(f,'bad','Trage für x und y je eine Zahl ein.'); return; }
+    if(ok(x,sx)&&ok(y,sy)){
+      say(f,'good',`Richtig: x = ${fmt(sx)} und y = ${fmt(sy)}.`);
+      [ix,iy].forEach(i=>i.disabled=true); chk.disabled=true; hb.remove(); li.classList.add('done'); opts.onDone(li); return;
+    }
+    st.errs++;
+    if(ok(x,sy)&&ok(y,sx)){ say(f,'bad','x und y sind vertauscht.'); return; }
+    if(ok(x,sx)){ say(f,'bad','x stimmt, y noch nicht. Setze x in eine der Gleichungen ein und berechne y.'); return; }
+    if(ok(y,sy)){ say(f,'bad','y stimmt, x noch nicht. Setze y in eine der Gleichungen ein und berechne x.'); return; }
+    const s1=sat(t.sys[0],x,y), s2=sat(t.sys[1],x,y);
+    if(s1&&!s2){ say(f,'bad','Deine Werte erfüllen (I), aber nicht (II). Prüfe deine Rechnung.'); return; }
+    if(s2&&!s1){ say(f,'bad','Deine Werte erfüllen (II), aber nicht (I). Prüfe deine Rechnung.'); return; }
+    say(f,'bad','Das stimmt noch nicht. Mach die Probe: Setze deine Werte in beide Gleichungen ein.');
+  };
+  chk.onclick=run;
+  [ix,iy].forEach(i=>i.addEventListener('keydown',ev=>{ if(ev.key==='Enter') run(); }));
+}
+
+function step4(){
+  const li=shell(4,'Ergebnis deuten','Welcher Antwortsatz passt zur Frage im Text?');
+  let hb=null;
+  mc(li,st.task.deut,()=>{ li.classList.add('done'); if(hb) hb.remove(); finish(li); });
+  hb=hintBox(li,limit([`Zur Erinnerung:${st.task.vars.find(o=>o.ok).html}`,'Der Antwortsatz beantwortet genau die Frage aus dem Text, mit Einheiten.']));
+}
+
+function finish(li){
+  const i=st.lv, L=LEVELS[i];
+  prog.solved[i]++;
+  let unlockedNow=false;
+  if(prog.solved[i]===L.need&&i===prog.unlocked&&i<LEVELS.length-1){ prog.unlocked=i+1; unlockedNow=true; }
+  save(); drawDots();
+  const clean=st.errs===0&&st.hints===0;
+  let head='Aufgabe gelöst', msg=clean?'Ohne Fehlversuch und ohne Hilfe.':`Fehlversuche: ${st.errs}, genutzte Hilfen: ${st.hints}.`;
+  if(unlockedNow){ head=`${lvName(i)} geschafft`; msg+=` ${lvName(i+1)} ist jetzt freigeschaltet.`; }
+  else if(prog.solved[i]===L.need&&i===LEVELS.length-1){ head='Alle Stufen geschafft'; }
+  const box=el('div','finish'); box.innerHTML=`<h3>${head}</h3><p>${msg}</p>`;
+  const row=el('div','row');
+  if(unlockedNow) row.append(btn('Zur nächsten Stufe',()=>startLevel(i+1)),btn('Hier weiterüben',()=>{ newTask(); top(); },true));
+  else row.append(btn('Nächste Aufgabe',()=>{ newTask(); top(); }));
+  box.append(row); li.append(box);
+  box.scrollIntoView({behavior:reduced?'auto':'smooth',block:'nearest'});
+}
+
+$('#unlockAll').onclick=()=>{ prog.unlocked=LEVELS.length-1; save(); if(st.lv===null) showMap(); };
+let armed=false;
+$('#resetAll').onclick=ev=>{
+  const b=ev.currentTarget;
+  if(!armed){ armed=true; b.textContent='Wirklich zurücksetzen? Zum Bestätigen noch einmal tippen.'; setTimeout(()=>{ armed=false; b.textContent='Fortschritt zurücksetzen'; },4000); return; }
+  armed=false; b.textContent='Fortschritt zurücksetzen';
+  prog={solved:LEVELS.map(()=>0),unlocked:0}; save(); showMap();
+};
+
+let helpOpener=null;
+function openHelp(id,opener){
+  helpOpener=opener||null;
+  const h=$('#help'); h.hidden=false; document.body.classList.add('noscroll');
+  if(!$('#helpGraph').innerHTML) $('#helpGraph').innerHTML=staticGraph({sys:[yEq(2,1),yEq(-1,7)],gx:'',gy:'',sol:{x:2,y:5},range:{xmax:8,ymax:10,xstep:1,ystep:1}},[2,5]);
+  const sec=id&&document.getElementById(id);
+  h.scrollTop = sec ? sec.offsetTop-10 : 0;
+  $('#helpClose').focus();
+}
+function closeHelp(){ $('#help').hidden=true; document.body.classList.remove('noscroll'); if(helpOpener) helpOpener.focus(); }
+$('#helpBtn').onclick=()=>openHelp(null,$('#helpBtn'));
+$('#helpClose').onclick=closeHelp;
+document.addEventListener('keydown',ev=>{ if(ev.key==='Escape'&&!$('#help').hidden) closeHelp(); });
+document.querySelectorAll('#help [data-go]').forEach(b=>b.onclick=()=>{ const sec=document.getElementById(b.dataset.go); $('#help').scrollTo({top:sec.offsetTop-10,behavior:reduced?'auto':'smooth'}); });
+
+showMap();
+})();
+</script>
+</body>
+</html>
