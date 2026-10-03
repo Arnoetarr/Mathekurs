@@ -146,6 +146,13 @@ svg .pl{font:bold 15px "AH",sans-serif;fill:#fff}
   .ch h1{font-size:26px}
 }
 @media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+.ostripe{display:flex;gap:4px;height:46px;margin-top:4px}
+.ostripe .seg{border:0;border-radius:6px;cursor:pointer;padding:0;min-width:24px}
+.ostripe .seg:focus-visible,.legend button:focus-visible{outline:3px solid var(--orange);outline-offset:2px}
+.legend button{font:inherit;font-size:16px;color:var(--grey);background:none;border:0;padding:6px 4px;cursor:pointer;min-height:40px}
+.legend button:hover{color:var(--ink)}
+.theme{scroll-margin-top:12px}
+.heft{margin:0 0 8px;padding:6px 10px;background:#FFF6E0;border-radius:8px;font-size:16px}
 
 </style>
 </head>
@@ -153,11 +160,10 @@ svg .pl{font:bold 15px "AH",sans-serif;fill:#fff}
 <main id="app"></main>
 <noscript>Bitte JavaScript aktivieren.</noscript>
 <script>
-/* ===== Speicher (nur lokal auf dem Gerät) ===== */
-const KEY = 'statistik78-v1';
-let S = { done: {}, parts: {} };
-try { const raw = localStorage.getItem(KEY); if (raw) S = Object.assign(S, JSON.parse(raw)); } catch (e) {}
-function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+/* ===== Zustand ===== */
+/* Kein Speichern: Rückmeldungen gelten nur, solange die Karte offen ist. */
+let S = { parts: {} };
+function save() {}
 
 /* ===== Hilfen ===== */
 const $ = (sel, el = document) => el.querySelector(sel);
@@ -297,16 +303,16 @@ function hundert(n) {
 const THEMEN = [
   { id: 'bp', name: 'Brüche und Prozent', color: '#9AA5AA', cards: ['E', '1', '2'] },
   { id: 'di', name: 'Diagramme', color: '#1F6F8B', cards: ['3', '4', '5', '6', '7', '8'] },
-  { id: 'ha', name: 'Häufigkeiten', color: '#7FA83A', cards: ['9', '10', '11'], test: 'Test 1' },
+  { id: 'ha', name: 'Häufigkeiten', color: '#7FA83A', cards: ['9', '10', '11'], test: 'Teste dich 1' },
   { id: 'mm', name: 'Mittelwert und Median', color: '#E8833A', cards: ['12', '13', '14', '15'] },
-  { id: 'co', name: 'Am Computer', color: '#8E5BC9', cards: ['16', '17'], test: 'Test 2' },
+  { id: 'co', name: 'Am Computer', color: '#8E5BC9', cards: ['16', '17'], test: 'Teste dich 2' },
   { id: 'ex', name: 'Für Expert*innen', color: '#E9B949', cards: ['X1', 'X2', 'X3'], optional: true }
 ];
 const CARDS = {};
 const card = c => CARDS[c.id] = c;
 
 /* ---------- E ---------- */
-card({ id: 'E', title: 'Eingangscheck', theme: 'Brüche und Prozent',
+card({ id: 'E', heft: [0, 1, 2, 3, 4, 5, 6, 7], title: 'Eingangscheck', theme: 'Brüche und Prozent',
   merke: `<p>Löse alle Aufgaben ohne Hilfe. Die Auswertung am Ende zeigt dir, ob du Karte 1 und Karte 2 brauchst.</p>`, nomerke: true,
   tasks: [
     { lvl: 'Teil A', intro: 'Kürze so weit wie möglich. Schreibe zum Beispiel 3/4.', parts: [F(`a) ${FR(12, 18)}`, 2, 3), F(`b) ${FR(25, 100)}`, 1, 4)], group: 'A' },
@@ -320,7 +326,7 @@ card({ id: 'E', title: 'Eingangscheck', theme: 'Brüche und Prozent',
   ], eingangscheck: true });
 
 /* ---------- 1 ---------- */
-card({ id: '1', title: 'Bruch, Dezimalzahl, Prozent', theme: 'Brüche und Prozent',
+card({ id: '1', heft: [0, 1, 2, 3, 4, 5], title: 'Bruch, Dezimalzahl, Prozent', theme: 'Brüche und Prozent',
   merke: `<div class="split"><div><p><b>Prozent</b> heißt „von Hundert“: 1 % = ${FR(1, 100)} = 0,01</p>
   <p><b>Kürzen:</b> Zähler und Nenner durch dieselbe Zahl teilen.<br><b>Erweitern:</b> Zähler und Nenner mit derselben Zahl malnehmen.</p>
  </div>
@@ -336,7 +342,7 @@ card({ id: '1', title: 'Bruch, Dezimalzahl, Prozent', theme: 'Brüche und Prozen
   ] });
 
 /* ---------- 2 ---------- */
-card({ id: '2', title: 'Prozentwert, Grundwert, Prozentsatz', theme: 'Brüche und Prozent',
+card({ id: '2', heft: [0, 1, 2, 3, 4, 5], title: 'Prozentwert, Grundwert, Prozentsatz', theme: 'Brüche und Prozent',
   merke: `<div class="split"><div><p><b>Grundwert G:</b> das Ganze (100 %)<br><b>Prozentwert W:</b> ein Teil davon<br><b>Prozentsatz p %:</b> der Anteil</p>
   <p>W = G · ${FR('p', 100)} &nbsp;&nbsp; p % = ${FR('W', 'G')}</p></div>
   <div>${stripe({ values: [20, 80], labels: ['W = 9 € (20 %)', 'Rest'], colors: ['#E8833A', '#D5DDE0'] })}<p>20 % von 45 €: 45 € · ${FR(20, 100)} = <b>9 €</b></p></div></div>`,
@@ -351,7 +357,7 @@ card({ id: '2', title: 'Prozentwert, Grundwert, Prozentsatz', theme: 'Brüche un
   ] });
 
 /* ---------- 3 ---------- */
-card({ id: '3', title: 'Säulen- und Balkendiagramme', theme: 'Diagramme',
+card({ id: '3', heft: [1, 2], title: 'Säulen- und Balkendiagramme', theme: 'Diagramme',
   merke: `<div class="split"><div><p><b>Säulen</b> (senkrecht): Werte vergleichen<br><b>Balken</b> (waagerecht): Rangfolgen, lange Namen</p><p><b>Immer:</b> Überschrift, Achsen mit Einheit, passender Maßstab. Die Achse beginnt bei 0.</p></div>
   <div>${barChart({ labels: ['A', 'B', 'C'], series: [{ values: [25, 35, 15] }], ymax: 40, ylabel: 'Anzahl', h: 200 })}</div></div>`,
   tasks: [
@@ -366,7 +372,7 @@ card({ id: '3', title: 'Säulen- und Balkendiagramme', theme: 'Diagramme',
 
 /* ---------- 4 ---------- */
 const TEMP = [10.5, 10.3, 10.4, 9.1, 10.5, 10.6, 10.9, 10.0], JAHRE = [2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025];
-card({ id: '4', title: 'Liniendiagramme', theme: 'Diagramme',
+card({ id: '4', heft: [1], title: 'Liniendiagramme', theme: 'Diagramme',
   merke: `<div class="split"><div><p>Ein <b>Liniendiagramm</b> zeigt, wie sich etwas <b>im Lauf der Zeit</b> verändert.</p><ol><li>Zeit auf die waagerechte Achse.</li><li>Werte als Punkte eintragen.</li><li>Punkte der Reihe nach verbinden.</li></ol></div>
   <div>${lineChart({ x: [1, 2, 3, 4, 5], y: [8, 14, 12, 22, 25], ymin: 0, ymax: 30, xlabel: 'Zeit', ylabel: 'Wert', h: 200 })}</div></div>`,
   tasks: [
@@ -379,7 +385,7 @@ card({ id: '4', title: 'Liniendiagramme', theme: 'Diagramme',
   ] });
 
 /* ---------- 5 ---------- */
-card({ id: '5', title: 'Streifendiagramme', theme: 'Diagramme',
+card({ id: '5', heft: [0, 1, 2], title: 'Streifendiagramme', theme: 'Diagramme',
   merke: `<p>Ein <b>Streifendiagramm</b> zeigt <b>Anteile an einem Ganzen</b>. Der ganze Streifen ist 100 %.<br>Ist der Streifen 10 cm lang, dann entspricht <b>1 % genau 1 mm</b>.</p>${stripe({ values: [30, 50, 20], labels: ['30 % = 3 cm', '50 % = 5 cm', '20 % = 2 cm'] })}`,
   tool: { name: 'anteile', preset: 'schulweg' },
   tasks: [
@@ -392,7 +398,7 @@ card({ id: '5', title: 'Streifendiagramme', theme: 'Diagramme',
 
 /* ---------- 6 ---------- */
 const STROM = { v: [30, 22, 16, 16, 4, 12], l: ['Windkraft', 'Kohle', 'Erdgas', 'Photovoltaik', 'Wasser', 'Sonstige'] };
-card({ id: '6', title: 'Kreisdiagramme lesen', theme: 'Diagramme',
+card({ id: '6', heft: [1, 2, 3], title: 'Kreisdiagramme lesen', theme: 'Diagramme',
   merke: `<div class="split"><div><p>Ein <b>Kreisdiagramm</b> zeigt <b>Anteile an einem Ganzen</b>. Der ganze Kreis ist 100 % und hat <b>360°</b>.</p><p>1 % entspricht 3,6°<br><b>Winkel = Prozentsatz · 3,6°</b><br>Beispiel: 25 % → 25 · 3,6° = 90°</p></div>
   <div class="center">${pieChart({ values: [25, 75], labels: ['', ''], colors: ['#E8833A', '#D5DDE0'], nolegend: true })}<p>25 % entsprechen 90°</p></div></div>`,
   tool: { name: 'anteile', preset: 'strom' },
@@ -405,7 +411,7 @@ card({ id: '6', title: 'Kreisdiagramme lesen', theme: 'Diagramme',
   ] });
 
 /* ---------- 7 ---------- */
-card({ id: '7', title: 'Kreisdiagramme zeichnen', theme: 'Diagramme',
+card({ id: '7', heft: [0, 1, 2], title: 'Kreisdiagramme zeichnen', theme: 'Diagramme',
   merke: `<ol><li>Anteile in Prozent berechnen.</li><li>Winkel berechnen: Prozentsatz · 3,6°</li><li>Kreis zeichnen (z. B. r = 4 cm) und einen Radius als Startlinie.</li><li>Ersten Winkel mit dem Geodreieck abtragen, dann vom neuen Schenkel aus weiter.</li><li>Teile färben, beschriften, Überschrift.</li></ol><p><b>Kontrolle:</b> Alle Winkel zusammen ergeben 360°.</p>`,
   tool: { name: 'anteile', preset: 'fach' },
   tasks: [
@@ -420,7 +426,7 @@ card({ id: '7', title: 'Kreisdiagramme zeichnen', theme: 'Diagramme',
 
 /* ---------- 8 ---------- */
 const DT = ['Liniendiagramm', 'Kreis- oder Streifendiagramm', 'Balkendiagramm (Rangfolge)', 'Säulen- oder Balkendiagramm'];
-card({ id: '8', title: 'Das passende Diagramm wählen', theme: 'Diagramme',
+card({ id: '8', heft: [1, 2], title: 'Das passende Diagramm wählen', theme: 'Diagramme',
   merke: table([['Diagramm', 'passt für'], ['Säulen, Balken', 'Werte vergleichen; Balken für Rangfolgen'], ['Linie', 'Entwicklung über die Zeit'], ['Kreis, Streifen', 'Anteile an einem Ganzen (zusammen 100 %)']]),
   tasks: [
     { lvl: 'Basis', intro: 'Welches Diagramm passt?', parts: [C('a) Jahresmitteltemperatur von 2018 bis 2025', DT, 0), C('b) Woher der Strom 2025 kam (Anteile, zusammen 100 %)', DT, 1), C('c) Strom aus Wind, Kohle, Gas … in Mrd. kWh, sortiert nach Größe', DT, 2), C('d) Punktzahlen von vier Teams bei einem Quiz', DT, 3), C('e) Anteil der Klasse, die mit Bus, Rad, zu Fuß oder Auto kommt', DT, 1)] },
@@ -431,7 +437,7 @@ card({ id: '8', title: 'Das passende Diagramm wählen', theme: 'Diagramme',
   ] });
 
 /* ---------- 9 ---------- */
-card({ id: '9', title: 'Absolute und relative Häufigkeit', theme: 'Häufigkeiten',
+card({ id: '9', heft: [0, 1, 2, 3], title: 'Absolute und relative Häufigkeit', theme: 'Häufigkeiten',
   merke: `<p><b>Absolute Häufigkeit:</b> die Anzahl<br><b>Relative Häufigkeit:</b> der Anteil an allen</p><p><b>relative Häufigkeit = absolute Häufigkeit : Gesamtzahl</b></p><p>Beispiel: 10 von 25 Lernenden haben ein Haustier. Absolut: 10, relativ: 10 : 25 = 0,4 = 40 %.<br>Alle relativen Häufigkeiten zusammen ergeben 100 %.</p>`,
   tasks: [
     { lvl: 'Basis', intro: `Wie viele Geschwister hast du? (Klasse 7a)${table([['Geschwister', 'Strichliste'], ['0', tally(4)], ['1', tally(10)], ['2', tally(7)], ['3', tally(3)], ['4 oder mehr', tally(1)]])}`,
@@ -444,7 +450,7 @@ card({ id: '9', title: 'Absolute und relative Häufigkeit', theme: 'Häufigkeite
   ] });
 
 /* ---------- 10 ---------- */
-card({ id: '10', title: 'Absolut oder relativ vergleichen', theme: 'Häufigkeiten',
+card({ id: '10', heft: [0, 1, 2, 3], title: 'Absolut oder relativ vergleichen', theme: 'Häufigkeiten',
   merke: `<p><b>Absoluter Vergleich:</b> Man vergleicht die Anzahlen.<br><b>Relativer Vergleich:</b> Man vergleicht die Anteile.<br>Sind die Gruppen <b>unterschiedlich groß</b>, ist nur der relative Vergleich fair.</p>
   <p>Klasse A: 12 von 20</p>${stripe({ values: [60, 40], labels: ['60 %', ''], colors: ['#1F6F8B', '#D5DDE0'] })}<p>Klasse B: 15 von 30</p>${stripe({ values: [50, 50], labels: ['50 %', ''], colors: ['#E8833A', '#D5DDE0'] })}<p>Absolut hat B mehr, relativ hat A mehr.</p>`,
   tasks: [
@@ -455,7 +461,7 @@ card({ id: '10', title: 'Absolut oder relativ vergleichen', theme: 'Häufigkeite
   ] });
 
 /* ---------- 11 ---------- */
-card({ id: '11', title: 'Irreführende Diagramme', theme: 'Häufigkeiten',
+card({ id: '11', heft: [0, 1, 2], title: 'Irreführende Diagramme', theme: 'Häufigkeiten',
   merke: `<ol><li>Die Achse beginnt <b>nicht bei 0</b>. Kleine Unterschiede wirken riesig.</li><li>Die Abstände auf der Achse sind <b>ungleich</b>.</li><li><b>Bilder</b> statt Säulen: doppelte Breite und Höhe ergibt die vierfache Fläche.</li><li>Es fehlen Beschriftung, Einheit oder Quelle.</li></ol>`,
   tool: { name: 'achse' },
   tasks: [
@@ -468,7 +474,7 @@ card({ id: '11', title: 'Irreführende Diagramme', theme: 'Häufigkeiten',
   ] });
 
 /* ---------- 12 ---------- */
-card({ id: '12', title: 'Den Mittelwert berechnen', theme: 'Mittelwert und Median',
+card({ id: '12', heft: [0, 1, 2, 3], title: 'Den Mittelwert berechnen', theme: 'Mittelwert und Median',
   merke: `<p>Der <b>Mittelwert</b> (Durchschnitt) verteilt alles gleichmäßig.</p><p><b>Mittelwert = Summe aller Werte : Anzahl der Werte</b></p><p>Beispiel: 2, 6, 4 → (2 + 6 + 4) : 3 = 12 : 3 = <b>4</b></p>`,
   tasks: [
     { lvl: 'Basis', icon: '📱', intro: `Amelies Bildschirmzeit in einer Woche (in Minuten):${table([['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'], [180, 150, 210, 165, 240, 300, 290]])}`,
@@ -479,7 +485,7 @@ card({ id: '12', title: 'Den Mittelwert berechnen', theme: 'Mittelwert und Media
   ] });
 
 /* ---------- 13 ---------- */
-card({ id: '13', title: 'Mittelwert aus einer Häufigkeitstabelle', theme: 'Mittelwert und Median',
+card({ id: '13', heft: [0, 1, 2], title: 'Mittelwert aus einer Häufigkeitstabelle', theme: 'Mittelwert und Median',
   merke: `<div class="split"><div><ol><li>Jeden Wert mit seiner Anzahl malnehmen.</li><li>Alle Produkte addieren.</li><li>Durch die Gesamtanzahl teilen.</li></ol></div>
   <div>${table([['Note', 'Anzahl', 'Note · Anzahl'], [1, 2, 2], [2, 4, 8], [3, 3, 9], [4, 1, 4], ['<b>Summe</b>', '<b>10</b>', '<b>23</b>']])}<p>Mittelwert: 23 : 10 = <b>2,3</b></p></div></div>`,
   tasks: [
@@ -490,7 +496,7 @@ card({ id: '13', title: 'Mittelwert aus einer Häufigkeitstabelle', theme: 'Mitt
   ] });
 
 /* ---------- 14 ---------- */
-card({ id: '14', title: 'Den Median bestimmen', theme: 'Mittelwert und Median',
+card({ id: '14', heft: [0, 1, 2], title: 'Den Median bestimmen', theme: 'Mittelwert und Median',
   merke: `<p>Der <b>Median</b> (Zentralwert) ist der Wert in der Mitte einer geordneten Liste.</p><ol><li><b>Ordnen:</b> alle Werte der Größe nach aufschreiben.</li><li><b>Mitte finden:</b> abwechselnd links und rechts einen Wert streichen.</li></ol>
   <p class="chips"><span>5</span><span>8</span><span class="mid">12</span><span>15</span><span>20</span> → Median 12</p>
   <p class="chips"><span>5</span><span>8</span><span class="mid">12</span><span class="mid">15</span><span>20</span><span>30</span> → (12 + 15) : 2 = 13,5</p>`,
@@ -504,7 +510,7 @@ card({ id: '14', title: 'Den Median bestimmen', theme: 'Mittelwert und Median',
   ] });
 
 /* ---------- 15 ---------- */
-card({ id: '15', title: 'Mittelwert oder Median?', theme: 'Mittelwert und Median',
+card({ id: '15', heft: [0, 1, 2], title: 'Mittelwert oder Median?', theme: 'Mittelwert und Median',
   merke: `<p>Ein <b>Ausreißer</b> ist ein Wert, der viel größer oder kleiner ist als die anderen.</p><p>Der <b>Mittelwert</b> verändert sich durch Ausreißer stark, der <b>Median</b> bleibt fast gleich. Bei Ausreißern beschreibt der Median den typischen Wert meist besser.</p>`,
   tool: { name: 'ausreisser' },
   tasks: [
@@ -538,7 +544,7 @@ card({ id: '17', title: 'Mittelwert und Median berechnen', theme: 'Am Computer',
   ] });
 
 /* ---------- Expertenaufgaben ---------- */
-card({ id: 'X1', title: 'Strom-Check: Zwei Schlagzeilen', theme: 'Für Expert*innen', expert: true,
+card({ id: 'X1', heft: [0], title: 'Strom-Check: Zwei Schlagzeilen', theme: 'Für Expert*innen', expert: true,
   merke: `<p class="headlines"><span class="h1">„Solarstrom boomt!“</span><span class="h2">„Ökostrom auf dem Rückzug!“</span></p><p>Können beide Schlagzeilen stimmen? Prüfe es mit den Daten.</p>${table([['', '2025', 'Veränderung zu 2024'], ['Strom insgesamt', '438,2 Mrd. kWh', ''], ['Photovoltaik', '70,1 Mrd. kWh', '+17,4 %'], ['Windkraft', '131,3 Mrd. kWh', '−3,6 %'], ['Erdgas', '70,6 Mrd. kWh', '+10,2 %'], ['Kohle', '96,8 Mrd. kWh', '−0,5 %'], ['Anteil Erneuerbare', '58,6 %', '2024: 59,5 %']])}${quelle('Destatis, Stromerzeugung 2025 (veröffentlicht 2026)')}`,
   tasks: [{ lvl: 'Experten', intro: '', parts: [
     N('a) Wie viel Strom kam 2024 aus Photovoltaik? (Mrd. kWh, eine Nachkommastelle)', 59.7, { tol: 0.06, sol: '70,1 : 1,174 ≈ 59,7' }),
@@ -548,7 +554,7 @@ card({ id: 'X1', title: 'Strom-Check: Zwei Schlagzeilen', theme: 'Für Expert*in
     O('d) Zeichne zu jeder Schlagzeile ein Diagramm, das sie besonders stark wirken lässt. Erkläre deine Tricks.', 'z. B. Photovoltaik-Säulen mit Achse ab 55 Mrd. kWh; Erneuerbaren-Anteil als Linie mit Achse von 58,5 % bis 59,5 %.'),
     O('e) Schreibe drei bis vier Sätze für einen fairen Zeitungsartikel.', '„Photovoltaik hat 2025 deutlich zugelegt (+17 %). Weil es weniger Wind gab, sank der Anteil der Erneuerbaren leicht auf 58,6 %. Erdgas glich die Lücke aus. Wind bleibt mit 30 % der wichtigste Energieträger.“')] }] });
 
-card({ id: 'X2', title: 'Klima-Detektive', theme: 'Für Expert*innen', expert: true,
+card({ id: 'X2', heft: [0], title: 'Klima-Detektive', theme: 'Für Expert*innen', expert: true,
   merke: `<p class="headlines"><span class="h2">„2025 war fast ein Grad kühler als 2024. Der Klimawandel macht offenbar Pause!“</span></p><p>Untersuche mit Daten, ob diese Schlussfolgerung stimmt.</p>${table([['Jahr', ...JAHRE], ['°C', ...TEMP.map(v => fmt(v, 1))]])}<p>Vergleichswerte: Mittel 1961 bis 1990: <b>8,2 °C</b>, Mittel 1991 bis 2020: <b>9,3 °C</b></p>${quelle('DWD, Jahresbilanzen 2018 bis 2025; Referenzwerte laut DWD')}`,
   tasks: [{ lvl: 'Experten', intro: '', parts: [
     N('a) Mittelwert 2018 bis 2025 (eine Nachkommastelle)', 10.3, { unit: '°C', tol: 0.06 }), N('a) Median', 10.45, { unit: '°C' }),
@@ -557,7 +563,7 @@ card({ id: 'X2', title: 'Klima-Detektive', theme: 'Für Expert*innen', expert: t
     O('d) Prüfe die Behauptung mit mindestens zwei Argumenten.', 'Falsch: 2025 war zwar 0,9 Grad kühler als 2024, aber 1,8 Grad wärmer als 1961–1990 und 0,7 Grad wärmer als 1991–2020.'),
     O('e) Warum sollte man aus einem einzelnen Jahr keine Schlüsse über das Klima ziehen?', 'Das Wetter schwankt von Jahr zu Jahr. Klima beschreibt den Durchschnitt über viele Jahre, deshalb vergleicht man mit 30-Jahres-Mitteln.')] }] });
 
-card({ id: 'X3', title: 'Das Notenspiegel-Rätsel', theme: 'Für Expert*innen', expert: true,
+card({ id: 'X3', heft: [0], title: 'Das Notenspiegel-Rätsel', theme: 'Für Expert*innen', expert: true,
   merke: `<p>Eine Klasse mit <b>20 Lernenden</b> hat eine Arbeit geschrieben. Erfinde passende Notenspiegel und prüfe sie.</p><p>Tipp: Bei 20 Lernenden und Mittelwert 3,0 muss die Summe aller Noten 60 sein. Der Median liegt zwischen dem 10. und 11. Wert.</p>`,
   tool: { name: 'noten' },
   tasks: [{ lvl: 'Experten', intro: 'Nutze die Notenspiegel-Werkstatt unten zum Prüfen.', parts: [
@@ -701,8 +707,7 @@ function bindParts(root) {
   });
   root.querySelectorAll('.show').forEach(b => b.onclick = () => {
     const id = b.dataset.id, p = PARTS[id], fb = $('#fb-' + id);
-    fb.innerHTML = `<div class="sol">${p.sol}</div><button class="btn ghost small mark">Habe ich im Hefter</button>`;
-    fb.querySelector('.mark').onclick = () => { S.parts[id] = true; save(); $('#p-' + id).classList.add('ok'); fb.querySelector('.mark').remove(); updateStats(); };
+    fb.innerHTML = `<div class="sol">${p.sol}</div>`;
   });
 }
 
@@ -710,10 +715,7 @@ function bindParts(root) {
 let CUR = null;
 function partIds(c) { const ids = []; c.tasks.forEach((t, ti) => t.parts.forEach((p, pi) => ids.push(`${c.id}-${ti}-${pi}`))); return ids; }
 function updateStats() {
-  if (!CUR) return;
-  const ids = partIds(CUR), n = ids.filter(i => S.parts[i]).length, el = $('#stats');
-  if (el) el.innerHTML = `${n} von ${ids.length} Teilaufgaben geschafft`;
-  if (CUR.eingangscheck) evalEC();
+  if (CUR && CUR.eingangscheck) evalEC();
 }
 function evalEC() {
   const box = $('#ec'); if (!box) return;
@@ -725,46 +727,30 @@ function evalEC() {
 /* ===== Seiten ===== */
 const app = () => $('#app');
 function themeOf(id) { return THEMEN.find(t => t.cards.includes(id)); }
-function progressStripe() {
-  const total = THEMEN.filter(t => !t.optional).reduce((a, t) => a + t.cards.length, 0);
-  let x = 0, g = '';
-  const W = 1000, H = 64;
-  THEMEN.filter(t => !t.optional).forEach(t => {
-    const w = t.cards.length / total * W, d = t.cards.filter(c => S.done[c]).length;
-    g += `<rect x="${x}" y="0" width="${w - 3}" height="${H}" fill="${t.color}" opacity="0.18" rx="4"/>`;
-    g += `<rect x="${x}" y="0" width="${(w - 3) * d / t.cards.length}" height="${H}" fill="${t.color}" rx="4"/>`;
-    x += w;
-  });
-  const done = ORDER.filter(c => !CARDS[c].expert && S.done[c]).length;
-  return `<div class="pstripe"><svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true">${g}</svg></div><p class="pnum"><b>${done}</b> von ${total} Karten erledigt</p>`;
+function orientStripe() {
+  return `<nav class="ostripe" aria-label="Themen">${THEMEN.map(t => `<button type="button" class="seg" data-jump="${t.id}" style="flex:${t.cards.length};background:${t.color}" aria-label="Zu ${t.name} springen"></button>`).join('')}</nav>
+  <p class="legend">${THEMEN.map(t => `<button type="button" data-jump="${t.id}"><i style="background:${t.color}"></i>${t.name}</button>`).join('')}</p>`;
 }
 function home() {
   CUR = null; document.title = 'Statistik 7/8';
   app().innerHTML = `
   <header class="hero">
     <div><h1>Statistik</h1><p class="sub">Freiarbeit Klasse 7/8</p></div>
-    ${progressStripe()}
-    <p class="legend">${THEMEN.filter(t => !t.optional).map(t => `<span><i style="background:${t.color}"></i>${t.name}</span>`).join('')}</p>
+    ${orientStripe()}
   </header>
   <section class="info">
     <details><summary>Worum geht es?</summary><p>Zahlen und Diagramme begegnen dir jeden Tag: in Nachrichten, in der Werbung, bei Umfragen und im Sport. Hier lernst du, Daten übersichtlich darzustellen, auszuwerten und Diagramme kritisch zu prüfen. Am Anfang wiederholst du Brüche und Prozente.</p></details>
     <details><summary>Das kannst du danach</summary><ul><li>Anteile als Bruch, Dezimalzahl und in Prozent angeben und Prozentaufgaben lösen</li><li>Informationen aus Tabellen und Diagrammen entnehmen und deuten</li><li>Daten in Säulen-, Balken-, Linien-, Streifen- und Kreisdiagrammen darstellen</li><li>ein passendes Diagramm auswählen und begründen</li><li>absolute und relative Häufigkeiten berechnen und vergleichen</li><li>irreführende Diagramme erkennen und erklären</li><li>Mittelwert und Median bestimmen und deuten</li><li>Tabellen und Diagramme am Computer erstellen</li></ul></details>
-    <details><summary>So arbeitest du</summary><ol><li>Beginne mit dem Eingangscheck. Er zeigt dir, ob du Karte 1 und 2 brauchst.</li><li>Bearbeite die Karten der Reihe nach und schreibe Datum und Kartennummer in deinen Hefter.</li><li>Übertrage jeden Merke-Kasten 💡📒 in deinen Hefter.</li><li>Rechne im Hefter, gib hier nur das Ergebnis ein. Notiere immer den Rechenweg.</li><li>Alle bearbeiten die Aufgaben Basis. Standard und Knobeln sind die nächsten Stufen.</li><li>Bei Fragen: erst Hefter und Merke-Kästen, dann Mitschüler*innen, dann die Lehrkraft.</li><li>Nach Karte 11 und nach Karte 17 schreibst du einen Test bei der Lehrkraft.</li></ol></details>
+    <details><summary>So arbeitest du</summary><ol><li>Beginne mit dem Eingangscheck. Er zeigt dir, ob du Karte 1 und 2 brauchst.</li><li>Bearbeite die Karten der Reihe nach und schreibe Datum und Kartennummer in deinen Hefter.</li><li>Übertrage jeden Merke-Kasten 💡📒 in deinen Hefter.</li><li>Steht bei einer Aufgabe 📒, notierst du den Rechenweg in deinem Hefter. Hier gibst du nur das Ergebnis ein.</li><li>Alle bearbeiten die Aufgaben Basis. Standard und Knobeln sind die nächsten Stufen.</li><li>Bei Fragen: erst Hefter und Merke-Kästen, dann Mitschüler*innen, dann die Lehrkraft.</li><li>Nach Karte 11 machst du „Teste dich 1“, nach Karte 17 „Teste dich 2“ beim Mathe-Team.</li></ol></details>
   </section>
-  ${THEMEN.map(t => `<section class="theme"><h2><i style="background:${t.color}"></i>${t.name}${t.optional ? ' <small>freiwillig</small>' : ''}</h2>
-    <div class="grid">${t.cards.map(id => `<button type="button" class="tile ${S.done[id] ? 'done' : ''}" data-go="${id}" style="--c:${t.color}"><span class="nr">${id}</span><span class="tt">${CARDS[id].title}</span>${S.done[id] ? '<span class="tick" aria-label="erledigt">✓</span>' : ''}</button>`).join('')}
-    ${t.test ? `<div class="tile test"><span class="nr">${t.test.replace('Test ', 'T')}</span><span class="tt">${t.test} bei der Lehrkraft</span></div>` : ''}</div></section>`).join('')}
-  <footer><button class="btn ghost small" id="reset">Fortschritt auf diesem Gerät löschen</button><p>Dein Fortschritt wird nur auf diesem Gerät gespeichert.</p></footer>`;
-  $('#reset').onclick = ev => {
-    const b = ev.currentTarget;
-    if (b.dataset.sure) { S = { done: {}, parts: {} }; save(); home(); }
-    else { b.dataset.sure = '1'; b.textContent = 'Wirklich alles löschen? Zum Bestätigen noch einmal tippen'; setTimeout(() => { if (b.isConnected) { delete b.dataset.sure; b.textContent = 'Fortschritt auf diesem Gerät löschen'; } }, 5000); }
-  };
+  ${THEMEN.map(t => `<section class="theme" id="t-${t.id}"><h2><i style="background:${t.color}"></i>${t.name}${t.optional ? ' <small>freiwillig</small>' : ''}</h2>
+    <div class="grid">${t.cards.map(id => `<button type="button" class="tile" data-go="${id}" style="--c:${t.color}"><span class="nr">${id}</span><span class="tt">${CARDS[id].title}</span></button>`).join('')}
+    ${t.test ? `<div class="tile test"><span class="nr">${t.test.replace('Teste dich ', 'T')}</span><span class="tt">${t.test} beim Mathe-Team</span></div>` : ''}</div></section>`).join('')}`;
   window.scrollTo(0, 0);
 }
 function showCard(id) {
   const c = CARDS[id]; if (!c) return home();
-  CUR = c; document.title = `Karte ${id}: ${c.title}`;
+  CUR = c; S.parts = {}; document.title = `Karte ${id}: ${c.title}`;
   const t = themeOf(id), i = ORDER.indexOf(id), prev = ORDER[i - 1], next = ORDER[i + 1];
   let html = `<nav class="bar" style="--c:${t.color}"><button type="button" class="btn ghost" data-go="">Übersicht</button><span class="where">${t.name}</span><span class="pn">${prev ? `<button type="button" class="btn ghost" data-go="${prev}" aria-label="vorherige Karte">‹ ${prev}</button>` : ''}${next ? `<button type="button" class="btn ghost" data-go="${next}" aria-label="nächste Karte">${next} ›</button>` : ''}</span></nav>
   <article class="card" style="--c:${t.color}"><header class="ch"><span class="nr">${id}</span><div><p class="th">${c.theme}</p><h1>${c.title}</h1></div></header>`;
@@ -774,15 +760,15 @@ function showCard(id) {
     if (c.eingangscheck && (ti === 0 || ti === 4)) html += `<h2 class="sect">${ti === 0 ? 'Teil A: Brüche, Dezimalzahlen, Prozente' : 'Teil B: Prozentrechnung'}</h2>`;
     ta++;
     const parts = tk.parts.map((p, pi) => { const pid = `${id}-${ti}-${pi}`; PARTS[pid] = p; return partHTML(p, pid); }).join('');
-    html += `<section class="task"><header><span class="ti">${tk.icon || LVL_ICON[tk.lvl] || '✏️'}</span><h3>Aufgabe ${ta}</h3><span class="lvl">${tk.lvl}</span></header>${tk.intro ? `<div class="intro">${tk.intro}</div>` : ''}${parts}</section>`;
+    const heft = (c.heft || []).includes(ti) ? `<p class="heft"><span aria-hidden="true">📒</span> Notiere den Rechenweg in deinem Hefter.</p>` : '';
+    html += `<section class="task"><header><span class="ti">${tk.icon || LVL_ICON[tk.lvl] || '✏️'}</span><h3>Aufgabe ${ta}</h3><span class="lvl">${tk.lvl}</span></header>${heft}${tk.intro ? `<div class="intro">${tk.intro}</div>` : ''}${parts}</section>`;
   });
   if (c.eingangscheck) html += `<section class="task" id="ec"></section>`;
   if (c.tool) html += `<section class="tool" id="tool"></section>`;
-  html += `<footer class="cf"><p id="stats"></p><button class="btn ${S.done[id] ? 'ghost' : ''}" id="done">${S.done[id] ? 'Erledigt ✓ (zurücknehmen)' : 'Karte als erledigt abhaken'}</button>${next ? `<button type="button" class="btn ghost" data-go="${next}">Weiter zu Karte ${next}</button>` : ''}</footer></article>`;
+  html += `<footer class="cf">${next ? `<button type="button" class="btn" data-go="${next}">Weiter zu Karte ${next}</button>` : ''}<button type="button" class="btn ghost" data-go="">Zur Übersicht</button></footer></article>`;
   app().innerHTML = html;
   bindParts(app());
   if (c.tool) TOOLS[c.tool.name]($('#tool'), c.tool.preset);
-  $('#done').onclick = () => { S.done[id] = !S.done[id]; save(); showCard(id); };
   updateStats(); window.scrollTo(0, 0);
 }
 function render(id) { id ? showCard(id) : home(); }
@@ -791,6 +777,8 @@ function go(id) {
   try { history.pushState({ id }, '', id ? '#' + encodeURIComponent(id) : location.pathname + location.search); } catch (e) {}
 }
 document.addEventListener('click', ev => {
+  const j = ev.target.closest('[data-jump]');
+  if (j) { const s = document.getElementById('t-' + j.dataset.jump); if (s) s.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' }); return; }
   const t = ev.target.closest('[data-go]');
   if (!t) return;
   ev.preventDefault();
