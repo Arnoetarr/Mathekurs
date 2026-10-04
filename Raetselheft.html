@@ -221,6 +221,9 @@ button:focus-visible,.cell:focus-visible{outline:3px solid var(--sea);outline-of
 .loopb.ro{min-width:0}
 .panel .small{font-size:14px;color:var(--soft)}
 .expl .expl{margin:2px 0 4px;padding-left:20px;border-left:2px solid var(--robo)}
+.slot{width:42px;height:42px;border-radius:10px;border:2px dashed var(--line);background:none;color:var(--soft);font-weight:700;font-size:18px;padding:0}
+.slot.on{width:auto;padding:0 10px;border:2px solid var(--robo);color:var(--robo);font-size:14px;background:color-mix(in srgb,var(--robo) 8%,var(--cell))}
+.phint{font-size:13px;color:var(--soft);margin:8px 2px 0}
 </style>
 </head>
 <body>
@@ -1138,7 +1141,8 @@ function renderRobot(){
     const list=listAt(G.target);if(b.dataset.c==='W'){if(progSize(G.prog)+1>=L.slots){setStatus('Für einen Block mit Inhalt fehlt der Platz.','bad');return}
       list.push({c:'W',k:2,b:[]});G.target=G.target.concat(list.length-1)}else list.push({c:b.dataset.c});
     resetBot();drawProg();saveRobot()};
-  $('#prog').onclick=e=>{if(G.running)return;const el=e.target.closest('[data-act]');if(!el)return;const path=el.dataset.p===''?[]:el.dataset.p.split('.').map(Number);
+  $('#prog').onclick=e=>{if(G.running)return;const el=e.target.closest('[data-act]');
+    if(!el){if(e.target.closest('.plist')){G.target=[];drawProg()}return}const path=el.dataset.p===''?[]:el.dataset.p.split('.').map(Number);
     const act=el.dataset.act;
     if(act==='main'){G.target=[]}
     else if(act==='sel'){G.target=path}
@@ -1204,10 +1208,13 @@ function progHTML(list,path){
     if(x.c!=='W')return `<button class="chip ${x.c}" data-act="del" data-p="${p}" aria-label="${{F:'Vor',L:'Links',R:'Rechts'}[x.c]} entfernen">${cmdIcon(x.c)}</button>`;
     const sel=G.target.join('.')===p;
     return `<div class="loopb${sel?' sel':''}" data-pp="${p}"><div class="lh"><button class="lt" data-act="sel" data-p="${p}">${cmdIcon('W')}Wiederhole</button><button class="lk" data-act="k" data-p="${p}" aria-label="Anzahl ändern">${x.k}×</button><button class="lx" data-act="del" data-p="${p}" aria-label="Block entfernen">✕</button></div>
-      <div class="lbody" data-act="sel" data-p="${p}">${progHTML(x.b,path.concat(i))||'<span class="empty">leer</span>'}</div></div>`}).join('')}
+      <div class="lbody" data-act="sel" data-p="${p}">${progHTML(x.b,path.concat(i))}${slotHTML(path.concat(i),'sel')}</div></div>`}).join('')}
+function slotHTML(path,act){const p=path.join('.');const on=G.target.join('.')===p;
+  return `<button class="slot${on?' on':''}" data-act="${act}" data-p="${p}" aria-label="${on?'Neue Befehle landen hier':'Hier einfügen'}">${on?'▸ hier':'+'}</button>`}
 function drawProg(){const{L}=G;const used=progSize(G.prog);
   $('#prog').innerHTML=`<div class="phead"><button class="pmain${G.target.length?'':' sel'}" data-act="main" data-p="">Programm</button><span class="slots${used>=L.slots?' full':''}">${used} / ${L.slots} Befehle</span></div>
-    <div class="plist">${progHTML(G.prog,[])||'<span class="empty">Tippe unten auf Befehle.</span>'}</div>`;
+    <div class="plist">${progHTML(G.prog,[])}${slotHTML([],'main')}${G.prog.length?'':'<span class="empty">Tippe unten auf Befehle.</span>'}</div>
+    <p class="phint">Neue Befehle landen bei <b>▸ hier</b>. Tippe auf ein <b>+</b>, um die Stelle zu wechseln, zum Beispiel hinter einen Block.</p>`;
   document.querySelectorAll('#pal .cmd').forEach(b=>b.disabled=used>=L.slots)}
 function placeBot(anim=true){const b=$('#bot');if(!b)return;const{cs}=G;b.style.transition=anim?'transform .28s ease':'none';
   b.style.transform=`translate(${G.bot.c*cs}px,${G.bot.r*cs}px) rotate(${G.bot.turns*90+G.L.dir*90}deg)`}
