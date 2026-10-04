@@ -10,7 +10,7 @@
 <style>
 :root{
   --paper:#F6F8FA; --rule:#DFE7EF; --ink:#1C2B3A; --soft:#5C6B7A; --line:#8796A5; --cell:#FFFFFF;
-  --tent:#2E7D4F; --sea:#1F5E99; --star:#8A4FB0; --gold:#C99A00; --bad:#C2412D; --ok:#2E7D4F;
+  --tent:#2E7D4F; --sea:#1F5E99; --star:#8A4FB0; --bin:#0E7470; --hashi:#9A5B13; --loop:#B0306A; --robo:#3A4BB0; --gold:#C99A00; --bad:#C2412D; --ok:#2E7D4F;
   --ship:#2F4558; --water:#3A8DDE; --dot:#9AA7B4; --shade:rgba(28,43,58,.06);
   --p0:#FBE3EA;--p1:#E1EEFA;--p2:#FFF4D6;--p3:#E4F3E6;--p4:#F0E3F7;--p5:#DDF4F6;--p6:#FDE7DA;--p7:#EDF5DC;--p8:#E7E3F8;--p9:#F8EEDB;
   --display:"Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
@@ -21,14 +21,14 @@
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
     --paper:#111921; --rule:#1B2631; --ink:#E4ECF3; --soft:#9AAABA; --line:#5E6E7E; --cell:#18222C;
-    --tent:#5CC28A; --sea:#6FAEEA; --star:#C392E3; --gold:#F1C232; --bad:#F07A63; --ok:#5CC28A;
+    --tent:#5CC28A; --sea:#6FAEEA; --star:#C392E3; --bin:#4FC4BD; --hashi:#E2A65A; --loop:#F07AAE; --robo:#8C9BF2; --gold:#F1C232; --bad:#F07A63; --ok:#5CC28A;
     --ship:#C9D6E2; --water:#6FAEEA; --dot:#5E6E7E; --shade:rgba(228,236,243,.06);
     --p0:#3A2630;--p1:#1F3247;--p2:#3A3320;--p3:#213628;--p4:#33263D;--p5:#1D3537;--p6:#3B2B22;--p7:#2C3622;--p8:#2A2840;--p9:#383024;
   }
 }
 :root[data-theme="dark"]{
     --paper:#111921; --rule:#1B2631; --ink:#E4ECF3; --soft:#9AAABA; --line:#5E6E7E; --cell:#18222C;
-    --tent:#5CC28A; --sea:#6FAEEA; --star:#C392E3; --gold:#F1C232; --bad:#F07A63; --ok:#5CC28A;
+    --tent:#5CC28A; --sea:#6FAEEA; --star:#C392E3; --bin:#4FC4BD; --hashi:#E2A65A; --loop:#F07AAE; --robo:#8C9BF2; --gold:#F1C232; --bad:#F07A63; --ok:#5CC28A;
     --ship:#C9D6E2; --water:#6FAEEA; --dot:#5E6E7E; --shade:rgba(228,236,243,.06);
     --p0:#3A2630;--p1:#1F3247;--p2:#3A3320;--p3:#213628;--p4:#33263D;--p5:#1D3537;--p6:#3B2B22;--p7:#2C3622;--p8:#2A2840;--p9:#383024;
 }
@@ -136,463 +136,1024 @@ button:focus-visible,.cell:focus-visible{outline:3px solid var(--sea);outline-of
   .solved .cell{animation:pop .5s ease both;animation-delay:calc(var(--d)*18ms)}
   @keyframes pop{50%{transform:scale(.88)}}
 }
+
+.sec{font-family:var(--display);font-weight:600;font-size:15px;color:var(--soft);margin:26px 4px 0;letter-spacing:.01em}
+.sec+.book{margin-top:6px}
+.badges{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin:0 0 6px}
+.badge{font-size:13.5px;color:var(--soft);background:var(--cell);border:1.5px solid var(--line);border-radius:999px;padding:3px 11px;display:inline-flex;align-items:center;gap:6px}
+.badge.tech{color:var(--ink)}
+.pip{width:8px;height:8px;border-radius:2px;border:1.5px solid var(--c);display:inline-block}
+.pip.on{background:var(--c)}
+.panel .tech li.cur{font-weight:700}
+.bin{width:68%;height:68%;border-radius:50%;display:block}
+.bin.dark{background:var(--bin)}
+.bin.light{border:3px solid var(--bin);background:var(--cell)}
+.fixedcell .bin{box-shadow:0 0 0 2px var(--cell),0 0 0 4px color-mix(in srgb,var(--ink) 35%,transparent)}
+.seg.mid{border-radius:12%}
+.tool.main{background:var(--c);border-color:var(--c);color:var(--paper);font-weight:700}
+.tool:disabled{opacity:.5}
+/* SVG-Bretter */
+.svgboard{display:block;max-width:100%;height:auto;touch-action:none;background:var(--cell);border:2px solid var(--ink);border-radius:6px}
+#gl line{stroke:var(--rule);stroke-width:1}
+.br{stroke:var(--hashi);stroke-width:3.2;stroke-linecap:round}
+.br.err{stroke:var(--bad)}
+.isl circle{fill:var(--cell);stroke:var(--hashi);stroke-width:2.6}
+.isl text{text-anchor:middle;font-weight:700;fill:var(--ink);font-family:var(--body);pointer-events:none}
+.isl.done circle{fill:color-mix(in srgb,var(--hashi) 18%,var(--cell))}
+.isl.done text{fill:var(--soft)}
+.isl.over circle{stroke:var(--bad)}.isl.over text{fill:var(--bad)}
+.isl.sel circle{fill:var(--hashi);}.isl.sel text{fill:var(--paper)}
+.isl.nb circle{stroke-dasharray:4 3}
+.slither{background:var(--cell)}
+.slither .dots circle{fill:var(--ink)}
+.slither text{text-anchor:middle;font-weight:700;fill:var(--ink);font-family:var(--body)}
+.slither text.done{fill:var(--soft);opacity:.55}.slither text.over{fill:var(--bad)}
+.ln{stroke:var(--loop);stroke-width:5;stroke-linecap:round}
+.ln.err{stroke:var(--bad)}
+.xx{stroke:var(--soft);stroke-width:2;stroke-linecap:round}
+.xx.err{stroke:var(--bad);stroke-width:3}
+/* Roboter */
+.rgrid{position:relative;display:grid;border:2px solid var(--ink);border-radius:6px;overflow:hidden;background:var(--cell)}
+.rc{width:var(--cs);height:var(--cs);border-right:1px solid var(--rule);border-bottom:1px solid var(--rule);display:grid;place-items:center;transition:background .2s}
+.rc svg{width:70%;height:70%}
+.rc.trail{background:color-mix(in srgb,var(--robo) 14%,var(--cell))}
+.rc.got .item{opacity:.25}
+.rc.crash{background:color-mix(in srgb,var(--bad) 30%,var(--cell))}
+.rc .item{display:grid;place-items:center;width:100%;height:100%;transition:opacity .3s}
+.wall{width:86%;height:86%;border-radius:5px;background:repeating-linear-gradient(45deg,var(--line) 0 5px,color-mix(in srgb,var(--line) 60%,var(--cell)) 5px 10px)}
+.bot{position:absolute;left:0;top:0;width:var(--cs);height:var(--cs);display:grid;place-items:center;pointer-events:none}
+.bot svg{width:72%;height:72%}
+.prog{max-width:520px;margin:14px auto 0;background:var(--cell);border:1.5px solid var(--line);border-radius:14px;padding:10px}
+.phead{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.pmain{background:none;border:0;font-weight:700;padding:4px 8px;border-radius:8px}
+.pmain.sel{background:color-mix(in srgb,var(--robo) 15%,transparent);color:var(--robo)}
+.slots{font-size:14px;color:var(--soft);font-variant-numeric:tabular-nums}.slots.full{color:var(--bad);font-weight:700}
+.plist,.lbody{display:flex;flex-wrap:wrap;gap:6px;align-items:flex-start}
+.empty{color:var(--soft);font-size:14px;padding:8px 4px}
+.chip{width:42px;height:42px;border-radius:10px;border:0;display:grid;place-items:center;color:#fff}
+.chip svg{width:24px;height:24px}
+.chip.F,.cmd.F{background:#2E7D4F}.chip.L,.cmd.L{background:#1F5E99}.chip.R,.cmd.R{background:#8A4FB0}.cmd.W{background:var(--robo)}
+.chip.act{outline:3px solid var(--gold);outline-offset:2px}
+.loopb{border:2px solid var(--robo);border-radius:12px;padding:4px;background:color-mix(in srgb,var(--robo) 6%,var(--cell));min-width:120px}
+.loopb.sel{box-shadow:0 0 0 3px color-mix(in srgb,var(--robo) 40%,transparent)}
+.lh{display:flex;align-items:center;gap:4px;margin-bottom:4px}
+.lt{background:none;border:0;display:flex;align-items:center;gap:4px;font-size:14px;font-weight:700;color:var(--robo);padding:2px 4px}
+.lt svg{width:16px;height:16px}
+.lk{border:1.5px solid var(--robo);background:var(--cell);color:var(--robo);border-radius:8px;font-weight:700;padding:1px 8px;font-variant-numeric:tabular-nums}
+.lx{margin-left:auto;background:none;border:0;color:var(--soft);font-size:14px;padding:2px 6px}
+.lbody{min-height:46px;padding:2px;border-radius:8px}
+.palette{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;max-width:520px;margin:10px auto 0}
+.cmd{border:0;border-radius:12px;color:#fff;padding:10px 4px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:13.5px;font-weight:700}
+.cmd svg{width:24px;height:24px}
+.cmd:disabled{opacity:.35}
 </style>
 </head>
 <body>
 <main id="app"></main>
 <div class="sheet" id="sheet" role="dialog" aria-modal="true"></div>
 <script>
-// ===== Rätsel-Engine: Generatoren + Solver (eindeutige Lösung) =====
+// ===================== Rätsel-Engine =====================
+// Jedes Rätsel wird als Bedingungsmodell (0/1-Variablen) beschrieben.
+// Ein logischer Löser bewertet die nötige Technik:
+//   1 = Grundregeln (jede Regel einzeln anwenden)
+//   2 = Kombinieren (zwei Regeln/Bereiche zusammen betrachten)
+//   3 = Widerspruch (Annahme treffen, Folgen prüfen, verwerfen)
+// Rätsel, die mit Stufe 1-3 vollständig lösbar sind, haben automatisch genau eine Lösung.
+
 function rng(seed){let a=seed>>>0;return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
 const N4=[[-1,0],[1,0],[0,-1],[0,1]];
 const N8=[[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]];
 function shuffle(a,R){for(let i=a.length-1;i>0;i--){const j=Math.floor(R()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 const pick=(a,R)=>a[Math.floor(R()*a.length)];
+const now=()=>(typeof performance!=='undefined'?performance.now():Date.now());
+
+// ---------- Kern ----------
+function Model(nv){this.nv=nv;this.cons=[];this.vc=Array.from({length:nv},()=>[]);this.check=null;this.final=null;this.h1=null;this.h2=null}
+Model.prototype.add=function(c){c.id=this.cons.length;this.cons.push(c);for(const v of c.cells)this.vc[v].push(c.id);return c};
+Model.prototype.sum=function(cells,lo,hi){const ok=new Uint8Array(cells.length+1);for(let s=Math.max(0,lo);s<=Math.min(hi,cells.length);s++)ok[s]=1;return this.add({k:0,cells,ok,lo,hi:Math.min(hi,cells.length)})};
+Model.prototype.sumIn=function(cells,set){const ok=new Uint8Array(cells.length+1);let lo=99,hi=-1;for(const s of set)if(s<=cells.length){ok[s]=1;lo=Math.min(lo,s);hi=Math.max(hi,s)}return this.add({k:0,cells,ok,lo,hi})};
+Model.prototype.table=function(cells,tuples){return this.add({k:1,cells,tuples})};
+Model.prototype.isl=function(pairs,num){return this.add({k:2,cells:pairs.flat(),pairs,num})};
+
+function step1(c,vals,set){
+  if(c.k===0){let t=0,u=0;for(const v of c.cells){const x=vals[v];if(x===1)t++;else if(x<0)u++}
+    let mn=-1,mx=-1;for(let s=t;s<=t+u;s++)if(c.ok[s]){if(mn<0)mn=s;mx=s}
+    if(mn<0)return false;if(!u)return true;
+    if(mx===t){for(const v of c.cells)if(vals[v]<0)set(v,0)}else if(mn===t+u){for(const v of c.cells)if(vals[v]<0)set(v,1)}
+    return true}
+  if(c.k===1){const n=c.cells.length;let agree=null,cnt=0;
+    for(const tp of c.tuples){let ok=true;for(let j=0;j<n;j++){const x=vals[c.cells[j]];if(x>=0&&x!==tp[j]){ok=false;break}}
+      if(!ok)continue;cnt++;if(!agree)agree=Array.from(tp);else for(let j=0;j<n;j++)if(agree[j]!==tp[j])agree[j]=-1}
+    if(!cnt)return false;for(let j=0;j<n;j++){const v=c.cells[j];if(vals[v]<0&&agree[j]>=0)set(v,agree[j])}
+    return true}
+  // Insel (Brückenbau): jede Verbindung trägt 0..2 Brücken
+  let smin=0,smax=0;const mins=[],maxs=[];
+  for(const[a,b]of c.pairs){const A=vals[a],B=vals[b];let mn,mx;
+    if(A===0){mn=0;mx=0}else if(A===1){mn=B===1?2:1;mx=B===0?1:2}else{mn=B===1?2:0;mx=B===0?1:2}
+    mins.push(mn);maxs.push(mx);smin+=mn;smax+=mx}
+  if(smin>c.num||smax<c.num)return false;
+  for(let j=0;j<c.pairs.length;j++){const lo=c.num-(smax-maxs[j]),hi=c.num-(smin-mins[j]);const[a,b]=c.pairs[j];
+    if(lo>=1&&vals[a]<0)set(a,1);if(lo>=2&&vals[b]<0)set(b,1);
+    if(hi<=1&&vals[b]<0)set(b,0);if(hi<=0&&vals[a]<0)set(a,0)}
+  return true;
+}
+function prop(m,vals,start){
+  const inq=new Uint8Array(m.cons.length),q=[];
+  if(start){for(const i of start)if(!inq[i]){inq[i]=1;q.push(i)}}else for(let i=0;i<m.cons.length;i++){q.push(i);inq[i]=1}
+  const set=(v,x)=>{vals[v]=x;for(const c of m.vc[v])if(!inq[c]){inq[c]=1;q.push(c)}};
+  while(q.length){const ci=q.pop();inq[ci]=0;if(!step1(m.cons[ci],vals,set))return false}
+  return true;
+}
+// Stufe 1 vollständig: Einzelregeln + typeigene Grundregeln + Widerspruchsprüfung
+function prop1(m,vals,start){
+  if(!prop(m,vals,start))return false;
+  if(m.h1){for(let g=0;g<500;g++){const r=m.h1(vals);if(r<0)return false;if(!r)break;if(!prop(m,vals))return false}}
+  return m.check?m.check(vals):true;
+}
+// Stufe 2: zwei Summenbedingungen gemeinsam betrachten
+function pairStep(m,vals){
+  if(!m.sums)m.sums=m.cons.filter(c=>c.k===0&&c.cells.length>=2);
+  const S=m.sums,info=[],byVar=new Map();
+  for(let k=0;k<S.length;k++){const c=S[k];let t=0;const U=[];for(const v of c.cells){const x=vals[v];if(x===1)t++;else if(x<0)U.push(v)}
+    info.push({U,lo:c.lo-t,hi:c.hi-t});if(!U.length)continue;for(const v of U){let l=byVar.get(v);if(!l)byVar.set(v,l=[]);l.push(k)}}
+  const mark=new Int32Array(m.nv).fill(-1);
+  for(let a=0;a<S.length;a++){const A=info[a];if(!A.U.length)continue;
+    for(const v of A.U)mark[v]=a;const seen=new Set();
+    for(const v of A.U)for(const b of byVar.get(v)){if(b<=a||seen.has(b))continue;seen.add(b);
+      const B=info[b];const I=[],Bp=[];for(const w of B.U)(mark[w]===a?I:Bp).push(w);
+      const Ap=A.U.filter(w=>!I.includes(w));
+      const xlo=Math.max(0,A.lo-Ap.length,B.lo-Bp.length),xhi=Math.min(I.length,A.hi,B.hi);
+      if(xlo>xhi)return -1;
+      let ch=false;
+      const apply=(L,lo,hi)=>{if(!L.length)return;lo=Math.max(0,lo);hi=Math.min(L.length,hi);if(lo>hi){ch=-1;return}
+        if(hi===0){L.forEach(w=>vals[w]=0);ch=ch||true}else if(lo===L.length){L.forEach(w=>vals[w]=1);ch=ch||true}};
+      apply(Bp,B.lo-xhi,B.hi-xlo);if(ch===-1)return -1;if(ch)return 1;
+      apply(Ap,A.lo-xhi,A.hi-xlo);if(ch===-1)return -1;if(ch)return 1;
+      if(I.length){if(xhi===0){I.forEach(w=>vals[w]=0);return 1}if(xlo===I.length){I.forEach(w=>vals[w]=1);return 1}}
+    }
+    for(const v of A.U)mark[v]=-1;
+  }
+  return 0;
+}
+// Stufe 3: Annahme treffen, mit Grundregeln weiterdenken, bei Widerspruch verwerfen
+function trialStep(m,vals){
+  for(let v=0;v<m.nv;v++){if(vals[v]>=0)continue;
+    for(const x of [1,0]){const w=Int8Array.from(vals);w[v]=x;if(!prop1(m,w,m.vc[v])){vals[v]=1-x;return 1}}}
+  return 0;
+}
+function rate(m,given){
+  const vals=Int8Array.from(given);let tier=1;
+  if(!prop1(m,vals))return{tier:-1};
+  for(;;){
+    if(vals.every(x=>x>=0))break;
+    let r=pairStep(m,vals);if(!r&&m.h2)r=m.h2(vals);
+    if(r<0)return{tier:-1};
+    if(r>0){tier=Math.max(tier,2);if(!prop1(m,vals))return{tier:-1};continue}
+    r=trialStep(m,vals);
+    if(r>0){tier=3;if(!prop1(m,vals))return{tier:-1};continue}
+    return{tier:4,vals};
+  }
+  if(m.final&&!m.final(vals))return{tier:-1};
+  return{tier,vals};
+}
+// Vollständige Suche (zählt Lösungen bzw. liefert eine zufällige Lösung)
+function solveCount(m,given,limit=2,R=null,budget=60000){
+  const sols=[];let nodes=0;
+  (function rec(vals,start){
+    if(sols.length>=limit||++nodes>budget)return;if(!prop1(m,vals,start))return;
+    let v=-1,best=1e9;
+    if(!m.big)m.big=m.cons.filter(c=>c.k===0&&c.cells.length>=3);
+    for(const c of m.big){let u=0,f=-1;for(const x of c.cells)if(vals[x]<0){u++;if(f<0)f=x}if(u&&u<best){best=u;v=f;if(u<=2)break}}
+    if(v<0)for(let i=0;i<m.nv;i++)if(vals[i]<0){v=i;break}
+    if(v<0){if(!m.final||m.final(vals))sols.push(vals);return}
+    const order=R&&R()<.5?[0,1]:[1,0];
+    for(const x of order){const w=Int8Array.from(vals);w[v]=x;rec(w,m.vc[v])}
+  })(Int8Array.from(given),null);
+  return nodes>budget?null:sols;
+}
+function kuhn(left,adj){ // adj: Array of arrays (rechte Knoten), true wenn alle links paarbar
+  const own=new Map();
+  function aug(u,seen){for(const x of adj[u]){if(seen.has(x))continue;seen.add(x);if(!own.has(x)||aug(own.get(x),seen)){own.set(x,u);return true}}return false}
+  for(let u=0;u<left;u++)if(!aug(u,new Set()))return false;return true;
+}
 
 // ---------- Zeltlager ----------
-function solveTents(n,trees,rows,cols,limit=2,budget=2e6){
-  const isTree=new Uint8Array(n*n);trees.forEach(i=>isTree[i]=1);
-  const cand=[];
-  for(let i=0;i<n*n;i++){if(isTree[i])continue;const r=(i/n)|0,c=i%n;
-    if(!rows[r]||!cols[c])continue;
-    if(N4.some(([a,b])=>{const rr=r+a,cc=c+b;return rr>=0&&rr<n&&cc>=0&&cc<n&&isTree[rr*n+cc]}))cand.push(i);}
-  const m=cand.length;
-  const remR=[],remC=[];// verbleibende Kandidaten ab Index k
-  for(let k=0;k<=m;k++){remR.push(new Int16Array(n));remC.push(new Int16Array(n));}
-  for(let k=m-1;k>=0;k--){remR[k].set(remR[k+1]);remC[k].set(remC[k+1]);const i=cand[k];remR[k][(i/n)|0]++;remC[k][i%n]++;}
-  const idxOf=new Int32Array(n*n).fill(-1);cand.forEach((i,k)=>idxOf[i]=k);
-  const treeCands=trees.map(t=>{const r=(t/n)|0,c=t%n;return N4.map(([a,b])=>[r+a,c+b]).filter(([x,y])=>x>=0&&x<n&&y>=0&&y<n&&idxOf[x*n+y]>=0).map(([x,y])=>x*n+y)});
-  const checkAt=Array.from({length:m},()=>[]);
-  for(let t=0;t<trees.length;t++){if(!treeCands[t].length)return[];checkAt[Math.max(...treeCands[t].map(i=>idxOf[i]))].push(t);}
-  const tent=new Uint8Array(n*n),rc=new Int16Array(n),cc=new Int16Array(n);const sols=[];let steps=0;
-  function matching(){const tl=[];for(let i=0;i<n*n;i++)if(tent[i])tl.push(i);
-    if(tl.length!==trees.length)return false;const own=new Map();
-    function aug(t,seen){for(const x of treeCands[t]){if(!tent[x]||seen.has(x))continue;seen.add(x);if(!own.has(x)||aug(own.get(x),seen)){own.set(x,t);return true}}return false}
-    for(let t=0;t<trees.length;t++)if(!aug(t,new Set()))return false;return true}
-  function rec(k){
-    if(sols.length>=limit||++steps>budget)return;
-    if(k===m){for(let r=0;r<n;r++)if(rc[r]!==rows[r]||cc[r]!==cols[r])return;
-      if(matching())sols.push(Array.from(tent));return}
-    const i=cand[k],r=(i/n)|0,c=i%n;
-    for(const v of [1,0]){
-      if(v){if(rc[r]>=rows[r]||cc[c]>=cols[c])continue;
-        let bad=false;for(const[a,b]of N8){const x=r+a,y=c+b;if(x>=0&&x<n&&y>=0&&y<n&&tent[x*n+y]){bad=true;break}}if(bad)continue;
-        tent[i]=1;rc[r]++;cc[c]++;}
-      let ok=rc[r]+remR[k+1][r]>=rows[r]&&cc[c]+remC[k+1][c]>=cols[c];
-      if(ok)for(const t of checkAt[k]){if(!treeCands[t].some(x=>tent[x])){ok=false;break}}
-      if(ok)rec(k+1);
-      if(v){tent[i]=0;rc[r]--;cc[c]--;}
-    }
-  }
-  rec(0);return steps>budget?null:sols;
+function modelTents(P){
+  const n=P.n,m=new Model(n*n),given=new Int8Array(n*n).fill(-1);
+  const isT=new Uint8Array(n*n);P.trees.forEach(i=>isT[i]=1);
+  const inb=(r,c)=>r>=0&&r<n&&c>=0&&c<n;
+  for(let i=0;i<n*n;i++){const r=(i/n)|0,c=i%n;
+    if(isT[i]||!N4.some(([a,b])=>inb(r+a,c+b)&&isT[(r+a)*n+c+b]))given[i]=0}
+  for(let r=0;r<n;r++)m.sum([...Array(n)].map((_,c)=>r*n+c),P.rows[r],P.rows[r]);
+  for(let c=0;c<n;c++)m.sum([...Array(n)].map((_,r)=>r*n+c),P.cols[c],P.cols[c]);
+  for(let r=0;r<n-1;r++)for(let c=0;c<n-1;c++)m.sum([r*n+c,r*n+c+1,(r+1)*n+c,(r+1)*n+c+1],0,1);
+  const tn=P.trees.map(t=>{const r=(t/n)|0,c=t%n;return N4.filter(([a,b])=>inb(r+a,c+b)&&!isT[(r+a)*n+c+b]).map(([a,b])=>(r+a)*n+c+b)});
+  tn.forEach(cs=>m.sum(cs,1,4));
+  const cellTrees=new Map();P.trees.forEach((t,k)=>tn[k].forEach(x=>{if(!cellTrees.has(x))cellTrees.set(x,[]);cellTrees.get(x).push(k)}));
+  m.check=vals=>{
+    if(!kuhn(P.trees.length,tn.map(cs=>cs.filter(x=>vals[x]!==0))))return false;
+    const tl=[];for(let i=0;i<n*n;i++)if(vals[i]===1)tl.push(i);
+    return kuhn(tl.length,tl.map(x=>cellTrees.get(x)||[]));
+  };
+  return{m,given};
 }
-function genTents(n,count,seed){
-  const R=rng(seed);
-  for(let tries=0;tries<400;tries++){
-    const cells=shuffle([...Array(n*n).keys()],R);const tents=[];const T=new Uint8Array(n*n);
+function genTents(n,seed){
+  const R=rng(seed),count=Math.round(n*n*0.19);
+  for(let tries=0;tries<300;tries++){
+    const cells=shuffle([...Array(n*n).keys()],R),T=new Uint8Array(n*n),tents=[];
     for(const i of cells){if(tents.length===count)break;const r=(i/n)|0,c=i%n;
       if(N8.every(([a,b])=>{const x=r+a,y=c+b;return x<0||x>=n||y<0||y>=n||!T[x*n+y]})){tents.push(i);T[i]=1}}
     if(tents.length<count)continue;
-    const trees=[];const Tr=new Uint8Array(n*n);let ok=true;
+    const Tr=new Uint8Array(n*n),trees=[];let ok=true;
     for(const t of tents){const r=(t/n)|0,c=t%n;
       const o=N4.map(([a,b])=>[r+a,c+b]).filter(([x,y])=>x>=0&&x<n&&y>=0&&y<n&&!T[x*n+y]&&!Tr[x*n+y]);
-      if(!o.length){ok=false;break}const [x,y]=pick(o,R);trees.push(x*n+y);Tr[x*n+y]=1;}
+      if(!o.length){ok=false;break}const[x,y]=pick(o,R);Tr[x*n+y]=1;trees.push(x*n+y)}
     if(!ok)continue;
+    const sol=new Int8Array(n*n);tents.forEach(i=>sol[i]=1);
     const rows=[...Array(n)].map((_,r)=>tents.filter(t=>((t/n)|0)===r).length);
     const cols=[...Array(n)].map((_,c)=>tents.filter(t=>t%n===c).length);
-    const s=solveTents(n,trees,rows,cols);
-    if(s&&s.length===1)return{type:'tents',n,trees:trees.sort((a,b)=>a-b),rows,cols,sol:tents.sort((a,b)=>a-b)};
+    return{type:'tents',n,trees:trees.sort((a,b)=>a-b),rows,cols,sol};
   }
-  return null;
-}
-
-// ---------- Schiffe versenken ----------
-function solveShips(n,fleet,rows,cols,hints,limit=2,budget=3e6){
-  // hints: Map idx->0/1
-  const lens=[...fleet].sort((a,b)=>b-a);
-  const place={};
-  for(const L of new Set(lens)){place[L]=[];
-    const dirs=L===1?[[0,1]]:[[0,1],[1,0]];
-    for(let r=0;r<n;r++)for(let c=0;c<n;c++)for(const[dr,dc]of dirs){
-      const cs=[];let ok=true;
-      for(let k=0;k<L;k++){const x=r+dr*k,y=c+dc*k;if(x>=n||y>=n||!rows[x]||!cols[y]||hints.get(x*n+y)===0){ok=false;break}cs.push(x*n+y)}
-      if(!ok)continue;
-      const cset=new Set(cs);const halo=new Set();
-      for(const i of cs){const x=(i/n)|0,y=i%n;for(const[a,b]of N8){const p=x+a,q=y+b;if(p>=0&&p<n&&q>=0&&q<n&&!cset.has(p*n+q))halo.add(p*n+q)}}
-      // Halo darf keinen Schiffshinweis enthalten
-      if([...halo].some(h=>hints.get(h)===1))continue;
-      place[L].push({cs,halo:[...halo]});
-    }}
-  const block=new Int16Array(n*n),occ=new Uint8Array(n*n),rc=new Int16Array(n),cc=new Int16Array(n);
-  const hintShips=[...hints].filter(([,v])=>v===1).map(([k])=>k);
-  const remain=lens.map((_,k)=>lens.slice(k).reduce((a,b)=>a+b,0));
-  const sols=[];let steps=0;
-  function rec(k,start){
-    if(sols.length>=limit||++steps>budget)return;
-    if(k===lens.length){for(let r=0;r<n;r++)if(rc[r]!==rows[r]||cc[r]!==cols[r])return;
-      if(hintShips.every(h=>occ[h]))sols.push(Array.from(occ));return}
-    // Pruning: unabgedeckte Schiffshinweise brauchen noch Schiffe
-    const L=lens[k];const P=place[L];
-    for(let j=(k>0&&lens[k-1]===L)?start:0;j<P.length;j++){
-      const p=P[j];let ok=true;
-      for(const i of p.cs){if(block[i]){ok=false;break}}
-      if(!ok)continue;
-      for(const i of p.cs){const r=(i/n)|0,c=i%n;rc[r]++;cc[c]++}
-      for(const i of p.cs){const r=(i/n)|0,c=i%n;if(rc[r]>rows[r]||cc[c]>cols[c])ok=false}
-      if(ok){for(const i of p.cs){occ[i]=1;block[i]++}for(const h of p.halo)block[h]++;
-        rec(k+1,j+1);
-        for(const i of p.cs){occ[i]=0;block[i]--}for(const h of p.halo)block[h]--;}
-      for(const i of p.cs){const r=(i/n)|0,c=i%n;rc[r]--;cc[c]--}
-      if(sols.length>=limit||steps>budget)return;
-    }
-  }
-  rec(0,0);return steps>budget?null:sols;
-}
-function genShips(n,fleet,seed,minHints=0){
-  const R=rng(seed);
-  for(let tries=0;tries<50;tries++){
-    const occ=new Int16Array(n*n).fill(-1);const ships=[];let ok=true;
-    for(const L of [...fleet].sort((a,b)=>b-a)){let placed=false;
-      for(let t=0;t<500&&!placed;t++){const h=R()<0.5;
-        const r=Math.floor(R()*(n-(h?0:L-1))),c=Math.floor(R()*(n-(h?L-1:0)));
-        const cs=[...Array(L)].map((_,k)=>h?r*n+c+k:(r+k)*n+c);
-        if(cs.every(i=>{const x=(i/n)|0,y=i%n;return [[0,0],...N8].every(([a,b])=>{const p=x+a,q=y+b;return p<0||p>=n||q<0||q>=n||occ[p*n+q]<0})})){
-          cs.forEach(i=>occ[i]=ships.length);ships.push(cs);placed=true}}
-      if(!placed){ok=false;break}}
-    if(!ok)continue;
-    const truth=Array.from(occ,v=>v>=0?1:0);
-    const rows=[...Array(n)].map((_,r)=>truth.slice(r*n,r*n+n).reduce((a,b)=>a+b,0));
-    const cols=[...Array(n)].map((_,c)=>truth.filter((v,i)=>i%n===c).reduce((a,b)=>a+b,0));
-    const hints=new Map();
-    const sc=shuffle(truth.map((v,i)=>v?i:-1).filter(i=>i>=0),R);
-    sc.slice(0,minHints).forEach(i=>hints.set(i,1));
-    let fail=false;
-    for(let g=0;g<40;g++){
-      const s=solveShips(n,fleet,rows,cols,hints);
-      if(!s){fail=true;break}
-      if(s.length===1)return{type:'ships',n,fleet,ships,rows,cols,hints:[...hints],sol:truth};
-      const alt=s.find(x=>x.some((v,i)=>v!==truth[i]));
-      const diff=truth.map((v,i)=>v!==alt[i]?i:-1).filter(i=>i>=0);
-      const pr=diff.filter(i=>truth[i]===1);const k=pick(pr.length?pr:diff,R);hints.set(k,truth[k]);
-    }
-    if(fail)continue;
-  }
-  return null;
 }
 
 // ---------- Star Battle ----------
-function solveStars(n,reg,limit=2){
-  const sols=[];const col=new Uint8Array(n),rg=new Uint8Array(n);const pos=[];
-  function rec(r){if(sols.length>=limit)return;if(r===n){sols.push([...pos]);return}
-    for(let c=0;c<n;c++){if(col[c]||rg[reg[r*n+c]])continue;if(r>0&&Math.abs(pos[r-1]-c)<2)continue;
-      col[c]=1;rg[reg[r*n+c]]=1;pos.push(c);rec(r+1);pos.pop();col[c]=0;rg[reg[r*n+c]]=0}}
-  rec(0);return sols;
+function modelStars(P){
+  const n=P.n,k=P.k,m=new Model(n*n),given=new Int8Array(n*n).fill(-1);
+  for(let r=0;r<n;r++)m.sum([...Array(n)].map((_,c)=>r*n+c),k,k);
+  for(let c=0;c<n;c++)m.sum([...Array(n)].map((_,r)=>r*n+c),k,k);
+  const G={};P.reg.forEach((g,i)=>(G[g]=G[g]||[]).push(i));Object.values(G).forEach(cs=>m.sum(cs,k,k));
+  for(let r=0;r<n-1;r++)for(let c=0;c<n-1;c++)m.sum([r*n+c,r*n+c+1,(r+1)*n+c,(r+1)*n+c+1],0,1);
+  return{m,given};
 }
-function connected(reg,n,g){const cells=[];for(let i=0;i<n*n;i++)if(reg[i]===g)cells.push(i);if(!cells.length)return false;
-  const seen=new Set([cells[0]]),st=[cells[0]];while(st.length){const i=st.pop(),r=(i/n)|0,c=i%n;
-    for(const[a,b]of N4){const x=r+a,y=c+b;if(x>=0&&x<n&&y>=0&&y<n&&reg[x*n+y]===g&&!seen.has(x*n+y)){seen.add(x*n+y);st.push(x*n+y)}}}
-  return seen.size===cells.length}
-function genStars(n,seed){
+function connectedSet(cells,n){if(!cells.length)return false;const S=new Set(cells),seen=new Set([cells[0]]),st=[cells[0]];
+  while(st.length){const i=st.pop(),r=(i/n)|0,c=i%n;for(const[a,b]of N4){const x=r+a,y=c+b,j=x*n+y;if(x>=0&&x<n&&y>=0&&y<n&&S.has(j)&&!seen.has(j)){seen.add(j);st.push(j)}}}
+  return seen.size===S.size}
+function genStars(n,k,seed,deadline=Infinity){
   const R=rng(seed);
-  for(let tries=0;tries<200;tries++){
-    let perm=[];let ok=true;
-    for(let r=0;r<n;r++){const o=[...Array(n).keys()].filter(c=>!perm.includes(c)&&(r===0||Math.abs(c-perm[r-1])>1));if(!o.length){ok=false;break}perm.push(pick(o,R))}
-    if(!ok)continue;
-    const reg=new Int16Array(n*n).fill(-1);const starIdx=perm.map((c,r)=>r*n+c);starIdx.forEach((i,g)=>reg[i]=g);
-    let left=n*n-n;
-    while(left>0){const i=Math.floor(R()*n*n);if(reg[i]<0)continue;const[a,b]=pick(N4,R);const x=((i/n)|0)+a,y=i%n+b;
+  for(let tries=0;tries<60;tries++){if(now()>deadline)return null;
+    // zufällige Sternverteilung
+    const empty=new Int8Array(n*n).fill(-1);
+    const base=modelStars({n,k,reg:[...Array(n*n)].map((_,i)=>(i/n)|0)});// Zeilen als Dummy-Gebiete
+    const s0=solveCount(base.m,empty,1,R,4000);if(!s0||!s0.length)continue;
+    const stars=[];s0[0].forEach((v,i)=>{if(v)stars.push(i)});
+    // je Stern ein Gebiet wachsen lassen
+    let reg=new Int16Array(n*n).fill(-1);stars.forEach((i,g)=>reg[i]=g);let left=n*n-stars.length,guard=0;
+    while(left>0&&guard++<200000){const i=Math.floor(R()*n*n);if(reg[i]<0)continue;const[a,b]=pick(N4,R);const x=((i/n)|0)+a,y=i%n+b;
       if(x>=0&&x<n&&y>=0&&y<n&&reg[x*n+y]<0){reg[x*n+y]=reg[i];left--}}
-    let s=solveStars(n,reg);
-    for(let it=0;it<1500&&s.length>1;it++){
-      const alt=s.find(p=>p.some((c,r)=>c!==perm[r]));
-      const bad=alt.map((c,r)=>r*n+c).filter(i=>!starIdx.includes(i));
-      const i=pick(bad,R);const r=(i/n)|0,c=i%n;
-      const nb=N4.map(([a,b])=>[r+a,c+b]).filter(([x,y])=>x>=0&&x<n&&y>=0&&y<n&&reg[x*n+y]!==reg[i]);
-      if(!nb.length)continue;const[x,y]=pick(nb,R);const old=reg[i];reg[i]=reg[x*n+y];
-      if(!connected(reg,n,old)){reg[i]=old;continue}
-      s=solveStars(n,reg);
+    if(left>0)continue;
+    if(k===2){// Gebiete paarweise zusammenlegen
+      const G=stars.length,adj=Array.from({length:G},()=>new Set());
+      for(let i=0;i<n*n;i++){const r=(i/n)|0,c=i%n;if(c<n-1&&reg[i]!==reg[i+1]){adj[reg[i]].add(reg[i+1]);adj[reg[i+1]].add(reg[i])}
+        if(r<n-1&&reg[i]!==reg[i+n]){adj[reg[i]].add(reg[i+n]);adj[reg[i+n]].add(reg[i])}}
+      const mate=new Int16Array(G).fill(-1);let steps=0;
+      const match=()=>{if(++steps>20000)return false;let u=-1;for(let g=0;g<G;g++)if(mate[g]<0){u=g;break}if(u<0)return true;
+        for(const v of shuffle([...adj[u]],R)){if(mate[v]>=0)continue;mate[u]=v;mate[v]=u;if(match())return true;mate[u]=-1;mate[v]=-1}return false};
+      if(!match())continue;
+      const id=new Int16Array(G).fill(-1);let nid=0;for(let g=0;g<G;g++){if(id[g]<0){id[g]=nid;id[mate[g]]=nid;nid++}}
+      reg=reg.map(g=>id[g]);
     }
-    if(s.length===1)return{type:'stars',n,reg:Array.from(reg),sol:starIdx};
+    const isStar=new Uint8Array(n*n);stars.forEach(i=>isStar[i]=1);
+    // lokale Suche bis eindeutig
+    let ok=false;
+    for(let it=0;it<250&&now()<deadline;it++){
+      const P={n,k,reg:Array.from(reg)};const{m,given}=modelStars(P);
+      const sols=solveCount(m,given,2,null,k===2?30000:8000);
+      if(!sols)break;if(sols.length===1){ok=true;break}
+      const alt=sols.find(s=>s.some((v,i)=>v!==isStar[i]));
+      const bad=[];alt.forEach((v,i)=>{if(v&&!isStar[i])bad.push(i)});
+      for(let tryMove=0;tryMove<10;tryMove++){const i=pick(bad,R);const r=(i/n)|0,c=i%n;
+        const nb=N4.map(([a,b])=>[r+a,c+b]).filter(([x,y])=>x>=0&&x<n&&y>=0&&y<n&&reg[x*n+y]!==reg[i]);
+        if(!nb.length)continue;const[x,y]=pick(nb,R);const old=reg[i];reg[i]=reg[x*n+y];
+        const oc=[];reg.forEach((g,j)=>{if(g===old)oc.push(j)});
+        if(!connectedSet(oc,n)){reg[i]=old;continue}break}
+    }
+    if(!ok)continue;
+    const sol=new Int8Array(n*n);stars.forEach(i=>sol[i]=1);
+    return{type:'stars',n,k,reg:Array.from(reg),sol};
   }
-  return null;
+}
+
+// ---------- Schiffe versenken ----------
+const FLEETS={6:[3,2,2,1,1],7:[3,2,2,1,1,1],8:[4,3,2,2,1,1,1],9:[4,3,3,2,2,1,1,1],10:[4,3,3,2,2,2,1,1,1,1],12:[5,4,3,3,2,2,2,1,1,1,1]};
+function shipShape(sol,n,i){const r=(i/n)|0,c=i%n,s=(x,y)=>x>=0&&x<n&&y>=0&&y<n&&sol[x*n+y]===1;
+  const U=s(r-1,c),D=s(r+1,c),L=s(r,c-1),Rr=s(r,c+1);
+  if((L&&Rr)||(U&&D))return'mid';if(Rr)return'l';if(L)return'r';if(D)return'u';if(U)return'd';return'single'}
+function modelShips(P){
+  const n=P.n,m=new Model(n*n),given=new Int8Array(n*n).fill(-1);
+  const inb=(r,c)=>r>=0&&r<n&&c>=0&&c<n;
+  for(let r=0;r<n;r++)m.sum([...Array(n)].map((_,c)=>r*n+c),P.rows[r],P.rows[r]);
+  for(let c=0;c<n;c++)m.sum([...Array(n)].map((_,r)=>r*n+c),P.cols[c],P.cols[c]);
+  for(let r=0;r<n-1;r++)for(let c=0;c<n-1;c++){m.sum([r*n+c,(r+1)*n+c+1],0,1);m.sum([r*n+c+1,(r+1)*n+c],0,1)}
+  for(const[i,v]of P.hints){given[i]=v;if(!v)continue;const r=(i/n)|0,c=i%n;const sh=shipShape(P.sol,n,i);
+    const nb={u:[r-1,c],d:[r+1,c],l:[r,c-1],r:[r,c+1]};
+    const setN=(d,x)=>{const[a,b]=nb[d];if(inb(a,b)){const j=a*n+b;if(x)given[j]=1;else given[j]=0}};
+    if(sh==='single')['u','d','l','r'].forEach(d=>setN(d,0));
+    else if(sh==='mid'){const cells=[],idx={};for(const d of['l','r','u','d']){const[a,b]=nb[d];if(inb(a,b)){idx[d]=cells.length;cells.push(a*n+b)}}
+      const tp=[];for(const o of[{l:1,r:1,u:0,d:0},{l:0,r:0,u:1,d:1}]){if(['l','r','u','d'].some(d=>o[d]&&idx[d]===undefined))continue;
+        tp.push(cells.map((_,j)=>o[Object.keys(idx).find(d=>idx[d]===j)]))}
+      m.table(cells,tp)}
+    else{const cont={l:'r',r:'l',u:'d',d:'u'}[sh];['u','d','l','r'].forEach(d=>setN(d,d===cont?1:0))}}
+  const maxL=Math.max(...P.fleet);const need={};P.fleet.forEach(L=>need[L]=(need[L]||0)+1);
+  function comps(vals){const seen=new Uint8Array(n*n),out=[];
+    for(let i=0;i<n*n;i++){if(vals[i]!==1||seen[i])continue;const cs=[],st=[i];seen[i]=1;
+      while(st.length){const k=st.pop();cs.push(k);const r=(k/n)|0,c=k%n;for(const[a,b]of N4){const x=r+a,y=c+b,j=x*n+y;if(inb(x,y)&&vals[j]===1&&!seen[j]){seen[j]=1;st.push(j)}}}
+      let closed=true;const S=new Set(cs);for(const k of cs){const r=(k/n)|0,c=k%n;for(const[a,b]of N4){const x=r+a,y=c+b;if(inb(x,y)&&!S.has(x*n+y)&&vals[x*n+y]!==0)closed=false}}
+      out.push({len:cs.length,closed})}
+    return out}
+  m.check=vals=>{const cnt={};for(const k of comps(vals)){if(k.len>maxL)return false;if(k.closed){cnt[k.len]=(cnt[k.len]||0)+1;if(cnt[k.len]>(need[k.len]||0))return false}}return true};
+  m.final=vals=>{const cnt={};for(const k of comps(vals))cnt[k.len]=(cnt[k.len]||0)+1;return Object.keys(need).every(L=>cnt[L]===need[L])&&Object.keys(cnt).every(L=>need[L])};
+  // Stufe 2: Flotte abgleichen (wäre hier ein Schiff zu lang oder eine Länge zu oft?)
+  m.h2=vals=>{for(let v=0;v<n*n;v++){if(vals[v]>=0)continue;
+    for(const x of[1,0]){vals[v]=x;const ok=m.check(vals);vals[v]=-1;if(!ok){vals[v]=1-x;return 1}}}return 0};
+  return{m,given};
+}
+function genShipsLayout(n,R){
+  const fleet=FLEETS[n];
+  for(let t=0;t<200;t++){const occ=new Int8Array(n*n);let ok=true;
+    for(const L of[...fleet].sort((a,b)=>b-a)){let placed=false;
+      for(let k=0;k<400&&!placed;k++){const h=R()<.5;const r=Math.floor(R()*(n-(h?0:L-1))),c=Math.floor(R()*(n-(h?L-1:0)));
+        const cs=[...Array(L)].map((_,j)=>h?r*n+c+j:(r+j)*n+c);
+        if(cs.every(i=>{const x=(i/n)|0,y=i%n;return[[0,0],...N8].every(([a,b])=>{const p=x+a,q=y+b;return p<0||p>=n||q<0||q>=n||!occ[p*n+q]})})){cs.forEach(i=>occ[i]=1);placed=true}}
+      if(!placed){ok=false;break}}
+    if(ok)return occ}
+}
+function genShips(n,target,seed){
+  const R=rng(seed);const occ=genShipsLayout(n,R);const fleet=FLEETS[n];
+  const sol=Int8Array.from(occ);
+  const rows=[...Array(n)].map((_,r)=>sol.slice(r*n,r*n+n).reduce((a,b)=>a+b,0));
+  const cols=[...Array(n)].map((_,c)=>{let s=0;for(let r=0;r<n;r++)s+=sol[r*n+c];return s});
+  const P={type:'ships',n,fleet,rows,cols,sol,hints:[]};
+  const hmap=new Map();
+  const res=()=>{P.hints=[...hmap];const{m,given}=modelShips(P);return rate(m,given)};
+  // so lange Hinweise ergänzen, bis die Technikstufe erreicht ist
+  let r=res();
+  for(let g=0;g<60&&(r.tier<0||r.tier>target);g++){
+    const unk=[];for(let i=0;i<n*n;i++)if(!hmap.has(i)&&(!r.vals||r.vals[i]<0))unk.push(i);
+    const shipU=unk.filter(i=>sol[i]);const i=pick(shipU.length&&R()<.7?shipU:unk,R);hmap.set(i,sol[i]);r=res()}
+  if(r.tier<0||r.tier>target)return null;
+  // überflüssige Hinweise wieder entfernen, solange die Stufe passt
+  for(const i of shuffle([...hmap.keys()],R)){const v=hmap.get(i);hmap.delete(i);const q=res();if(q.tier<0||q.tier>target)hmap.set(i,v);else r=q}
+  P.hints=[...hmap];P.tier=r.tier;return P;
+}
+
+// ---------- Binairo ----------
+function modelBinairo(P){
+  const n=P.n,m=new Model(n*n),given=new Int8Array(n*n).fill(-1);
+  for(let r=0;r<n;r++){const row=[...Array(n)].map((_,c)=>r*n+c);m.sum(row,n/2,n/2);for(let c=0;c+2<n;c++)m.sum(row.slice(c,c+3),1,2)}
+  for(let c=0;c<n;c++){const col=[...Array(n)].map((_,r)=>r*n+c);m.sum(col,n/2,n/2);for(let r=0;r+2<n;r++)m.sum(col.slice(r,r+3),1,2)}
+  if(P.givens)P.givens.forEach(([i,v])=>given[i]=v);
+  return{m,given};
+}
+function genBinairo(n,target,seed){
+  const R=rng(seed);const{m,given}=modelBinairo({n});
+  const s=solveCount(m,given,1,R,20000);if(!s||!s.length)return null;const sol=s[0];
+  const g=Int8Array.from(sol);let tier=1;
+  for(const i of shuffle([...Array(n*n).keys()],R)){const v=g[i];g[i]=-1;const q=rate(m,g);if(q.tier<0||q.tier>target)g[i]=v;else tier=q.tier}
+  const givens=[];g.forEach((v,i)=>{if(v>=0)givens.push([i,v])});
+  return{type:'binairo',n,givens,sol,tier};
+}
+
+// ---------- Brückenbau ----------
+function modelHashi(P){
+  const E=P.edges,m=new Model(E.length*2),given=new Int8Array(E.length*2).fill(-1);
+  E.forEach((e,k)=>m.table([2*k,2*k+1],[[0,0],[1,0],[1,1]]));
+  P.islands.forEach((is,k)=>m.isl(E.map((e,j)=>e.a===k||e.b===k?[2*j,2*j+1]:null).filter(Boolean),is.num));
+  // Kreuzungen
+  for(let i=0;i<E.length;i++)for(let j=i+1;j<E.length;j++)if(crosses(P,E[i],E[j]))m.sum([2*i,2*j],0,1);
+  const I=P.islands.length;
+  const conn=(vals,useUnknown)=>{const par=[...Array(I).keys()];const f=x=>par[x]===x?x:(par[x]=f(par[x]));
+    E.forEach((e,k)=>{const v=vals[2*k];if(v===1||(useUnknown&&v<0))par[f(e.a)]=f(e.b)});
+    const r0=f(0);for(let k=1;k<I;k++)if(f(k)!==r0)return false;return true};
+  m.check=vals=>conn(vals,true);
+  m.final=vals=>conn(vals,false);
+  // Stufe 2: Inselgruppen dürfen sich nicht abschließen
+  m.h2=vals=>{
+    for(let k=0;k<E.length;k++){for(const b of[2*k,2*k+1]){if(vals[b]>=0)continue;if(b%2===1&&vals[2*k]!==1)continue;
+      const w=Int8Array.from(vals);w[b]=1;if(b%2===1)w[2*k]=1;
+      // Brückenzahl je Insel
+      const deg=new Int16Array(I),full=new Uint8Array(I);
+      E.forEach((e,j)=>{const c=(w[2*j]===1?1:0)+(w[2*j+1]===1?1:0);deg[e.a]+=c;deg[e.b]+=c});
+      P.islands.forEach((is,j)=>full[j]=deg[j]===is.num?1:0);
+      const par=[...Array(I).keys()];const f=x=>par[x]===x?x:(par[x]=f(par[x]));
+      E.forEach((e,j)=>{if(w[2*j]===1)par[f(e.a)]=f(e.b)});
+      const root=f(E[k].a);let all=true,size=0;
+      for(let j=0;j<I;j++)if(f(j)===root){size++;if(!full[j])all=false}
+      if(all&&size<I){vals[b]=0;return 1}}}
+    return 0};
+  return{m,given};
+}
+function crosses(P,e,f){const A=P.islands;
+  const h=e.h?e:f.h?f:null,v=!e.h?e:!f.h?f:null;if(!h||!v||h===v)return false;
+  const hr=A[h.a].r,hc1=Math.min(A[h.a].c,A[h.b].c),hc2=Math.max(A[h.a].c,A[h.b].c);
+  const vc=A[v.a].c,vr1=Math.min(A[v.a].r,A[v.b].r),vr2=Math.max(A[v.a].r,A[v.b].r);
+  return vc>hc1&&vc<hc2&&hr>vr1&&hr<vr2}
+function hashiEdges(n,islands){const at=new Int16Array(n*n).fill(-1);islands.forEach((s,k)=>at[s.r*n+s.c]=k);const E=[];
+  islands.forEach((s,k)=>{for(let c=s.c+1;c<n;c++){const j=at[s.r*n+c];if(j>=0){E.push({a:k,b:j,h:true});break}}
+    for(let r=s.r+1;r<n;r++){const j=at[r*n+s.c];if(j>=0){E.push({a:k,b:j,h:false});break}}});return E}
+function genHashi(n,seed){
+  const R=rng(seed);const target=Math.round(n*n*0.2);
+  for(let tries=0;tries<80;tries++){
+    const at=new Int16Array(n*n).fill(-1),used=new Uint8Array(n*n);const isl=[],br=[];
+    const put=(r,c)=>{at[r*n+c]=isl.length;isl.push({r,c})};
+    put(Math.floor(R()*n),Math.floor(R()*n));
+    for(let g=0;g<3000&&isl.length<target;g++){
+      const k=Math.floor(R()*isl.length),s=isl[k];const[dr,dc]=pick(N4,R);const L=2+Math.floor(R()*Math.min(4,n/2));
+      const r=s.r+dr*L,c=s.c+dc*L;if(r<0||r>=n||c<0||c>=n||at[r*n+c]>=0||used[r*n+c])continue;
+      let ok=true;for(let t=1;t<L;t++){const x=s.r+dr*t,y=s.c+dc*t;if(at[x*n+y]>=0||used[x*n+y]){ok=false;break}}
+      if(!ok)continue;
+      if(N4.some(([a,b])=>{const x=r+a,y=c+b;return x>=0&&x<n&&y>=0&&y<n&&at[x*n+y]>=0}))continue;
+      for(let t=1;t<L;t++)used[(s.r+dr*t)*n+s.c+dc*t]=1;
+      put(r,c);br.push({a:k,b:isl.length-1,w:R()<.45?2:1})}
+    if(isl.length<target*0.8)continue;
+    // zusätzliche Brücken für Kreise
+    const E=hashiEdges(n,isl);
+    for(const e of shuffle(E.slice(),R)){if(br.some(b=>(b.a===e.a&&b.b===e.b)||(b.a===e.b&&b.b===e.a)))continue;if(R()<.6)continue;
+      const A=isl[e.a],B=isl[e.b];const cells=[];if(e.h)for(let c=Math.min(A.c,B.c)+1;c<Math.max(A.c,B.c);c++)cells.push(A.r*n+c);else for(let r=Math.min(A.r,B.r)+1;r<Math.max(A.r,B.r);r++)cells.push(r*n+A.c);
+      if(cells.some(i=>used[i]))continue;cells.forEach(i=>used[i]=1);br.push({a:e.a,b:e.b,w:R()<.35?2:1})}
+    const islands=isl.map((s,k)=>({r:s.r,c:s.c,num:br.reduce((a,b)=>a+(b.a===k||b.b===k?b.w:0),0)}));
+    const sol=new Int8Array(E.length*2);
+    E.forEach((e,k)=>{const b=br.find(b=>(b.a===e.a&&b.b===e.b)||(b.a===e.b&&b.b===e.a));if(b){sol[2*k]=1;sol[2*k+1]=b.w===2?1:0}});
+    return{type:'hashi',n,islands,edges:E,sol};
+  }
+}
+
+// ---------- Rundweg (Slitherlink) ----------
+function slGeom(n){const H=(n+1)*n;const h=(r,c)=>r*n+c,v=(r,c)=>H+r*(n+1)+c;const ne=H+n*(n+1);
+  const ends=e=>e<H?[[(e/n)|0,e%n],[(e/n)|0,e%n+1]]:[[((e-H)/(n+1))|0,(e-H)%(n+1)],[(((e-H)/(n+1))|0)+1,(e-H)%(n+1)]];
+  const cellE=(r,c)=>[h(r,c),h(r+1,c),v(r,c),v(r,c+1)];
+  const vertE=(r,c)=>{const o=[];if(c>0)o.push(h(r,c-1));if(c<n)o.push(h(r,c));if(r>0)o.push(v(r-1,c));if(r<n)o.push(v(r,c));return o};
+  return{H,h,v,ne,ends,cellE,vertE}}
+function modelSlither(P){
+  const n=P.n,G=slGeom(n),m=new Model(G.ne),given=new Int8Array(G.ne).fill(-1);
+  for(let r=0;r<=n;r++)for(let c=0;c<=n;c++)m.sumIn(G.vertE(r,c),[0,2]);
+  P.clues.forEach((k,i)=>{if(k>=0)m.sum(G.cellE((i/n)|0,i%n),k,k)});
+  const V=(n+1)*(n+1),vid=([r,c])=>r*(n+1)+c;const E=[...Array(G.ne).keys()].map(e=>G.ends(e).map(vid));
+  function comps(vals){const par=new Int32Array(V).map((_,i)=>i);const f=x=>par[x]===x?x:(par[x]=f(par[x]));
+    let tot=0;for(let e=0;e<G.ne;e++)if(vals[e]===1){tot++;par[f(E[e][0])]=f(E[e][1])}
+    const ec=new Map(),vc=new Map(),deg=new Int8Array(V);
+    for(let e=0;e<G.ne;e++)if(vals[e]===1){const r=f(E[e][0]);ec.set(r,(ec.get(r)||0)+1);deg[E[e][0]]++;deg[E[e][1]]++}
+    for(let x=0;x<V;x++)if(deg[x]){const r=f(x);vc.set(r,(vc.get(r)||0)+1)}
+    return{f,tot,ec,vc}}
+  const cluesOk=vals=>P.clues.every((k,i)=>k<0||G.cellE((i/n)|0,i%n).reduce((a,e)=>a+(vals[e]===1?1:0),0)===k);
+  m.check=vals=>{const{tot,ec,vc}=comps(vals);for(const[r,e]of ec)if(e===vc.get(r)){if(e<tot)return false;return cluesOk(vals)}return true};
+  m.final=vals=>{const{tot,ec,vc}=comps(vals);if(!tot||ec.size!==1)return false;const[r,e]=[...ec][0];return e===vc.get(r)};
+  // Grundregel: keine vorzeitig geschlossene Schleife
+  m.h1=vals=>{const{f,tot,ec}=comps(vals);
+    for(let e=0;e<G.ne;e++){if(vals[e]>=0)continue;const a=f(E[e][0]),b=f(E[e][1]);
+      if(a===b&&ec.has(a)&&ec.get(a)<tot){vals[e]=0;return 1}}return 0};
+  return{m,given};
+}
+function genSlither(n,target,seed){
+  const R=rng(seed);
+  for(let tries=0;tries<100;tries++){
+    const inR=new Uint8Array(n*n);const start=Math.floor(R()*n*n);inR[start]=1;let size=1;const goal=Math.round(n*n*(0.45+R()*0.15));
+    const isIn=(r,c)=>r>=0&&r<n&&c>=0&&c<n&&inR[r*n+c];
+    const outsideOk=()=>{// Außenbereich zusammenhängend (keine Löcher)
+      const seen=new Uint8Array((n+2)*(n+2)),st=[0];seen[0]=1;let cnt=1;const W=n+2;
+      while(st.length){const k=st.pop(),r=(k/W)|0,c=k%W;for(const[a,b]of N4){const x=r+a,y=c+b;if(x<0||x>=W||y<0||y>=W)continue;const j=x*W+y;
+        if(seen[j]||(x>=1&&x<=n&&y>=1&&y<=n&&inR[(x-1)*n+y-1]))continue;seen[j]=1;cnt++;st.push(j)}}
+      return cnt===W*W-size};
+    for(let g=0;g<20000&&size<goal;g++){
+      const i=Math.floor(R()*n*n);if(inR[i])continue;const r=(i/n)|0,c=i%n;
+      if(!N4.some(([a,b])=>isIn(r+a,c+b)))continue;
+      // kein Berühren nur über Ecke
+      let bad=false;for(const[a,b]of[[-1,-1],[-1,1],[1,-1],[1,1]]){if(isIn(r+a,c+b)&&!isIn(r+a,c)&&!isIn(r,c+b))bad=true}
+      if(bad)continue;inR[i]=1;size++;if(!outsideOk()){inR[i]=0;size--}}
+    // Diagonalberührung prüfen (gesamt)
+    let bad=false;for(let r=0;r<n-1;r++)for(let c=0;c<n-1;c++){const a=inR[r*n+c],b=inR[r*n+c+1],d=inR[(r+1)*n+c],e=inR[(r+1)*n+c+1];if((a&&e&&!b&&!d)||(b&&d&&!a&&!e))bad=true}
+    if(bad||size<n*n*0.35)continue;
+    const G=slGeom(n),sol=new Int8Array(G.ne);
+    const io=(r,c)=>isIn(r,c)?1:0;
+    for(let r=0;r<=n;r++)for(let c=0;c<n;c++)sol[G.h(r,c)]=io(r-1,c)^io(r,c);
+    for(let r=0;r<n;r++)for(let c=0;c<=n;c++)sol[G.v(r,c)]=io(r,c-1)^io(r,c);
+    const clues=[...Array(n*n)].map((_,i)=>G.cellE((i/n)|0,i%n).reduce((a,e)=>a+sol[e],0));
+    const P={type:'slither',n,clues,sol};
+    let tier=1;
+    for(const i of shuffle([...Array(n*n).keys()],R)){const k=P.clues[i];P.clues[i]=-1;const{m,given}=modelSlither(P);const q=rate(m,given);
+      if(q.tier<0||q.tier>target)P.clues[i]=k;else tier=q.tier}
+    const{m,given}=modelSlither(P);const q=rate(m,given);if(q.tier<1||q.tier>3)continue;
+    P.tier=q.tier;return P;
+  }
 }
 
 // ---------- Stufenplan ----------
-const FLEETS={6:[3,2,2,1,1],7:[3,2,2,1,1,1],8:[4,3,2,2,1,1,1],9:[4,3,3,2,2,1,1,1],10:[4,3,3,2,2,2,1,1,1,1],12:[5,4,3,3,2,2,2,1,1,1,1]};
-function spec(type,level){
-  const L=Math.max(1,level);
-  if(type==='tents'){const n=Math.min(5+Math.floor((L-1)/2),12);return{n,count:Math.round(n*n*0.19)}}
-  if(type==='ships'){const n=[6,6,7,7,8,8,9,9,10,10,10,12][Math.min(L-1,11)];
-    return{n,fleet:FLEETS[n],minHints:Math.max(0,3-Math.floor((L-1)/2))}}
-  const n=Math.min(5+Math.floor((L-1)/2),10);return{n};
-}
-function makePuzzle(type,level,variant=0){
-  const sp=spec(type,level);let seed=(type.length*7919+level*104729+variant*15485863)>>>0;
-  for(let k=0;k<20;k++,seed+=97){
-    let p=null;
-    if(type==='tents')p=genTents(sp.n,sp.count,seed);
-    else if(type==='ships')p=genShips(sp.n,sp.fleet,seed,sp.minHints);
-    else p=genStars(sp.n,seed);
-    if(p)return p;
-  }
-  return null;
-}
-
-
-// ===== App =====
-const TYPES={
-  tents:{name:'Zeltlager',c:'var(--tent)',obj:'Zelt',
-    rules:['Neben jedem Baum steht genau ein Zelt: links, rechts, oben oder unten, nicht schräg.','Jedes Zelt gehört zu genau einem Baum.','Zelte berühren sich nicht, auch nicht über Eck.','Die Zahlen sagen, wie viele Zelte in der Zeile oder Spalte stehen.']},
-  ships:{name:'Schiffe versenken',c:'var(--sea)',obj:'Schiffsteil',
-    rules:['Alle Schiffe der Flotte liegen waagerecht oder senkrecht im Gitter.','Schiffe berühren sich nicht, auch nicht über Eck.','Die Zahlen sagen, wie viele Schiffsteile in der Zeile oder Spalte liegen.','Dunkle Teile und Wellen sind vorgegeben. Ein rundes Ende zeigt, wo ein Schiff aufhört.']},
-  stars:{name:'Star Battle',c:'var(--star)',obj:'Stern',
-    rules:['In jeder Zeile steht genau ein Stern.','In jeder Spalte steht genau ein Stern.','In jedem dick umrandeten Gebiet steht genau ein Stern.','Sterne berühren sich nicht, auch nicht über Eck.']}
+const PLAN={
+  tents:[[5,1],[6,1],[6,2],[7,1],[7,2],[8,2],[8,3],[9,2],[9,3],[10,2],[10,3],[11,3],[12,3]],
+  ships:[[6,1],[6,2],[7,1],[7,2],[8,2],[8,3],[9,2],[9,3],[10,2],[10,3],[12,3]],
+  stars:[[5,1,1],[6,1,1],[6,1,2],[7,1,2],[8,1,2],[8,1,3],[9,1,3],[10,1,2],[10,1,3],[8,2,2],[9,2,2],[9,2,3]],
+  binairo:[[6,1],[6,2],[8,1],[8,2],[8,3],[10,2],[10,3],[12,2],[12,3]],
+  hashi:[[7,1],[7,2],[8,2],[9,2],[9,3],[10,2],[10,3],[12,3]],
+  slither:[[5,1],[5,2],[6,2],[6,3],[7,2],[7,3],[8,3],[10,3]],
 };
+function spec(type,level){const p=PLAN[type];const e=p[Math.min(level,p.length)-1];
+  return type==='stars'?{n:e[0],k:e[1],tier:e[2]}:{n:e[0],tier:e[1]}}
+function modelFor(P){return({tents:modelTents,stars:modelStars,ships:modelShips,binairo:modelBinairo,hashi:modelHashi,slither:modelSlither})[P.type](P)}
+function makePuzzle(type,level,variant=0,timeLimit=2500){
+  const sp=spec(type,level);const t0=now();let best=null,bestD=99;
+  let seed=(((type.charCodeAt(0)*131+type.length)*7919+level*104729+variant*15485863)>>>0);
+  for(let att=0;att<400;att++){seed=(seed*1103515245+12345)>>>0;
+    let P=null;
+    if(type==='tents')P=genTents(sp.n,seed);
+    else if(type==='stars')P=genStars(sp.n,sp.k,seed,t0+(best?timeLimit:timeLimit*3));
+    else if(type==='ships')P=genShips(sp.n,sp.tier,seed);
+    else if(type==='binairo')P=genBinairo(sp.n,sp.tier,seed);
+    else if(type==='hashi')P=genHashi(sp.n,seed);
+    else P=genSlither(sp.n,sp.tier,seed);
+    if(P){const{m,given}=modelFor(P);const q=rate(m,given);
+      if(q.tier>=1&&q.tier<=3){P.tier=q.tier;const d=Math.abs(q.tier-sp.tier)+(q.tier>sp.tier?0.5:0);
+        if(d<bestD){best=P;bestD=d}if(d===0)break}}
+    if(best&&now()-t0>timeLimit)break;
+  }
+  if(best)best.spec=sp;
+  return best;
+}
+
+// ===================== Roboter-Befehlsfolgen =====================
+const DIRS=[[-1,0],[0,1],[1,0],[0,-1]]; // 0=oben,1=rechts,2=unten,3=links
+function progSize(p){return p.reduce((a,x)=>a+(x.c==='W'?1+progSize(x.b):1),0)}
+function flatten(p,path=[]){const out=[];p.forEach((x,i)=>{const pp=path.concat(i);
+  if(x.c==='W'){for(let k=0;k<x.k;k++)out.push(...flatten(x.b,pp.concat('b')))}else out.push({c:x.c,path:pp.join('.')})});return out}
+function runProg(L,prog,limit=400){
+  const steps=flatten(prog).slice(0,limit);let r=L.start[0],c=L.start[1],d=L.dir;const got=new Set();const trace=[{r,c,d,i:-1}];
+  const items=new Set(L.items.map(([a,b])=>a*L.n+b));
+  for(let i=0;i<steps.length;i++){const s=steps[i];
+    if(s.c==='L')d=(d+3)%4;else if(s.c==='R')d=(d+1)%4;
+    else{const nr=r+DIRS[d][0],nc=c+DIRS[d][1];
+      if(nr<0||nr>=L.n||nc<0||nc>=L.n||L.walls.includes(nr*L.n+nc)){trace.push({r,c,d,i,crash:true});return{ok:false,crash:true,trace,steps}}
+      r=nr;c=nc;if(items.has(r*L.n+c))got.add(r*L.n+c)}
+    trace.push({r,c,d,i,got:new Set(got)})}
+  const ok=r===L.goal[0]&&c===L.goal[1]&&got.size===items.size;
+  return{ok,crash:false,trace,steps,got}}
+function minPlain(L){ // kürzeste Befehlsfolge ohne Schleifen (BFS)
+  const n=L.n,items=L.items.map(([a,b])=>a*n+b),full=(1<<items.length)-1;
+  const key=(r,c,d,m)=>((r*n+c)*4+d)*(full+1)+m;const seen=new Map();
+  let q=[[L.start[0],L.start[1],L.dir,0]];seen.set(key(...q[0]),0);let dist=0;
+  while(q.length){const nq=[];
+    for(const[r,c,d,m]of q){if(r===L.goal[0]&&c===L.goal[1]&&m===full)return dist;
+      const nexts=[[r,c,(d+3)%4,m],[r,c,(d+1)%4,m]];const nr=r+DIRS[d][0],nc=c+DIRS[d][1];
+      if(nr>=0&&nr<n&&nc>=0&&nc<n&&!L.walls.includes(nr*n+nc)){let mm=m;const k=items.indexOf(nr*n+nc);if(k>=0)mm|=1<<k;nexts.push([nr,nc,d,mm])}
+      for(const s of nexts){const k=key(...s);if(!seen.has(k)){seen.set(k,1);nq.push(s)}}}
+    q=nq;dist++}
+  return Infinity}
+const ROBOPLAN=[ // [Größe, Art, Zusatz]
+  [5,'plain',1],[5,'plain',2],[6,'plain',3],[6,'items',2],[6,'items',3],[7,'items',3],
+  [6,'loop',0],[7,'loop',0],[7,'loop',1],[7,'loop2',0],[8,'loop2',1],[7,'nest',0],[8,'nest',1],[8,'nest',2]];
+function roboSpec(level){const e=ROBOPLAN[Math.min(level,ROBOPLAN.length)-1];return{n:e[0],kind:e[1],x:e[2],loops:!['plain','items'].includes(e[1])}}
+function randBody(R,len){const b=[];while(b.length<len){const c=R()<.55?'F':R()<.5?'L':'R';const last=b[b.length-1];
+  if(last&&last.c!=='F'&&c!=='F')continue;b.push({c})}
+  if(!b.some(x=>x.c==='F'))b[0]={c:'F'};if(!b.some(x=>x.c!=='F'))b.push({c:R()<.5?'L':'R'});return b}
+function genRobot(level,variant=0){
+  const sp=roboSpec(level);const R=rng((level*7349+variant*92821+17)>>>0);const n=sp.n;
+  for(let t=0;t<3000;t++){
+    let prog;
+    if(sp.kind==='plain'||sp.kind==='items'){
+      const turns=sp.kind==='plain'?sp.x:2+Math.floor(R()*2);prog=[];
+      for(let k=0;k<=turns;k++){const f=1+Math.floor(R()*3);for(let j=0;j<f;j++)prog.push({c:'F'});if(k<turns)prog.push({c:R()<.5?'L':'R'})}}
+    else if(sp.kind==='loop'){prog=[];if(sp.x&&R()<.8)prog.push({c:'F'});prog.push({c:'W',k:3+Math.floor(R()*3),b:randBody(R,2+Math.floor(R()*3))})}
+    else if(sp.kind==='loop2'){prog=[{c:'W',k:2+Math.floor(R()*3),b:randBody(R,2)},{c:R()<.5?'L':'R'},{c:'W',k:2+Math.floor(R()*3),b:randBody(R,2+(sp.x?1:0))}]}
+    else{const inner={c:'W',k:2+Math.floor(R()*3),b:[{c:'F'}]};const turn={c:R()<.5?'L':'R'};
+      const body=sp.x===2?[inner,turn,{c:'F'},{c:turn.c==='L'?'R':'L'}]:sp.x===1?[inner,turn,inner]:[inner,turn];
+      prog=[{c:'W',k:2+Math.floor(R()*3),b:body.map(x=>JSON.parse(JSON.stringify(x)))}]}
+    const start=[Math.floor(R()*n),Math.floor(R()*n)],dir=Math.floor(R()*4);
+    const L={n,start,dir,walls:[],items:[],goal:null};
+    const steps=flatten(prog);let r=start[0],c=start[1],d=dir;const path=[[r,c]];let ok=true;
+    for(const s of steps){if(s.c==='L')d=(d+3)%4;else if(s.c==='R')d=(d+1)%4;else{r+=DIRS[d][0];c+=DIRS[d][1];if(r<0||r>=n||c<0||c>=n){ok=false;break}path.push([r,c])}}
+    if(!ok)continue;
+    const keys=path.map(([a,b])=>a*n+b);if(new Set(keys).size<keys.length*0.85)continue; // kaum Überschneidungen
+    if(path.length<(sp.kind==='items'?8:4)||(r===start[0]&&c===start[1]))continue;
+    L.goal=[r,c];
+    const inner=[...new Set(keys.slice(1,-1))].filter(k=>k!==start[0]*n+start[1]&&k!==r*n+c);
+    let ni=sp.kind==='plain'?0:sp.kind==='items'?sp.x:Math.min(3,1+Math.floor(R()*3));
+    if(inner.length<ni)continue;
+    L.items=shuffle(inner,R).slice(0,ni).map(k=>[(k/n)|0,k%n]);
+    const onPath=new Set(keys);
+    for(let k=0;k<n*n;k++)if(!onPath.has(k)&&R()<0.22)L.walls.push(k);
+    const best=minPlain(L);const size=progSize(prog);
+    if(sp.loops){if(best<=size+1)continue;L.slots=size;L.loops=true}
+    else{L.slots=sp.kind==='items'&&sp.x>=3?best:best+2;L.loops=false}
+    if(!runProg(L,prog).ok)continue;
+    L.example=prog;L.level=level;return L;
+  }
+}
+
+// ===================== App =====================
+const TECH={1:['Grundregeln','Jede Regel wird für sich angewendet.'],2:['Kombinieren','Zwei Regeln oder Bereiche werden gemeinsam betrachtet.'],3:['Widerspruch','Eine Annahme wird durchdacht und verworfen, wenn sie nicht aufgeht.']};
+const TYPES={
+  tents:{name:'Zeltlager',c:'var(--tent)',obj:'Zelt',grid:true,
+    rules:['Neben jedem Baum steht genau ein Zelt: links, rechts, oben oder unten, nicht schräg.','Jedes Zelt gehört zu genau einem Baum.','Zelte berühren sich nicht, auch nicht über Eck.','Die Zahlen sagen, wie viele Zelte in der Zeile oder Spalte stehen.']},
+  ships:{name:'Schiffe versenken',c:'var(--sea)',obj:'Schiffsteil',grid:true,
+    rules:['Alle Schiffe der Flotte liegen waagerecht oder senkrecht im Gitter.','Schiffe berühren sich nicht, auch nicht über Eck.','Die Zahlen sagen, wie viele Schiffsteile in der Zeile oder Spalte liegen.','Dunkle Teile und Wellen sind vorgegeben. Ein rundes Ende zeigt, wo ein Schiff aufhört, ein Quadrat ist ein Mittelstück.']},
+  stars:{name:'Star Battle',c:'var(--star)',obj:'Stern',grid:true,
+    rules:k=>[`In jeder Zeile stehen genau ${k===1?'ein Stern':'zwei Sterne'}.`,`In jeder Spalte stehen genau ${k===1?'ein Stern':'zwei Sterne'}.`,`In jedem dick umrandeten Gebiet stehen genau ${k===1?'ein Stern':'zwei Sterne'}.`,'Sterne berühren sich nicht, auch nicht über Eck.']},
+  binairo:{name:'Binairo',c:'var(--bin)',obj:'dunkler Kreis',grid:true,
+    rules:['Fülle jedes Feld mit einem dunklen oder hellen Kreis.','In jeder Zeile und jeder Spalte gibt es gleich viele dunkle und helle Kreise.','Nie mehr als zwei gleiche Kreise direkt nebeneinander oder untereinander.']},
+  hashi:{name:'Brückenbau',c:'var(--hashi)',obj:'Brücke',
+    rules:['Verbinde die Inseln mit waagerechten oder senkrechten Brücken.','Die Zahl sagt, wie viele Brücken an der Insel enden.','Zwischen zwei Inseln liegen höchstens zwei Brücken.','Brücken kreuzen sich nicht.','Am Ende hängen alle Inseln zusammen.']},
+  slither:{name:'Rundweg',c:'var(--loop)',obj:'Linie',
+    rules:['Zeichne entlang der Gitterlinien einen einzigen geschlossenen Rundweg.','Der Weg verzweigt sich nicht und kreuzt sich nicht.','Eine Zahl sagt, wie viele Seiten ihres Feldes zum Weg gehören.','Felder ohne Zahl können beliebig viele Seiten haben.']},
+};
+const ROBO={name:'Roboter',c:'var(--robo)'};
 const ICON={
   tree:'<svg viewBox="0 0 40 40"><rect x="17.5" y="24" width="5" height="11" rx="1" fill="#7A5230"/><circle cx="20" cy="17" r="12" fill="#3E9B5A" stroke="#2A6B3E" stroke-width="1.5"/></svg>',
   tent:'<svg viewBox="0 0 40 40"><path d="M4 33 L20 6 L36 33 Z" fill="#E67E22" stroke="#9E4D0B" stroke-width="2" stroke-linejoin="round"/><path d="M14 33 L20 21 L26 33 Z" fill="#6E3207"/></svg>',
   star:'<svg viewBox="0 0 40 40"><path d="M20 3 L24.9 14.6 L37.3 15.5 L27.9 23.6 L30.7 35.8 L20 29.3 L9.3 35.8 L12.1 23.6 L2.7 15.5 L15.1 14.6 Z" fill="var(--gold)" stroke="color-mix(in srgb,var(--gold) 70%,#000)" stroke-width="1.5" stroke-linejoin="round"/></svg>',
   wave:'<svg viewBox="0 0 40 40" fill="none" stroke="var(--water)" stroke-width="3" stroke-linecap="round"><path d="M6 15 q7 -7 14 0 t14 0"/><path d="M6 26 q7 -7 14 0 t14 0"/></svg>',
   ship:'<svg viewBox="0 0 40 40"><rect x="3" y="14" width="34" height="12" rx="6" fill="var(--sea)"/><rect x="13" y="14" width="1.5" height="12" fill="var(--paper)"/><rect x="25" y="14" width="1.5" height="12" fill="var(--paper)"/></svg>',
+  bin:'<svg viewBox="0 0 40 40"><circle cx="13" cy="13" r="8" fill="var(--bin)"/><circle cx="27" cy="13" r="7" fill="none" stroke="var(--bin)" stroke-width="2.5"/><circle cx="13" cy="27" r="7" fill="none" stroke="var(--bin)" stroke-width="2.5"/><circle cx="27" cy="27" r="8" fill="var(--bin)"/></svg>',
+  hashi:'<svg viewBox="0 0 40 40"><line x1="10" y1="12" x2="30" y2="12" stroke="var(--hashi)" stroke-width="2.5"/><line x1="10" y1="10" x2="10" y2="30" stroke="var(--hashi)" stroke-width="2.5"/><line x1="13" y1="10" x2="13" y2="30" stroke="var(--hashi)" stroke-width="2.5"/><circle cx="10" cy="11" r="7" fill="var(--cell)" stroke="var(--hashi)" stroke-width="2.5"/><circle cx="31" cy="11" r="6" fill="var(--cell)" stroke="var(--hashi)" stroke-width="2.5"/><circle cx="11" cy="31" r="6" fill="var(--cell)" stroke="var(--hashi)" stroke-width="2.5"/></svg>',
+  loop:'<svg viewBox="0 0 40 40"><g fill="var(--soft)"><circle cx="6" cy="6" r="2"/><circle cx="20" cy="6" r="2"/><circle cx="34" cy="6" r="2"/><circle cx="6" cy="20" r="2"/><circle cx="20" cy="20" r="2"/><circle cx="34" cy="20" r="2"/><circle cx="6" cy="34" r="2"/><circle cx="20" cy="34" r="2"/><circle cx="34" cy="34" r="2"/></g><path d="M6 6 H34 V34 H20 V20 H6 Z" fill="none" stroke="var(--loop)" stroke-width="3" stroke-linejoin="round"/></svg>',
+  robot:'<svg viewBox="0 0 40 40"><rect x="9" y="12" width="22" height="20" rx="5" fill="var(--robo)"/><rect x="18.5" y="5" width="3" height="7" fill="var(--robo)"/><circle cx="20" cy="5" r="2.5" fill="var(--robo)"/><circle cx="16" cy="21" r="3" fill="var(--paper)"/><circle cx="24" cy="21" r="3" fill="var(--paper)"/><rect x="15" y="27" width="10" height="2" rx="1" fill="var(--paper)"/></svg>',
+  bot:'<svg viewBox="0 0 40 40"><path d="M20 3 L33 33 L20 26 L7 33 Z" fill="var(--robo)" stroke="color-mix(in srgb,var(--robo) 60%,#000)" stroke-width="2" stroke-linejoin="round"/><circle cx="20" cy="19" r="3.2" fill="var(--paper)"/></svg>',
+  battery:'<svg viewBox="0 0 40 40"><rect x="10" y="9" width="20" height="26" rx="3" fill="#F2C230" stroke="#9A7400" stroke-width="2"/><rect x="16" y="5" width="8" height="5" rx="1" fill="#9A7400"/><path d="M22 14 L15 23 H20 L18 30 L25 21 H20 Z" fill="#5A4300"/></svg>',
+  flag:'<svg viewBox="0 0 40 40"><rect x="10" y="5" width="3" height="31" rx="1.5" fill="var(--ink)"/><path d="M13 6 H32 L27 13 L32 20 H13 Z" fill="var(--bad)"/></svg>',
   undo:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg>',
   check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>',
   reset:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>',
   rules:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6V14"/><circle cx="12" cy="17.5" r=".6" fill="currentColor"/></svg>',
+  play:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4.5v15l12-7.5z"/></svg>',
+  back:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4v16"/><path d="M19 5 9 12l10 7z"/></svg>',
 };
-const KEY='raetselheft-v1';
-let store={};
+const typeIcon=t=>({tents:ICON.tent,ships:ICON.ship,stars:ICON.star,binairo:ICON.bin,hashi:ICON.hashi,slither:ICON.loop,robot:ICON.robot})[t];
+const stars3=k=>[1,2,3].map(i=>`<span class="pip${i<=k?' on':''}"></span>`).join('');
+
+// ---------- Speicher ----------
+const KEY='raetselheft-v2';let store={};
 function load(){try{store=JSON.parse(localStorage.getItem(KEY)||'{}')||{}}catch(e){store={}}
-  for(const t in TYPES){store[t]=store[t]||{unlocked:1,current:1,solved:{},saves:{}}}}
+  for(const t of[...Object.keys(TYPES),'robot']){store[t]=store[t]||{};const s=store[t];s.unlocked=s.unlocked||1;s.current=s.current||1;s.solved=s.solved||{};s.saves=s.saves||{};s.variant=s.variant||{}}}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(store))}catch(e){}}
 load();
 
-const $=s=>document.querySelector(s);
-const app=$('#app');
-let G=null; // aktuelles Spiel
-let timerId=null;
+const $=s=>document.querySelector(s);const app=$('#app');
+let G=null,timerId=null;
+const fmt=s=>`${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;
 
 // ---------- Startseite ----------
-function home(){
+function ladder(t){const s=store[t];const max=Math.max(s.unlocked,t==='robot'?ROBOPLAN.length:PLAN[t].length);const o=[];
+  for(let i=1;i<=max;i++)o.push(`<i class="${s.solved[i]?'done':''} ${i===s.current?'now':''}"></i>`);return o.join('')}
+function entry(t,name,c,meta){const s=store[t];
+  return `<li><button class="entry" data-t="${t}" style="--c:${c}"><span class="icon">${typeIcon(t)}</span>
+    <span><span class="ename">${name}</span><div class="emeta">${meta}${s.saves[s.current]&&!s.saves[s.current].won?', angefangen':''}</div><div class="ladder">${ladder(t)}</div></span>
+    <span class="lvl"><small>Stufe</small>${s.current}</span></button></li>`}
+function home(){closeSheet();
   stopTimer();G=null;
   const total=Object.values(store).reduce((a,s)=>a+Object.keys(s.solved).length,0);
+  const logic=Object.entries(TYPES).map(([t,T])=>{const sp=spec(t,store[t].current);
+    return entry(t,T.name,T.c,`${sp.n}×${sp.n}${t==='stars'&&sp.k===2?', zwei Sterne':''}, ${TECH[sp.tier][0]}`)}).join('');
+  const rs=roboSpec(store.robot.current);
   app.innerHTML=`<div class="wrap">
-    <header class="mast"><h1>Rätsel&shy;heft</h1><p>Drei Platzierungsrätsel, jedes mit eindeutiger Lösung. Mit jeder gelösten Stufe wird das Gitter größer.</p></header>
-    <ul class="book">${Object.entries(TYPES).map(([t,T])=>{
-      const s=store[t];const sp=spec(t,s.current);
-      const lad=[];const max=Math.max(s.unlocked,10);
-      for(let i=1;i<=max;i++)lad.push(`<i class="${s.solved[i]?'done':''} ${i===s.current?'now':''}"></i>`);
-      return `<li><button class="entry" data-t="${t}" style="--c:${T.c}">
-        <span class="icon">${t==='tents'?ICON.tent:t==='ships'?ICON.ship:ICON.star}</span>
-        <span><span class="ename">${T.name}</span><div class="emeta">${sp.n}×${sp.n} Felder${s.saves[s.current]?', angefangen':''}</div><div class="ladder">${lad.join('')}</div></span>
-        <span class="lvl"><small>Stufe</small>${s.current}</span></button></li>`}).join('')}
-    </ul>
-    <div class="foot"><span>${total} ${total===1?'Rätsel':'Rätsel'} gelöst</span><button class="linkbtn" id="howto">So wird gespielt</button></div>
-  </div>`;
-  app.querySelectorAll('.entry').forEach(b=>b.onclick=()=>start(b.dataset.t,store[b.dataset.t].current));
+    <header class="mast"><h1>Rätsel&shy;heft</h1><p>Sechs Logikrätsel mit eindeutiger Lösung und ein Roboter, der programmiert werden will. Jede gelöste Stufe schaltet die nächste frei.</p></header>
+    <h2 class="sec">Logikrätsel</h2><ul class="book">${logic}</ul>
+    <h2 class="sec">Programmieren</h2><ul class="book">${entry('robot','Roboter',ROBO.c,rs.loops?'Mit Schleifen':'Befehlsfolgen')}</ul>
+    <div class="foot"><span>${total} gelöst</span><button class="linkbtn" id="howto">So wird gespielt</button></div></div>`;
+  app.querySelectorAll('.entry').forEach(b=>b.onclick=()=>{const t=b.dataset.t;t==='robot'?startRobot(store.robot.current):start(t,store[t].current)});
   $('#howto').onclick=()=>openSheet(`<h3>So wird gespielt</h3>
-    <p><b>Tippen</b> wechselt ein Feld: leer, dann Symbol, dann Punkt, dann wieder leer. Der Punkt bedeutet »hier sicher nichts«.</p>
-    <p><b>Ziehen</b> über mehrere Felder überträgt denselben Zustand auf alle, praktisch zum Auffüllen mit Punkten.</p>
-    <p><b>Zahl am Rand antippen</b> füllt alle leeren Felder dieser Reihe mit Punkten.</p>
-    <p><b>Prüfen</b> markiert Felder, die nicht zur Lösung passen. Dein Fortschritt wird auf diesem Gerät gespeichert.</p>
+    <p><b>Tippen</b> wechselt ein Feld: leer, Symbol, Punkt. Der Punkt heißt »hier sicher nichts«. <b>Ziehen</b> überträgt denselben Zustand auf mehrere Felder. Eine <b>Randzahl antippen</b> füllt die leeren Felder ihrer Reihe mit Punkten.</p>
+    <p><b>Brückenbau</b>: von Insel zu Insel ziehen oder nacheinander antippen. <b>Rundweg</b>: Linien antippen oder entlang der Punkte ziehen.</p>
+    <p><b>Technik</b> zeigt, welche Denkweise ein Rätsel mindestens braucht:</p>
+    <ol class="tech">${[1,2,3].map(k=>`<li><b>${TECH[k][0]}</b>: ${TECH[k][1]}</li>`).join('')}</ol>
+    <p>Fortschritt und Bestzeiten bleiben auf diesem Gerät gespeichert.</p>
     <div class="row"><button class="btn main" data-close>Verstanden</button></div>`,'var(--ink)');
 }
 
-// ---------- Spiel starten ----------
-function start(t,level){
-  stopTimer();
-  const s=store[t];s.current=level;save();
+// ---------- Logikrätsel starten ----------
+function boardLen(P){return P.type==='hashi'?P.edges.length:P.type==='slither'?P.sol.length:P.n*P.n}
+function start(t,level){closeSheet();
+  stopTimer();const s=store[t];s.current=level;save();
   app.innerHTML=`<div class="wrap"><div class="loading">Rätsel wird erstellt …</div></div>`;
   setTimeout(()=>{
-    const variant=(s.variant&&s.variant[level])||0;
-    const P=makePuzzle(t,level,variant);
-    if(!P){app.innerHTML=`<div class="wrap"><p class="loading">Für diese Stufe konnte kein Rätsel erzeugt werden. Tippe auf »Anderes Rätsel« oder wähle eine andere Stufe.</p></div>`;return}
-    const n=P.n;
-    const fixed=new Int8Array(n*n).fill(-1); // -1 frei, sonst fester Zustand
+    const variant=s.variant[level]||0;const P=makePuzzle(t,level,variant);
+    if(!P){app.innerHTML=`<div class="wrap"><p class="loading">Für diese Stufe ließ sich gerade kein Rätsel erzeugen. <button class="linkbtn" onclick="home()">Zurück zum Heft</button></p></div>`;return}
+    const n=P.n,len=boardLen(P);const fixed=new Int8Array(len).fill(-1);
     if(t==='tents')P.trees.forEach(i=>fixed[i]=9);
     if(t==='ships')P.hints.forEach(([i,v])=>fixed[i]=v?1:2);
-    const sv=s.saves[level];
-    let board=new Int8Array(n*n);
-    if(sv&&sv.v===variant&&sv.b.length===n*n)board=Int8Array.from(sv.b);
-    for(let i=0;i<n*n;i++)if(fixed[i]>=0)board[i]=fixed[i]===9?0:fixed[i];
-    G={t,level,variant,P,n,fixed,board,undo:[],time:sv&&sv.v===variant?sv.time:0,done:!!(s.solved[level]&&sv&&sv.won)};
+    if(t==='binairo')P.givens.forEach(([i,v])=>fixed[i]=v?1:2);
+    const sv=s.saves[level];let board=new Int8Array(len);
+    if(sv&&sv.v===variant&&sv.b&&sv.b.length===len)board=Int8Array.from(sv.b);
+    for(let i=0;i<len;i++)if(fixed[i]>=0)board[i]=fixed[i]===9?0:fixed[i];
+    G={t,level,variant,P,n,fixed,board,undo:[],time:sv&&sv.v===variant?sv.time||0:0,done:!!(sv&&sv.v===variant&&sv.won),sel:-1};
     renderGame();
   },30);
 }
+function truth(){const{P,n}=G;const T=new Int8Array(boardLen(P));
+  if(P.type==='hashi')P.edges.forEach((e,k)=>T[k]=P.sol[2*k]+P.sol[2*k+1]);else P.sol.forEach((v,i)=>T[i]=v);return T}
 
-function truthSet(){const {P,n}=G;const T=new Uint8Array(n*n);
-  if(G.t==='ships')P.sol.forEach((v,i)=>T[i]=v);else P.sol.forEach(i=>T[i]=1);return T}
-
-function renderGame(){
-  const {t,P,n}=G;const T=TYPES[t];
-  const clues=t!=='stars';
-  const maxW=Math.min(window.innerWidth-32,568);
-  const cs=Math.floor(Math.min(54,maxW/(n+(clues?1:0))));
-  app.innerHTML=`<div class="wrap" style="--c:${T.c}">
-    <div class="top">
-      <button class="back" id="back" aria-label="Zurück zum Rätselheft">‹ Heft</button>
+function frame(T,extra=''){const sp=G.P.spec||spec(G.t,G.level);const tier=G.P.tier;
+  return `<div class="wrap" style="--c:${T.c}">
+    <div class="top"><button class="back" id="back" aria-label="Zurück zum Rätselheft">‹ Heft</button>
       <div class="title"><h2>${T.name}</h2>
-        <div class="stepper"><button id="prev" aria-label="Vorherige Stufe" ${G.level<=1?'disabled':''}>‹</button>Stufe ${G.level}<button id="next" aria-label="Nächste Stufe" ${G.level>=store[t].unlocked?'disabled':''}>›</button></div></div>
-      <div class="timer" id="timer"></div>
-    </div>
-    <div class="boardwrap"><div class="board ${t}" id="board" style="--cs:${cs}px;grid-template-columns:${clues?`${cs}px `:''}repeat(${n},${cs}px)"></div></div>
-    ${t==='ships'?'<div class="fleet" id="fleet"></div>':''}
+        <div class="stepper"><button id="prev" aria-label="Vorherige Stufe" ${G.level<=1?'disabled':''}>‹</button>Stufe ${G.level}<button id="next" aria-label="Nächste Stufe" ${G.level>=store[G.t].unlocked?'disabled':''}>›</button></div></div>
+      <div class="timer" id="timer"></div></div>
+    <div class="badges"><span class="badge">${G.n}×${G.n}${G.P.k===2?', zwei Sterne':''}</span><button class="badge tech" id="techb">Technik ${stars3(tier)} ${TECH[tier][0]}</button></div>
+    <div class="boardwrap" id="bw"></div>${extra}
     <div class="status" id="status"></div>
     <div class="tools">
-      <button class="tool" id="u">${ICON.undo}Zurück</button>
-      <button class="tool" id="chk">${ICON.check}Prüfen</button>
-      <button class="tool" id="rst">${ICON.reset}Leeren</button>
-      <button class="tool" id="rl">${ICON.rules}Regeln</button>
-    </div>
-    <p class="hint"><button class="linkbtn" id="other">Anderes Rätsel dieser Stufe</button></p>
-  </div>`;
-  const B=$('#board');
-  if(clues){B.insertAdjacentHTML('beforeend','<span class="corner"></span>');
-    for(let c=0;c<n;c++)B.insertAdjacentHTML('beforeend',`<button class="clue" data-col="${c}" style="height:${cs}px" aria-label="Spalte ${c+1}: ${P.cols[c]}">${P.cols[c]}</button>`);}
-  for(let r=0;r<n;r++){
-    if(clues)B.insertAdjacentHTML('beforeend',`<button class="clue" data-row="${r}" aria-label="Zeile ${r+1}: ${P.rows[r]}">${P.rows[r]}</button>`);
-    for(let c=0;c<n;c++){const i=r*n+c;
-      let cls=`cell${r===0?' r0':''}${c===0?' c0':''}${r===n-1?' rl':''}${c===n-1?' cl':''}`;
-      let style=`--d:${r+c}`;
-      if(t==='stars'){const g=P.reg[i];style+=`;background:var(--p${g%10})`;
-        if(r===0||P.reg[i-n]!==g)cls+=' bt';if(c===0||P.reg[i-1]!==g)cls+=' bl';
-        if(r===n-1||P.reg[i+n]!==g)cls+=' bb';if(c===n-1||P.reg[i+1]!==g)cls+=' br';}
-      if(G.fixed[i]>=0)cls+=' fixedcell';
-      B.insertAdjacentHTML('beforeend',`<div class="${cls}" data-i="${i}" style="${style}"></div>`);}
-  }
+      <button class="tool" id="u">${ICON.undo}Zurück</button><button class="tool" id="chk">${ICON.check}Prüfen</button>
+      <button class="tool" id="rst">${ICON.reset}Leeren</button><button class="tool" id="rl">${ICON.rules}Regeln</button></div>
+    <p class="hint"><button class="linkbtn" id="other">Anderes Rätsel dieser Stufe</button></p></div>`}
+
+function renderGame(){
+  const{t,P}=G;const T=TYPES[t];
+  app.innerHTML=frame(T,t==='ships'?'<div class="fleet" id="fleet"></div>':'');
+  const bw=$('#bw');
+  if(T.grid)renderGrid(bw);else if(t==='hashi')renderHashi(bw);else renderSlither(bw);
   $('#back').onclick=()=>{persist();home()};
   $('#prev').onclick=()=>{persist();start(t,G.level-1)};
   $('#next').onclick=()=>{persist();start(t,G.level+1)};
   $('#u').onclick=()=>{if(G.done||!G.undo.length)return;G.board=G.undo.pop();clearMarks();draw();persist()};
   $('#chk').onclick=check;
-  $('#rst').onclick=()=>{if(G.done)return;pushUndo();for(let i=0;i<n*n;i++)if(G.fixed[i]<0)G.board[i]=0;clearMarks();draw();persist()};
-  $('#rl').onclick=()=>openSheet(`<h3>${T.name}</h3><ol>${T.rules.map(r=>`<li>${r}</li>`).join('')}</ol>
-     <p style="color:var(--soft);font-size:15px">Tippen wechselt: leer, ${T.obj}, Punkt. Ziehen überträgt den Zustand. Zahl am Rand antippen füllt die Reihe mit Punkten.</p>
-     <div class="row"><button class="btn main" data-close>Weiter rätseln</button></div>`,T.c);
-  $('#other').onclick=()=>{const s=store[t];s.variant=s.variant||{};s.variant[G.level]=(s.variant[G.level]||0)+1;delete s.saves[G.level];save();start(t,G.level)};
-  B.querySelectorAll('.clue').forEach(b=>b.onclick=()=>{if(G.done)return;pushUndo();
-    for(let k=0;k<n;k++){const i=b.dataset.row!==undefined?(+b.dataset.row)*n+k:k*n+(+b.dataset.col);
-      if(G.fixed[i]<0&&G.board[i]===0)G.board[i]=2}
-    clearMarks();draw();persist();winCheck()});
-  bindPointer(B);
+  $('#rst').onclick=()=>{if(G.done)return;pushUndo();for(let i=0;i<G.board.length;i++)if(G.fixed[i]<0)G.board[i]=0;clearMarks();draw();persist()};
+  const rules=typeof T.rules==='function'?T.rules(P.k):T.rules;
+  $('#rl').onclick=()=>openSheet(`<h3>${T.name}</h3><ol>${rules.map(r=>`<li>${r}</li>`).join('')}</ol><div class="row"><button class="btn main" data-close>Weiter rätseln</button></div>`,T.c);
+  $('#techb').onclick=()=>openSheet(`<h3>Technik</h3><p>Dieses Rätsel braucht mindestens <b>${TECH[P.tier][0]}</b>.</p><ol class="tech">${[1,2,3].map(k=>`<li${k===P.tier?' class="cur"':''}><b>${TECH[k][0]}</b>: ${TECH[k][1]}</li>`).join('')}</ol><div class="row"><button class="btn main" data-close>Weiter rätseln</button></div>`,T.c);
+  $('#other').onclick=()=>{const s=store[t];s.variant[G.level]=(s.variant[G.level]||0)+1;delete s.saves[G.level];save();start(t,G.level)};
   draw();
-  if(G.done){B.classList.add('solved');setStatus('Gelöst. Wähle eine andere Stufe oder ein anderes Rätsel.','ok')}
-  else startTimer();
+  if(G.done){bw.classList.add('solved');setStatus('Gelöst. Weiter mit der nächsten Stufe oder einem anderen Rätsel.','ok')}else startTimer();
   tick();
 }
 
-// ---------- Eingabe ----------
-let drag=null;
-function bindPointer(B){
-  B.addEventListener('pointerdown',e=>{
-    const el=e.target.closest('.cell');if(!el||G.done)return;
-    const i=+el.dataset.i;if(G.fixed[i]>=0)return;
-    e.preventDefault();pushUndo();
-    const nv=(G.board[i]+1)%3;G.board[i]=nv;drag={v:nv,seen:new Set([i])};
-    clearMarks();draw();
-  });
-  B.addEventListener('pointermove',e=>{
-    if(!drag)return;const el=document.elementFromPoint(e.clientX,e.clientY);
-    const c=el&&el.closest&&el.closest('.cell');if(!c)return;const i=+c.dataset.i;
-    if(drag.seen.has(i)||G.fixed[i]>=0)return;drag.seen.add(i);G.board[i]=drag.v;draw();
-  });
-  const end=()=>{if(!drag)return;drag=null;persist();winCheck()};
-  window.addEventListener('pointerup',end);window.addEventListener('pointercancel',end);
+// ---------- Gitter-Rätsel ----------
+function renderGrid(bw){
+  const{t,P,n}=G;const clues=t==='tents'||t==='ships';
+  const maxW=Math.min(window.innerWidth-32,568);const cs=Math.floor(Math.min(54,maxW/(n+(clues?1:0))));
+  bw.innerHTML=`<div class="board ${t}" id="board" style="--cs:${cs}px;grid-template-columns:${clues?`${cs}px `:''}repeat(${n},${cs}px)"></div>`;
+  const B=$('#board');let h='';
+  if(clues){h+='<span></span>';for(let c=0;c<n;c++)h+=`<button class="clue" data-col="${c}" style="height:${cs}px" aria-label="Spalte ${c+1}: ${P.cols[c]}">${P.cols[c]}</button>`}
+  for(let r=0;r<n;r++){
+    if(clues)h+=`<button class="clue" data-row="${r}" aria-label="Zeile ${r+1}: ${P.rows[r]}">${P.rows[r]}</button>`;
+    for(let c=0;c<n;c++){const i=r*n+c;let cls=`cell${r===0?' r0':''}${c===0?' c0':''}${r===n-1?' rl':''}${c===n-1?' cl':''}`,style=`--d:${r+c}`;
+      if(t==='stars'){const g=P.reg[i];style+=`;background:var(--p${g%10})`;
+        if(r===0||P.reg[i-n]!==g)cls+=' bt';if(c===0||P.reg[i-1]!==g)cls+=' bl';if(r===n-1||P.reg[i+n]!==g)cls+=' bb';if(c===n-1||P.reg[i+1]!==g)cls+=' br'}
+      if(G.fixed[i]>=0)cls+=' fixedcell';
+      h+=`<div class="${cls}" data-i="${i}" style="${style}"></div>`}}
+  B.innerHTML=h;
+  B.querySelectorAll('.clue').forEach(b=>b.onclick=()=>{if(G.done)return;pushUndo();
+    for(let k=0;k<n;k++){const i=b.dataset.row!==undefined?(+b.dataset.row)*n+k:k*n+(+b.dataset.col);if(G.fixed[i]<0&&G.board[i]===0)G.board[i]=2}
+    clearMarks();draw();persist();winCheck()});
+  let drag=null;
+  B.addEventListener('pointerdown',e=>{const el=e.target.closest('.cell');if(!el||G.done)return;const i=+el.dataset.i;if(G.fixed[i]>=0)return;
+    e.preventDefault();pushUndo();const nv=(G.board[i]+1)%3;G.board[i]=nv;drag={v:nv,seen:new Set([i])};clearMarks();draw()});
+  B.addEventListener('pointermove',e=>{if(!drag)return;const el=document.elementFromPoint(e.clientX,e.clientY);const c=el&&el.closest&&el.closest('.cell');if(!c)return;
+    const i=+c.dataset.i;if(drag.seen.has(i)||G.fixed[i]>=0)return;drag.seen.add(i);G.board[i]=drag.v;draw()});
+  G.endDrag=()=>{if(!drag)return;drag=null;persist();winCheck()};
 }
-function pushUndo(){G.undo.push(Int8Array.from(G.board));if(G.undo.length>200)G.undo.shift()}
-function persist(){if(!G)return;store[G.t].saves[G.level]={v:G.variant,b:Array.from(G.board),time:G.time,won:G.done};save()}
-
-// ---------- Darstellung ----------
-function isShip(i){return G.board[i]===1}
-function segClass(i){const n=G.n,r=(i/n)|0,c=i%n;
-  const s=(x,y)=>x>=0&&x<n&&y>=0&&y<n&&isShip(x*n+y);
-  const w=(x,y)=>x<0||x>=n||y<0||y>=n||G.board[x*n+y]===2;
+function segClass(i){const{n,board}=G,r=(i/n)|0,c=i%n,s=(x,y)=>x>=0&&x<n&&y>=0&&y<n&&board[x*n+y]===1,w=(x,y)=>x<0||x>=n||y<0||y>=n||board[x*n+y]===2;
   const U=s(r-1,c),D=s(r+1,c),L=s(r,c-1),R=s(r,c+1);
-  if((L||R)&&!(U||D)){if(L&&R)return'mh';return L?'r':'l'}
-  if((U||D)&&!(L||R)){if(U&&D)return'mv';return U?'d':'u'}
-  if(!U&&!D&&!L&&!R){ // isoliert: rund, wenn ringsum Wasser
-    return (w(r-1,c)&&w(r+1,c)&&w(r,c-1)&&w(r,c+1))?'single':'lone'}
-  return 'lone'}
-function fixedSegClass(i){ // Form aus der Lösung
-  const n=G.n,r=(i/n)|0,c=i%n,S=G.P.sol;const s=(x,y)=>x>=0&&x<n&&y>=0&&y<n&&S[x*n+y];
-  const U=s(r-1,c),D=s(r+1,c),L=s(r,c-1),R=s(r,c+1);
-  if(L&&R)return'mh';if(U&&D)return'mv';if(R)return'l';if(L)return'r';if(D)return'u';if(U)return'd';return'single'}
-
-function draw(){
-  const {t,n,P,board}=G;const cells=document.querySelectorAll('#board .cell');
-  const conf=conflicts();
-  cells.forEach(el=>{const i=+el.dataset.i;let h='';
+  if((L||R)&&!(U||D)){if(L&&R)return'mh';return L?'r':'l'}if((U||D)&&!(L||R)){if(U&&D)return'mv';return U?'d':'u'}
+  if(!U&&!D&&!L&&!R)return(w(r-1,c)&&w(r+1,c)&&w(r,c-1)&&w(r,c+1))?'single':'lone';return'lone'}
+function drawGrid(){
+  const{t,n,P,board}=G;const conf=gridConflicts();
+  document.querySelectorAll('#board .cell').forEach(el=>{const i=+el.dataset.i;let h='';
     if(t==='tents'&&G.fixed[i]===9)h=ICON.tree;
-    else if(t==='ships'&&G.fixed[i]===1)h=`<span class="seg fixed ${fixedSegClass(i)}"></span>`;
+    else if(t==='ships'&&G.fixed[i]===1){const sh=shipShape(P.sol,n,i);h=`<span class="seg fixed ${sh==='mid'?'mid':sh}"></span>`}
     else if(t==='ships'&&G.fixed[i]===2)h=ICON.wave;
+    else if(t==='binairo'&&board[i])h=`<span class="bin ${board[i]===1?'dark':'light'}"></span>`;
     else if(board[i]===1)h=t==='tents'?ICON.tent:t==='stars'?ICON.star:`<span class="seg ${segClass(i)}"></span>`;
     else if(board[i]===2)h='<span class="dot"></span>';
-    if(el._h!==h){el.innerHTML=h;el._h=h}
-    el.classList.toggle('conf',conf.has(i));
-    el.setAttribute('aria-label',`Zeile ${((i/n)|0)+1}, Spalte ${i%n+1}: ${board[i]===1?TYPES[t].obj:board[i]===2?'Punkt':G.fixed[i]===9?'Baum':'leer'}`);
-  });
-  if(t!=='stars'){
-    document.querySelectorAll('#board .clue').forEach(b=>{
-      let cnt=0;for(let k=0;k<n;k++){const i=b.dataset.row!==undefined?(+b.dataset.row)*n+k:k*n+(+b.dataset.col);if(board[i]===1)cnt++}
-      const tgt=b.dataset.row!==undefined?P.rows[+b.dataset.row]:P.cols[+b.dataset.col];
-      b.classList.toggle('done',cnt===tgt);b.classList.toggle('over',cnt>tgt);});
-  }
+    if(el._h!==h){el.innerHTML=h;el._h=h}el.classList.toggle('conf',conf.has(i));
+    const lab=t==='binairo'?(board[i]===1?'dunkel':board[i]===2?'hell':'leer'):(board[i]===1?TYPES[t].obj:board[i]===2?'Punkt':G.fixed[i]===9?'Baum':'leer');
+    el.setAttribute('aria-label',`Zeile ${((i/n)|0)+1}, Spalte ${i%n+1}: ${lab}`)});
+  if(t==='tents'||t==='ships')document.querySelectorAll('#board .clue').forEach(b=>{let cnt=0;
+    for(let k=0;k<n;k++){const i=b.dataset.row!==undefined?(+b.dataset.row)*n+k:k*n+(+b.dataset.col);if(board[i]===1)cnt++}
+    const tgt=b.dataset.row!==undefined?P.rows[+b.dataset.row]:P.cols[+b.dataset.col];b.classList.toggle('done',cnt===tgt);b.classList.toggle('over',cnt>tgt)});
   if(t==='ships')drawFleet();
 }
-function conflicts(){ // Regelverstöße, ohne die Lösung zu verraten
-  const {t,n,board,P}=G;const S=new Set();if(t==='ships')return S;
-  for(let i=0;i<n*n;i++){if(board[i]!==1)continue;const r=(i/n)|0,c=i%n;
-    for(const[a,b]of N8){const x=r+a,y=c+b;if(x>=0&&x<n&&y>=0&&y<n&&board[x*n+y]===1){S.add(i);S.add(x*n+y)}}}
-  if(t==='stars'){const rows={},cols={},regs={};
-    for(let i=0;i<n*n;i++)if(board[i]===1){const r=(i/n)|0,c=i%n;(rows[r]=rows[r]||[]).push(i);(cols[c]=cols[c]||[]).push(i);(regs[P.reg[i]]=regs[P.reg[i]]||[]).push(i)}
-    for(const g of [rows,cols,regs])for(const k in g)if(g[k].length>1)g[k].forEach(i=>S.add(i));}
+function gridConflicts(){const{t,n,board,P}=G;const S=new Set();
+  if(t==='tents'||t==='stars'){for(let i=0;i<n*n;i++){if(board[i]!==1)continue;const r=(i/n)|0,c=i%n;
+      for(const[a,b]of N8){const x=r+a,y=c+b;if(x>=0&&x<n&&y>=0&&y<n&&board[x*n+y]===1){S.add(i);S.add(x*n+y)}}}}
+  if(t==='stars'){const groups=[];for(let r=0;r<n;r++)groups.push([...Array(n)].map((_,c)=>r*n+c));for(let c=0;c<n;c++)groups.push([...Array(n)].map((_,r)=>r*n+c));
+    const R={};P.reg.forEach((g,i)=>(R[g]=R[g]||[]).push(i));groups.push(...Object.values(R));
+    for(const g of groups){const st=g.filter(i=>board[i]===1);if(st.length>P.k)st.forEach(i=>S.add(i))}}
+  if(t==='binairo'){const lines=[];for(let r=0;r<n;r++)lines.push([...Array(n)].map((_,c)=>r*n+c));for(let c=0;c<n;c++)lines.push([...Array(n)].map((_,r)=>r*n+c));
+    for(const L of lines){for(const v of[1,2]){const cs=L.filter(i=>board[i]===v);if(cs.length>n/2)cs.forEach(i=>S.add(i))}
+      for(let k=0;k+2<n;k++){const a=board[L[k]];if(a&&a===board[L[k+1]]&&a===board[L[k+2]]){S.add(L[k]);S.add(L[k+1]);S.add(L[k+2])}}}}
   return S}
-function drawFleet(){
-  const {n,P,board}=G;const seen=new Uint8Array(n*n);const found={};
-  const water=(x,y)=>x<0||x>=n||y<0||y>=n||board[x*n+y]===2;
-  for(let i=0;i<n*n;i++){if(!isShip(i)||seen[i])continue;
-    const comp=[];const st=[i];seen[i]=1;
-    while(st.length){const k=st.pop();comp.push(k);const r=(k/n)|0,c=k%n;
-      for(const[a,b]of N4){const x=r+a,y=c+b;if(x>=0&&x<n&&y>=0&&y<n&&isShip(x*n+y)&&!seen[x*n+y]){seen[x*n+y]=1;st.push(x*n+y)}}}
-    const rs=new Set(comp.map(k=>(k/n)|0)),cs=new Set(comp.map(k=>k%n));
-    if(rs.size>1&&cs.size>1)continue;
-    // vollständig, wenn ringsum Wasser oder Rand
-    const cset=new Set(comp);let closed=true;
-    for(const k of comp){const r=(k/n)|0,c=k%n;for(const[a,b]of N4){const x=r+a,y=c+b;if(cset.has(x*n+y))continue;if(!water(x,y)){closed=false}}}
-    if(closed)found[comp.length]=(found[comp.length]||0)+1;}
-  const lens=[...new Set(P.fleet)].sort((a,b)=>b-a);
-  $('#fleet').innerHTML=lens.map(L=>{const need=P.fleet.filter(x=>x===L).length,f=found[L]||0;
-    return `<span class="fl ${f===need?'full':f>need?'over':''}"><span class="mini">${'<b></b>'.repeat(L)}</span>${f}/${need}</span>`}).join('');
+function drawFleet(){const{n,P,board}=G;const seen=new Uint8Array(n*n),found={};const water=(x,y)=>x<0||x>=n||y<0||y>=n||board[x*n+y]===2;
+  for(let i=0;i<n*n;i++){if(board[i]!==1||seen[i])continue;const comp=[],st=[i];seen[i]=1;
+    while(st.length){const k=st.pop();comp.push(k);const r=(k/n)|0,c=k%n;for(const[a,b]of N4){const x=r+a,y=c+b;if(x>=0&&x<n&&y>=0&&y<n&&board[x*n+y]===1&&!seen[x*n+y]){seen[x*n+y]=1;st.push(x*n+y)}}}
+    const rs=new Set(comp.map(k=>(k/n)|0)),cs=new Set(comp.map(k=>k%n));if(rs.size>1&&cs.size>1)continue;
+    const S=new Set(comp);let closed=true;for(const k of comp){const r=(k/n)|0,c=k%n;for(const[a,b]of N4){if(!S.has((r+a)*n+c+b)&&!water(r+a,c+b))closed=false}}
+    if(closed)found[comp.length]=(found[comp.length]||0)+1}
+  $('#fleet').innerHTML=[...new Set(P.fleet)].sort((a,b)=>b-a).map(L=>{const need=P.fleet.filter(x=>x===L).length,f=found[L]||0;
+    return `<span class="fl ${f===need?'full':f>need?'over':''}"><span class="mini">${'<b></b>'.repeat(L)}</span>${f}/${need}</span>`}).join('')}
+
+// ---------- Brückenbau ----------
+function renderHashi(bw){
+  const{P,n}=G;const W=Math.min(window.innerWidth-32,560),cs=W/n;G.cs=cs;
+  const at=new Int16Array(n*n).fill(-1);P.islands.forEach((s,k)=>at[s.r*n+s.c]=k);G.at=at;
+  G.cross=P.edges.map((e,i)=>P.edges.map((f,j)=>j!==i&&crosses(P,e,f)?j:-1).filter(j=>j>=0));
+  bw.innerHTML=`<svg class="svgboard" id="board" viewBox="0 0 ${W} ${W}" width="${W}" height="${W}" role="img" aria-label="Brückenbau-Spielfeld"><g id="gl"></g><g id="ge"></g><g id="gi"></g></svg>`;
+  const svg=$('#board');
+  let gl='';for(let k=0;k<n;k++){gl+=`<line x1="${(k+.5)*cs}" y1="${cs/2}" x2="${(k+.5)*cs}" y2="${W-cs/2}"/><line y1="${(k+.5)*cs}" x1="${cs/2}" y2="${(k+.5)*cs}" x2="${W-cs/2}"/>`}
+  $('#gl').innerHTML=gl;
+  const pt=e=>{const b=svg.getBoundingClientRect();return[(e.clientX-b.left)*W/b.width,(e.clientY-b.top)*W/b.height]};
+  const islandAt=([x,y])=>{const c=Math.floor(x/cs),r=Math.floor(y/cs);if(r<0||r>=n||c<0||c>=n)return-1;const k=at[r*n+c];if(k<0)return-1;
+    const s=P.islands[k];return Math.hypot(x-(s.c+.5)*cs,y-(s.r+.5)*cs)<cs*.55?k:-1};
+  let down=-1;
+  svg.addEventListener('pointerdown',e=>{if(G.done)return;e.preventDefault();down=islandAt(pt(e))});
+  svg.addEventListener('pointerup',e=>{if(G.done)return;const up=islandAt(pt(e));
+    if(down>=0&&up>=0&&up!==down){toggleBridge(down,up);G.sel=-1}
+    else if(up>=0&&up===down){if(G.sel>=0&&G.sel!==up){toggleBridge(G.sel,up);G.sel=-1}else G.sel=G.sel===up?-1:up}
+    else G.sel=-1;down=-1;draw()});
+}
+function toggleBridge(a,b){const{P}=G;const k=P.edges.findIndex(e=>(e.a===a&&e.b===b)||(e.a===b&&e.b===a));
+  if(k<0){setStatus('Diese Inseln liegen nicht in einer freien Linie.','bad');return}
+  const nv=(G.board[k]+1)%3;if(nv>0&&G.board[k]===0&&G.cross[k].some(j=>G.board[j]>0)){setStatus('Brücken dürfen sich nicht kreuzen.','bad');return}
+  pushUndo();G.board[k]=nv;clearMarks();persist();winCheck()}
+function drawHashi(){
+  const{P,board,cs}=G;let ge='';const err=G.err||new Set();
+  P.edges.forEach((e,k)=>{const v=board[k];if(!v)return;const A=P.islands[e.a],B=P.islands[e.b];
+    const x1=(A.c+.5)*cs,y1=(A.r+.5)*cs,x2=(B.c+.5)*cs,y2=(B.r+.5)*cs,o=cs*.09,cls=err.has(k)?'br err':'br';
+    if(v===1)ge+=`<line class="${cls}" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/>`;
+    else{const dx=e.h?0:o,dy=e.h?o:0;ge+=`<line class="${cls}" x1="${x1-dx}" y1="${y1-dy}" x2="${x2-dx}" y2="${y2-dy}"/><line class="${cls}" x1="${x1+dx}" y1="${y1+dy}" x2="${x2+dx}" y2="${y2+dy}"/>`}});
+  $('#ge').innerHTML=ge;
+  const deg=new Int16Array(P.islands.length);P.edges.forEach((e,k)=>{deg[e.a]+=board[k];deg[e.b]+=board[k]});
+  const nb=new Set();if(G.sel>=0)P.edges.forEach(e=>{if(e.a===G.sel)nb.add(e.b);if(e.b===G.sel)nb.add(e.a)});
+  $('#gi').innerHTML=P.islands.map((s,k)=>{const st=deg[k]===s.num?'done':deg[k]>s.num?'over':'';
+    return `<g class="isl ${st}${G.sel===k?' sel':''}${nb.has(k)?' nb':''}"><circle cx="${(s.c+.5)*cs}" cy="${(s.r+.5)*cs}" r="${cs*.4}"/><text x="${(s.c+.5)*cs}" y="${(s.r+.5)*cs}" dy=".36em" font-size="${cs*.42}">${s.num}</text></g>`}).join('');
 }
 
-// ---------- Prüfen & Gewinnen ----------
-function clearMarks(){document.querySelectorAll('#board .err').forEach(e=>e.classList.remove('err'));setStatus('')}
+// ---------- Rundweg ----------
+function renderSlither(bw){
+  const{P,n}=G;const W=Math.min(window.innerWidth-32,540),m=W*0.04,cs=(W-2*m)/n;G.cs=cs;G.m=m;G.geo=slGeom(n);
+  const g=G.geo;
+  let dots='';for(let r=0;r<=n;r++)for(let c=0;c<=n;c++)dots+=`<circle cx="${m+c*cs}" cy="${m+r*cs}" r="${Math.max(2,cs*.06)}"/>`;
+  let clues='';P.clues.forEach((k,i)=>{if(k>=0)clues+=`<text data-i="${i}" x="${m+(i%n+.5)*cs}" y="${m+(((i/n)|0)+.5)*cs}" dy=".36em" font-size="${cs*.5}">${k}</text>`});
+  bw.innerHTML=`<svg class="svgboard slither" id="board" viewBox="0 0 ${W} ${W}" width="${W}" height="${W}" role="img" aria-label="Rundweg-Spielfeld"><g id="gc">${clues}</g><g id="ge"></g><g class="dots">${dots}</g></svg>`;
+  const svg=$('#board');
+  const pt=e=>{const b=svg.getBoundingClientRect();return[(e.clientX-b.left)*W/b.width,(e.clientY-b.top)*W/b.height]};
+  const nearestEdge=([x,y])=>{const fx=(x-m)/cs,fy=(y-m)/cs;let best=-1,bd=1e9;
+    const hr=Math.round(fy),hc=Math.floor(fx);if(hr>=0&&hr<=n&&hc>=0&&hc<n){const d=Math.abs(fy-hr);if(d<bd){bd=d;best=g.h(hr,hc)}}
+    const vc=Math.round(fx),vr=Math.floor(fy);if(vc>=0&&vc<=n&&vr>=0&&vr<n){const d=Math.abs(fx-vc);if(d<bd){bd=d;best=g.v(vr,vc)}}
+    return bd<0.42?best:-1};
+  const nearestVertex=([x,y])=>{const r=Math.round((y-m)/cs),c=Math.round((x-m)/cs);if(r<0||r>n||c<0||c>n)return null;
+    return Math.hypot(x-(m+c*cs),y-(m+r*cs))<cs*.33?[r,c]:null};
+  const edgeBetween=(a,b)=>{if(a[0]===b[0]&&Math.abs(a[1]-b[1])===1)return g.h(a[0],Math.min(a[1],b[1]));if(a[1]===b[1]&&Math.abs(a[0]-b[0])===1)return g.v(Math.min(a[0],b[0]),a[1]);return-1};
+  let d=null;
+  svg.addEventListener('pointerdown',e=>{if(G.done)return;e.preventDefault();svg.setPointerCapture(e.pointerId);const p=pt(e);pushUndo();d={p,last:nearestVertex(p),moved:false,mode:null}});
+  svg.addEventListener('pointermove',e=>{if(!d)return;const v=nearestVertex(pt(e));if(!v)return;
+    if(!d.last){d.last=v;return}if(v[0]===d.last[0]&&v[1]===d.last[1])return;
+    const k=edgeBetween(d.last,v);d.last=v;if(k<0)return;
+    if(d.mode===null)d.mode=G.board[k]===1?0:1;G.board[k]=d.mode;d.moved=true;clearMarks();draw()});
+  svg.addEventListener('pointerup',e=>{if(!d)return;if(!d.moved){const k=nearestEdge(pt(e));if(k>=0){G.board[k]=(G.board[k]+1)%3;clearMarks()}else G.undo.pop()}
+    d=null;draw();persist();winCheck()});
+}
+function drawSlither(){
+  const{P,n,board,cs,m,geo:g}=G;const err=G.err||new Set();
+  const deg=new Int8Array((n+1)*(n+1));const vid=([r,c])=>r*(n+1)+c;
+  for(let e=0;e<board.length;e++)if(board[e]===1){const[a,b]=g.ends(e);deg[vid(a)]++;deg[vid(b)]++}
+  let h='';for(let e=0;e<board.length;e++){if(!board[e])continue;const[a,b]=g.ends(e);
+    const x1=m+a[1]*cs,y1=m+a[0]*cs,x2=m+b[1]*cs,y2=m+b[0]*cs;
+    if(board[e]===1){const bad=deg[vid(a)]>2||deg[vid(b)]>2||err.has(e);h+=`<line class="ln${bad?' err':''}" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/>`}
+    else{const cx=(x1+x2)/2,cy=(y1+y2)/2,s=cs*.09;h+=`<path class="xx${err.has(e)?' err':''}" d="M${cx-s} ${cy-s}L${cx+s} ${cy+s}M${cx+s} ${cy-s}L${cx-s} ${cy+s}"/>`}}
+  $('#ge').innerHTML=h;
+  document.querySelectorAll('#gc text').forEach(t=>{const i=+t.dataset.i,k=P.clues[i];const cnt=g.cellE((i/n)|0,i%n).reduce((a,e)=>a+(board[e]===1?1:0),0);
+    t.classList.toggle('done',cnt===k);t.classList.toggle('over',cnt>k)});
+}
+
+// ---------- gemeinsam ----------
+function draw(){if(!G)return;const T=TYPES[G.t];if(T.grid)drawGrid();else if(G.t==='hashi')drawHashi();else drawSlither()}
+function pushUndo(){G.undo.push(Int8Array.from(G.board));if(G.undo.length>300)G.undo.shift()}
+function persist(){if(!G||G.t==='robot')return;store[G.t].saves[G.level]={v:G.variant,b:Array.from(G.board),time:G.time,won:G.done};save()}
+function clearMarks(){document.querySelectorAll('#board .err').forEach(e=>e.classList.remove('err'));if(G)G.err=null;setStatus('')}
 function setStatus(m,k){const s=$('#status');if(!s)return;s.textContent=m;s.className='status'+(k?' '+k:'')}
-function check(){if(G.done)return;const T=truthSet();let err=0;
-  document.querySelectorAll('#board .cell').forEach(el=>{const i=+el.dataset.i;
-    const bad=G.fixed[i]<0&&((G.board[i]===1&&!T[i])||(G.board[i]===2&&T[i]));el.classList.toggle('err',bad);if(bad)err++});
-  if(err)setStatus(err===1?'1 Feld passt nicht zur Lösung.':`${err} Felder passen nicht zur Lösung.`,'bad');
-  else setStatus('Bisher alles richtig.','ok');
+function userVals(){const{t,board}=G;
+  if(t==='binairo')return Array.from(board,v=>v===1?1:v===2?0:-1);
+  if(t==='hashi')return Array.from(board);return Array.from(board,v=>v===1?1:0)}
+function check(){if(G.done)return;const T=truth(),U=userVals(),{t,board}=G;let err=0;
+  if(TYPES[t].grid){document.querySelectorAll('#board .cell').forEach(el=>{const i=+el.dataset.i;let bad=false;
+      if(G.fixed[i]<0){if(t==='binairo')bad=board[i]>0&&U[i]!==T[i];else bad=(board[i]===1&&!T[i])||(board[i]===2&&T[i])}
+      el.classList.toggle('err',bad);if(bad)err++})}
+  else{G.err=new Set();for(let k=0;k<board.length;k++){let bad;
+      if(t==='hashi')bad=board[k]>0&&board[k]!==T[k];else bad=(board[k]===1&&!T[k])||(board[k]===2&&T[k]);
+      if(bad){G.err.add(k);err++}}draw()}
+  if(err)setStatus(err===1?'1 Eintrag passt nicht zur Lösung.':`${err} Einträge passen nicht zur Lösung.`,'bad');else setStatus('Bisher alles richtig.','ok');
 }
-function winCheck(){const T=truthSet();const {n,board}=G;
-  for(let i=0;i<n*n;i++){if(G.t==='tents'&&G.fixed[i]===9)continue;if((board[i]===1)!==!!T[i])return}
+function winCheck(){if(!G||G.done)return;const T=truth(),U=userVals();
+  for(let i=0;i<T.length;i++){if(G.t==='tents'&&G.fixed[i]===9)continue;if(U[i]!==T[i])return}
   G.done=true;stopTimer();
-  for(let i=0;i<n*n;i++)if(G.fixed[i]<0&&board[i]===0)board[i]=2;
-  const s=store[G.t];const first=!s.solved[G.level];
-  const best=s.solved[G.level]?Math.min(s.solved[G.level],G.time):G.time;s.solved[G.level]=best;
-  s.unlocked=Math.max(s.unlocked,G.level+1);persist();draw();
-  $('#board').classList.add('solved');document.getElementById('next').disabled=false;
-  setTimeout(()=>openSheet(`<div class="win"><h3>Gelöst</h3><div class="big">${fmt(G.time)}</div>
-    <p style="color:var(--soft);margin:0">Stufe ${G.level}${!first?`, Bestzeit ${fmt(best)}`:''}</p></div>
-    <div class="row"><button class="btn" id="wHome">Zum Heft</button><button class="btn main" id="wNext">Stufe ${G.level+1}</button></div>`,TYPES[G.t].c,()=>{
-      $('#wHome').onclick=()=>{closeSheet();home()};$('#wNext').onclick=()=>{closeSheet();start(G.t,G.level+1)};}),650);
+  if(TYPES[G.t].grid&&G.t!=='binairo')for(let i=0;i<G.board.length;i++)if(G.fixed[i]<0&&G.board[i]===0)G.board[i]=2;
+  if(G.t==='slither')for(let i=0;i<G.board.length;i++)if(G.board[i]===2)G.board[i]=0;
+  G.sel=-1;draw();finish(TYPES[G.t])}
+function finish(T){
+  const s=store[G.t];const first=!s.solved[G.level];const best=first?G.time:Math.min(s.solved[G.level],G.time);s.solved[G.level]=best;
+  s.unlocked=Math.max(s.unlocked,G.level+1);persist();save();
+  const bw=$('#bw');if(bw)bw.classList.add('solved');const nx=$('#next');if(nx)nx.disabled=false;
+  setTimeout(()=>openSheet(`<div class="win"><h3>Gelöst</h3><div class="big">${G.t==='robot'?`${progSize(G.prog)} Befehle`:fmt(G.time)}</div>
+    <p style="color:var(--soft);margin:0">Stufe ${G.level}${G.t!=='robot'&&!first?`, Bestzeit ${fmt(best)}`:''}</p></div>
+    <div class="row"><button class="btn" id="wHome">Zum Heft</button><button class="btn main" id="wNext">Stufe ${G.level+1}</button></div>`,T.c,()=>{
+      $('#wHome').onclick=()=>{closeSheet();home()};$('#wNext').onclick=()=>{closeSheet();G.t==='robot'?startRobot(G.level+1):start(G.t,G.level+1)}}),G.t==='robot'?200:650);
 }
-
-// ---------- Zeit ----------
-const fmt=s=>`${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;
-function tick(){const el=$('#timer');if(el&&G)el.textContent=fmt(G.time)}
-function startTimer(){stopTimer();timerId=setInterval(()=>{if(!G||G.done||document.hidden)return;G.time++;tick();if(G.time%10===0)persist()},1000)}
+function tick(){const el=$('#timer');if(el&&G&&G.t!=='robot')el.textContent=fmt(G.time)}
+function startTimer(){stopTimer();timerId=setInterval(()=>{if(!G||G.done||document.hidden||G.t==='robot')return;G.time++;tick();if(G.time%10===0)persist()},1000)}
 function stopTimer(){if(timerId)clearInterval(timerId);timerId=null}
-window.addEventListener('pagehide',persist);
+window.addEventListener('pointerup',()=>{if(G&&G.endDrag)G.endDrag()});
+window.addEventListener('pointercancel',()=>{if(G&&G.endDrag)G.endDrag()});
+window.addEventListener('pagehide',()=>{persist();if(G&&G.t==='robot')saveRobot()});
+
+// ===================== Roboter =====================
+function startRobot(level){closeSheet();
+  stopTimer();const s=store.robot;s.current=level;save();
+  const variant=s.variant[level]||0;const L=genRobot(level,variant);
+  if(!L){app.innerHTML=`<div class="wrap"><p class="loading">Für diese Stufe ließ sich gerade kein Level erzeugen. <button class="linkbtn" onclick="home()">Zurück zum Heft</button></p></div>`;return}
+  const sv=s.saves[level];
+  G={t:'robot',level,variant,L,n:L.n,prog:sv&&sv.v===variant&&sv.prog?sv.prog:[],target:[],running:false,done:!!(sv&&sv.v===variant&&sv.won),bot:{r:L.start[0],c:L.start[1],d:L.dir,turns:0}};
+  renderRobot();
+}
+function saveRobot(){if(!G||G.t!=='robot')return;store.robot.saves[G.level]={v:G.variant,prog:G.prog,won:G.done};save()}
+function listAt(path){let l=G.prog;for(const i of path)l=l[i].b;return l}
+function renderRobot(){
+  const{L,n}=G;
+  const maxW=Math.min(window.innerWidth-32,480),cs=Math.floor(Math.min(56,maxW/n));G.cs=cs;
+  app.innerHTML=`<div class="wrap" style="--c:${ROBO.c}">
+    <div class="top"><button class="back" id="back" aria-label="Zurück zum Rätselheft">‹ Heft</button>
+      <div class="title"><h2>Roboter</h2><div class="stepper"><button id="prev" aria-label="Vorherige Stufe" ${G.level<=1?'disabled':''}>‹</button>Stufe ${G.level}<button id="next" aria-label="Nächste Stufe" ${G.level>=store.robot.unlocked?'disabled':''}>›</button></div></div>
+      <div class="timer"></div></div>
+    <div class="badges"><span class="badge">${L.items.length?`${L.items.length} ${L.items.length===1?'Batterie':'Batterien'} einsammeln`:'Zur Flagge fahren'}</span>${L.loops?'<span class="badge">Schleifen nötig</span>':''}</div>
+    <div class="boardwrap" id="bw"><div class="rgrid" id="rgrid" style="--cs:${cs}px;grid-template-columns:repeat(${n},${cs}px)"></div></div>
+    <div class="prog" id="prog"></div>
+    <div class="palette" id="pal">
+      <button class="cmd F" data-c="F" aria-label="Vor">${cmdIcon('F')}<span>Vor</span></button>
+      <button class="cmd L" data-c="L" aria-label="Links drehen">${cmdIcon('L')}<span>Links</span></button>
+      <button class="cmd R" data-c="R" aria-label="Rechts drehen">${cmdIcon('R')}<span>Rechts</span></button>
+      ${L.loops?`<button class="cmd W" data-c="W" aria-label="Wiederhole">${cmdIcon('W')}<span>Wiederhole</span></button>`:''}</div>
+    <div class="status" id="status"></div>
+    <div class="tools">
+      <button class="tool main" id="run">${ICON.play}Start</button><button class="tool" id="home2">${ICON.back}Auf Start</button>
+      <button class="tool" id="clr">${ICON.reset}Leeren</button><button class="tool" id="rl">${ICON.rules}Regeln</button></div>
+    <p class="hint"><button class="linkbtn" id="other">Anderes Level dieser Stufe</button></p></div>`;
+  const RG=$('#rgrid');let h='';const items=new Set(L.items.map(([a,b])=>a*n+b));
+  for(let i=0;i<n*n;i++){const r=(i/n)|0,c=i%n;let inner='';
+    if(L.walls.includes(i))inner='<span class="wall"></span>';else if(items.has(i))inner=`<span class="item">${ICON.battery}</span>`;else if(L.goal[0]===r&&L.goal[1]===c)inner=ICON.flag;
+    h+=`<div class="rc${L.walls.includes(i)?' w':''}" data-i="${i}">${inner}</div>`}
+  h+=`<div class="bot" id="bot">${ICON.bot}</div>`;RG.innerHTML=h;
+  placeBot(false);
+  $('#back').onclick=()=>{stopRun();saveRobot();home()};
+  $('#prev').onclick=()=>{stopRun();saveRobot();startRobot(G.level-1)};
+  $('#next').onclick=()=>{stopRun();saveRobot();startRobot(G.level+1)};
+  $('#other').onclick=()=>{stopRun();const s=store.robot;s.variant[G.level]=(s.variant[G.level]||0)+1;delete s.saves[G.level];save();startRobot(G.level)};
+  $('#rl').onclick=()=>openSheet(`<h3>Roboter</h3><ol><li>Baue aus Befehlen ein Programm. <b>Vor</b> fährt ein Feld weiter, <b>Links</b> und <b>Rechts</b> drehen auf der Stelle.</li>
+    <li>Der Roboter soll am Ende auf der Flagge stehen und unterwegs alle Batterien eingesammelt haben.</li><li>Mauern und der Rand dürfen nicht berührt werden.</li>
+    <li>Es gibt nur begrenzt viele Plätze für Befehle.</li>${L.loops?'<li><b>Wiederhole</b> führt die Befehle im Block mehrmals aus. Der Block zählt als ein Befehl, sein Inhalt zählt zusätzlich.</li>':''}</ol>
+    <p style="color:var(--soft);font-size:15px">Befehl antippen entfernt ihn. Einen Block antippen wählt ihn aus, neue Befehle landen dann darin. Die Zahl am Block ändert, wie oft wiederholt wird.</p>
+    <div class="row"><button class="btn main" data-close>Los geht’s</button></div>`,ROBO.c);
+  $('#pal').onclick=e=>{const b=e.target.closest('.cmd');if(!b||G.running)return;
+    if(progSize(G.prog)>=L.slots){setStatus('Alle Plätze sind belegt.','bad');return}
+    const list=listAt(G.target);if(b.dataset.c==='W'){if(progSize(G.prog)+1>=L.slots){setStatus('Für einen Block mit Inhalt fehlt der Platz.','bad');return}
+      list.push({c:'W',k:2,b:[]});G.target=G.target.concat(list.length-1)}else list.push({c:b.dataset.c});
+    resetBot();drawProg();saveRobot()};
+  $('#prog').onclick=e=>{if(G.running)return;const el=e.target.closest('[data-act]');if(!el)return;const path=el.dataset.p===''?[]:el.dataset.p.split('.').map(Number);
+    const act=el.dataset.act;
+    if(act==='main'){G.target=[]}
+    else if(act==='sel'){G.target=path}
+    else if(act==='k'){const node=listAt(path.slice(0,-1))[path[path.length-1]];node.k=node.k>=9?2:node.k+1}
+    else if(act==='del'){const par=listAt(path.slice(0,-1));par.splice(path[path.length-1],1);
+      const tp=G.target.join('.'),pp=path.join('.');if(tp===pp||tp.startsWith(pp+'.'))G.target=path.slice(0,-1);
+      else if(G.target.length>=path.length&&G.target.slice(0,path.length-1).join('.')===path.slice(0,-1).join('.')&&G.target[path.length-1]>path[path.length-1])G.target[path.length-1]--}
+    resetBot();drawProg();saveRobot()};
+  $('#run').onclick=run;$('#home2').onclick=()=>{stopRun();resetBot();setStatus('')};
+  $('#clr').onclick=()=>{if(G.running)return;G.prog=[];G.target=[];resetBot();drawProg();saveRobot();setStatus('')};
+  drawProg();
+  if(G.done)setStatus('Gelöst. Du kannst dein Programm noch verbessern oder weitergehen.','ok');
+}
+function cmdIcon(c){
+  if(c==='F')return'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V5"/><path d="m6 11 6-6 6 6"/></svg>';
+  if(c==='L')return'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h9a6 6 0 0 1 6 6v5"/></svg>';
+  if(c==='R')return'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 14 5-5-5-5"/><path d="M20 9h-9a6 6 0 0 0-6 6v5"/></svg>';
+  return'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M17 2l4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></svg>'}
+function progHTML(list,path){
+  return list.map((x,i)=>{const p=path.concat(i).join('.');
+    if(x.c!=='W')return `<button class="chip ${x.c}" data-act="del" data-p="${p}" aria-label="${{F:'Vor',L:'Links',R:'Rechts'}[x.c]} entfernen">${cmdIcon(x.c)}</button>`;
+    const sel=G.target.join('.')===p;
+    return `<div class="loopb${sel?' sel':''}" data-pp="${p}"><div class="lh"><button class="lt" data-act="sel" data-p="${p}">${cmdIcon('W')}Wiederhole</button><button class="lk" data-act="k" data-p="${p}" aria-label="Anzahl ändern">${x.k}×</button><button class="lx" data-act="del" data-p="${p}" aria-label="Block entfernen">✕</button></div>
+      <div class="lbody" data-act="sel" data-p="${p}">${progHTML(x.b,path.concat(i))||'<span class="empty">leer</span>'}</div></div>`}).join('')}
+function drawProg(){const{L}=G;const used=progSize(G.prog);
+  $('#prog').innerHTML=`<div class="phead"><button class="pmain${G.target.length?'':' sel'}" data-act="main" data-p="">Programm</button><span class="slots${used>=L.slots?' full':''}">${used} / ${L.slots} Befehle</span></div>
+    <div class="plist">${progHTML(G.prog,[])||'<span class="empty">Tippe unten auf Befehle.</span>'}</div>`;
+  document.querySelectorAll('#pal .cmd').forEach(b=>b.disabled=used>=L.slots)}
+function placeBot(anim=true){const b=$('#bot');if(!b)return;const{cs}=G;b.style.transition=anim?'transform .28s ease':'none';
+  b.style.transform=`translate(${G.bot.c*cs}px,${G.bot.r*cs}px) rotate(${G.bot.turns*90+G.L.dir*90}deg)`}
+function resetBot(){const{L}=G;G.bot={r:L.start[0],c:L.start[1],d:L.dir,turns:0};placeBot(false);
+  document.querySelectorAll('#rgrid .rc').forEach(e=>e.classList.remove('trail','got','crash'));document.querySelectorAll('#prog .act').forEach(e=>e.classList.remove('act'))}
+let runTimer=null;
+function stopRun(){if(runTimer)clearTimeout(runTimer);runTimer=null;if(G)G.running=false;const r=$('#run');if(r)r.disabled=false}
+function run(){if(G.running)return;if(!G.prog.length){setStatus('Das Programm ist noch leer.','bad');return}
+  resetBot();setStatus('');G.running=true;$('#run').disabled=true;
+  const res=runProg(G.L,G.prog);const{n}=G;let k=1;const items=new Set(G.L.items.map(([a,b])=>a*n+b));
+  const cell=(r,c)=>document.querySelector(`#rgrid .rc[data-i="${r*n+c}"]`);cell(G.L.start[0],G.L.start[1]).classList.add('trail');
+  const stepFn=()=>{if(k>=res.trace.length){done();return}const s=res.trace[k],prev=res.trace[k-1];
+    document.querySelectorAll('#prog .act').forEach(e=>e.classList.remove('act'));
+    const st=res.steps[s.i];if(st){const ch=document.querySelector(`#prog .chip[data-p="${st.path}"]`);if(ch)ch.classList.add('act')}
+    if(s.crash){const ce=cell(s.r,s.c);ce.classList.add('crash');done();return}
+    let diff=s.d-prev.d;if(diff===3)diff=-1;if(diff===-3)diff=1;G.bot.turns+=diff;G.bot.r=s.r;G.bot.c=s.c;G.bot.d=s.d;placeBot(true);
+    const ce=cell(s.r,s.c);ce.classList.add('trail');if(items.has(s.r*n+s.c))ce.classList.add('got');
+    k++;runTimer=setTimeout(stepFn,320)};
+  const done=()=>{stopRun();
+    if(res.ok){if(!G.done){G.done=true;saveRobot();finish(ROBO)}else{setStatus('Geschafft.','ok')}return}
+    if(res.crash)setStatus('Der Roboter stößt an eine Mauer oder den Rand.','bad');
+    else if(res.got&&res.got.size<items.size)setStatus(`Es fehlen noch ${items.size-res.got.size} ${items.size-res.got.size===1?'Batterie':'Batterien'}.`,'bad');
+    else setStatus('Der Roboter steht noch nicht auf der Flagge.','bad')};
+  runTimer=setTimeout(stepFn,250);
+}
 
 // ---------- Dialog ----------
 function openSheet(html,c,after){const sh=$('#sheet');sh.innerHTML=`<div class="panel" style="--c:${c}">${html}</div>`;sh.classList.add('open');
@@ -600,8 +1161,7 @@ function openSheet(html,c,after){const sh=$('#sheet');sh.innerHTML=`<div class="
   const f=sh.querySelector('button');if(f)f.focus();if(after)after()}
 function closeSheet(){$('#sheet').classList.remove('open')}
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSheet()});
-let rz,lastW=window.innerWidth;window.addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(()=>{if(G&&Math.abs(window.innerWidth-lastW)>40){lastW=window.innerWidth;renderGame()}},200)});
-
+let rz,lastW=window.innerWidth;window.addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(()=>{if(G&&Math.abs(window.innerWidth-lastW)>40){lastW=window.innerWidth;G.t==='robot'?(stopRun(),renderRobot()):renderGame()}},200)});
 home();
 
 </script>
