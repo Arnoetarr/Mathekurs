@@ -206,6 +206,21 @@ button:focus-visible,.cell:focus-visible{outline:3px solid var(--sea);outline-of
 .cmd{border:0;border-radius:12px;color:#fff;padding:10px 4px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:13.5px;font-weight:700}
 .cmd svg{width:24px;height:24px}
 .cmd:disabled{opacity:.35}
+.helpbar{display:flex;gap:8px;max-width:520px;margin:10px auto 0}
+.hbtn{flex:1;background:none;border:1.5px dashed var(--robo);color:var(--robo);border-radius:12px;padding:9px 6px;font-weight:700;font-size:14px}
+.hbtn:disabled{opacity:.45;border-style:solid}
+.tipbox{max-width:520px;margin:10px auto 0;display:grid;gap:8px}
+.tip{display:grid;grid-template-columns:26px 1fr;gap:8px;background:var(--cell);border:1.5px solid var(--line);border-left:4px solid var(--robo);border-radius:10px;padding:10px 12px;font-size:15px}
+.tn{width:24px;height:24px;border-radius:50%;background:var(--robo);color:var(--paper);display:grid;place-items:center;font-size:13px}
+.skel{margin-top:6px;font-weight:700;font-size:16px;line-height:2}
+.sk{border:1.5px solid var(--robo);border-radius:8px;padding:2px 6px;color:var(--robo)}
+.skq{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:6px;background:var(--rule);color:var(--soft);font-weight:700}
+.rc.ghost{box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--robo) 55%,transparent);position:relative}
+.rc.ghost::before{content:attr(data-n);position:absolute;left:3px;top:1px;font-size:10px;color:var(--robo);font-weight:700}
+.solprog{margin:6px 0 10px}
+.loopb.ro{min-width:0}
+.panel .small{font-size:14px;color:var(--soft)}
+.expl .expl{margin:2px 0 4px;padding-left:20px;border-left:2px solid var(--robo)}
 </style>
 </head>
 <body>
@@ -736,6 +751,25 @@ function genRobot(level,variant=0){
   }
 }
 
+function bfsProgram(L){ // kürzeste Befehlsfolge ohne Schleifen, mit Befehlen
+  const n=L.n,items=L.items.map(([a,b])=>a*n+b),full=(1<<items.length)-1;
+  const key=(r,c,d,m)=>((r*n+c)*4+d)*(full+1)+m;const par=new Map();
+  const s0=[L.start[0],L.start[1],L.dir,0];par.set(key(...s0),null);let q=[s0];
+  while(q.length){const nq=[];
+    for(const st of q){const[r,c,d,m]=st;
+      if(r===L.goal[0]&&c===L.goal[1]&&m===full){const cmds=[];let k=key(...st);while(par.get(k)){const[pk,cmd]=par.get(k);cmds.unshift({c:cmd});k=pk}return cmds}
+      const nexts=[[[r,c,(d+3)%4,m],'L'],[[r,c,(d+1)%4,m],'R']];const nr=r+DIRS[d][0],nc=c+DIRS[d][1];
+      if(nr>=0&&nr<n&&nc>=0&&nc<n&&!L.walls.includes(nr*n+nc)){let mm=m;const k=items.indexOf(nr*n+nc);if(k>=0)mm|=1<<k;nexts.push([[nr,nc,d,mm],'F'])}
+      for(const[s2,cmd]of nexts){const k=key(...s2);if(!par.has(k)){par.set(k,[key(...st),cmd]);nq.push(s2)}}}
+    q=nq}
+  return null}
+function describe(list){const out=[];let i=0;
+  while(i<list.length){const x=list[i];
+    if(x.c==='F'){let k=0;while(i<list.length&&list[i].c==='F'){k++;i++}out.push(k===1?'1 Feld vor':`${k} Felder vor`);continue}
+    if(x.c==='L')out.push('links drehen');else if(x.c==='R')out.push('rechts drehen');
+    else out.push(`${x.k}× wiederholen [ ${describe(x.b).join(', ')} ]`);i++}
+  return out}
+
 // ===================== App =====================
 const TECH={1:['Grundregeln','Jede Regel wird für sich angewendet.'],2:['Kombinieren','Zwei Regeln oder Bereiche werden gemeinsam betrachtet.'],3:['Widerspruch','Eine Annahme wird durchdacht und verworfen, wenn sie nicht aufgeht.']};
 const TYPES={
@@ -1056,10 +1090,11 @@ function startRobot(level){closeSheet();
   const variant=s.variant[level]||0;const L=genRobot(level,variant);
   if(!L){app.innerHTML=`<div class="wrap"><p class="loading">Für diese Stufe ließ sich gerade kein Level erzeugen. <button class="linkbtn" onclick="home()">Zurück zum Heft</button></p></div>`;return}
   const sv=s.saves[level];
-  G={t:'robot',level,variant,L,n:L.n,prog:sv&&sv.v===variant&&sv.prog?sv.prog:[],target:[],running:false,done:!!(sv&&sv.v===variant&&sv.won),bot:{r:L.start[0],c:L.start[1],d:L.dir,turns:0}};
+  G={t:'robot',level,variant,L,n:L.n,prog:sv&&sv.v===variant&&sv.prog?sv.prog:[],target:[],running:false,done:!!(sv&&sv.v===variant&&sv.won),bot:{r:L.start[0],c:L.start[1],d:L.dir,turns:0},tips:sv&&sv.v===variant&&sv.tips||0,ghost:false};
+  G.sol=L.loops?L.example:(bfsProgram(L)||L.example);
   renderRobot();
 }
-function saveRobot(){if(!G||G.t!=='robot')return;store.robot.saves[G.level]={v:G.variant,prog:G.prog,won:G.done};save()}
+function saveRobot(){if(!G||G.t!=='robot')return;store.robot.saves[G.level]={v:G.variant,prog:G.prog,won:G.done,tips:G.tips};save()}
 function listAt(path){let l=G.prog;for(const i of path)l=l[i].b;return l}
 function renderRobot(){
   const{L,n}=G;
@@ -1080,6 +1115,8 @@ function renderRobot(){
     <div class="tools">
       <button class="tool main" id="run">${ICON.play}Start</button><button class="tool" id="home2">${ICON.back}Auf Start</button>
       <button class="tool" id="clr">${ICON.reset}Leeren</button><button class="tool" id="rl">${ICON.rules}Regeln</button></div>
+    <div class="helpbar"><button class="hbtn" id="tip"></button><button class="hbtn" id="sol">Lösung mit Erklärung</button></div>
+    <div class="tipbox" id="tipbox" hidden></div>
     <p class="hint"><button class="linkbtn" id="other">Anderes Level dieser Stufe</button></p></div>`;
   const RG=$('#rgrid');let h='';const items=new Set(L.items.map(([a,b])=>a*n+b));
   for(let i=0;i<n*n;i++){const r=(i/n)|0,c=i%n;let inner='';
@@ -1110,11 +1147,53 @@ function renderRobot(){
       const tp=G.target.join('.'),pp=path.join('.');if(tp===pp||tp.startsWith(pp+'.'))G.target=path.slice(0,-1);
       else if(G.target.length>=path.length&&G.target.slice(0,path.length-1).join('.')===path.slice(0,-1).join('.')&&G.target[path.length-1]>path[path.length-1])G.target[path.length-1]--}
     resetBot();drawProg();saveRobot()};
+  $('#tip').onclick=()=>{if(G.tips<TIPCOUNT)G.tips++;showTips();saveRobot()};
+  $('#sol').onclick=showSolution;
   $('#run').onclick=run;$('#home2').onclick=()=>{stopRun();resetBot();setStatus('')};
   $('#clr').onclick=()=>{if(G.running)return;G.prog=[];G.target=[];resetBot();drawProg();saveRobot();setStatus('')};
-  drawProg();
+  drawProg();showTips();
   if(G.done)setStatus('Gelöst. Du kannst dein Programm noch verbessern oder weitergehen.','ok');
 }
+// ---------- Tipps und Lösung ----------
+const TIPCOUNT=3;
+function solPath(){const res=runProg(G.L,G.sol);const seen=[];res.trace.forEach(s=>{const k=s.r*G.n+s.c;if(!seen.includes(k))seen.push(k)});return seen}
+function strategyTip(){const{L}=G;const k=roboSpec(G.level).kind;
+  if(k==='plain')return'Fahre den Weg zuerst mit dem Finger nach. Zähle die Felder bis zur ersten Kurve. <b>Links und Rechts</b> gelten immer aus Sicht des Roboters, also in Pfeilrichtung, nicht vom Bildschirm aus.';
+  if(k==='items')return`Plane zuerst die <b>Reihenfolge</b>: Welche Batterie liegt am nächsten, welche liegt auf dem Weg zur Flagge? Du hast ${L.slots} Plätze, Umwege kosten Befehle.`;
+  if(k==='loop')return`Du hast nur ${L.slots} Plätze. Ohne Schleife bräuchtest du mindestens ${minPlain(L)} Befehle. Suche im Weg ein <b>Stück, das sich wiederholt</b>, und lege es in einen Wiederhole-Block.`;
+  if(k==='loop2')return'Der Weg besteht aus <b>zwei verschiedenen Mustern</b>. Jedes Muster bekommt einen eigenen Wiederhole-Block, dazwischen kann ein einzelner Befehl stehen.';
+  return'Eine gerade Strecke ist schon eine Wiederholung von »Vor«. Ein Block darf einen <b>Block enthalten</b>: innen die Strecke, außen das, was sich mit der Drehung wiederholt.'}
+function skeleton(list){return list.map(x=>x.c==='W'?`<span class="sk">${x.k}× [ ${skeleton(x.b)} ]</span>`:'<span class="skq">?</span>').join(' ')}
+function structureTip(){const k=roboSpec(G.level).kind;const S=G.sol;
+  if(!G.L.loops){let first=[];for(const x of S){first.push(x);if(x.c!=='F')break}
+    return`So beginnt eine kürzeste Lösung: <b>${describe(first).join(', ')}</b>.`}
+  return`So ist eine Lösung aufgebaut, jedes ? ist ein einzelner Befehl:<div class="skel">${skeleton(S)}</div>`}
+function showTips(){const b=$('#tip'),box=$('#tipbox');if(!b)return;
+  b.textContent=G.tips>=TIPCOUNT?'Alle Tipps gezeigt':`Tipp ${G.tips+1} von ${TIPCOUNT}`;b.disabled=G.tips>=TIPCOUNT;
+  const tips=[];if(G.tips>=1)tips.push(['Vorgehen',strategyTip()]);
+  if(G.tips>=2)tips.push(['Weg',`Die markierten Felder zeigen einen Weg, der funktioniert. Die Zahlen geben die Reihenfolge an.`]);
+  if(G.tips>=3)tips.push(['Aufbau',structureTip()]);
+  box.hidden=!tips.length;box.innerHTML=tips.map(([h,t],i)=>`<div class="tip"><b class="tn">${i+1}</b><div><b>${h}</b><br>${t}</div></div>`).join('');
+  document.querySelectorAll('#rgrid .rc').forEach(e=>{e.classList.remove('ghost');e.removeAttribute('data-n')});
+  if(G.tips>=2)solPath().forEach((k,i)=>{const e=document.querySelector(`#rgrid .rc[data-i="${k}"]`);if(e){e.classList.add('ghost');e.dataset.n=i}})}
+function staticProg(list){return list.map(x=>x.c==='W'?`<div class="loopb ro"><div class="lh"><span class="lt">${cmdIcon('W')}Wiederhole</span><span class="lk">${x.k}×</span></div><div class="lbody">${staticProg(x.b)}</div></div>`:`<span class="chip ${x.c}">${cmdIcon(x.c)}</span>`).join('')}
+function explainList(list){const out=[];let i=0;
+  while(i<list.length){const x=list[i];
+    if(x.c==='F'){let k=0;while(i<list.length&&list[i].c==='F'){k++;i++}out.push(k===1?'1 Feld vor':`${k} Felder vor`);continue}
+    if(x.c==='W')out.push(`<b>${x.k}× wiederholen:</b>${explainList(x.b)}`);else out.push(x.c==='L'?'links drehen':'rechts drehen');i++}
+  return `<ol class="expl">${out.map(s=>`<li>${s}</li>`).join('')}</ol>`}
+function showSolution(){const{L}=G;const S=G.sol;const size=progSize(S);const k=roboSpec(G.level).kind;
+  const steps=describe(S);
+  let why='';
+  if(L.loops){const mp=minPlain(L);const nested=S.some(x=>x.c==='W'&&x.b.some(y=>y.c==='W'));
+    why=`<p><b>Warum Schleifen?</b> Ohne Wiederhole wären mindestens ${mp} Befehle nötig, erlaubt sind ${L.slots}. Der Roboter fährt aber mehrmals dasselbe Muster. Statt es jedes Mal neu aufzuschreiben, steht es einmal im Block. So reichen ${size} Befehle.${nested?' Im inneren Block steckt eine gerade Strecke, der äußere Block wiederholt Strecke und Drehung zusammen.':''}</p>
+    <p class="small">So zählen die Plätze: Jeder Block zählt 1, jeder Befehl darin zählt zusätzlich.</p>`}
+  else why=`<p><b>Warum so?</b> Das ist ein kürzester Weg: ${size} Befehle, erlaubt sind ${L.slots}.${L.items.length?' Die Batterien liegen so, dass dieser Weg alle einsammelt, ohne umzukehren.':''}</p>`;
+  openSheet(`<h3>Eine mögliche Lösung</h3><div class="plist solprog">${staticProg(S)}</div>
+    <p><b>Schritt für Schritt</b></p>${explainList(S)}${why}
+    <p class="small">Links und Rechts gelten aus Sicht des Roboters. Es gibt oft mehrere richtige Programme.</p>
+    <div class="row"><button class="btn" data-close>Selbst weiterprobieren</button><button class="btn main" id="useSol">Übernehmen</button></div>`,ROBO.c,()=>{
+    $('#useSol').onclick=()=>{G.prog=JSON.parse(JSON.stringify(S));G.target=[];G.tips=TIPCOUNT;closeSheet();resetBot();drawProg();showTips();saveRobot();setStatus('Lösung übernommen. Tippe auf Start, um sie laufen zu sehen.','ok')}})}
 function cmdIcon(c){
   if(c==='F')return'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V5"/><path d="m6 11 6-6 6 6"/></svg>';
   if(c==='L')return'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h9a6 6 0 0 1 6 6v5"/></svg>';
