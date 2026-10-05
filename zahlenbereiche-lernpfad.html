@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Zahlenbereiche</title>
+<style>
+:root{
+  --ink:#1c2233; --soft:#586077; --card:#ffffff; --line:#d5dae6; --good:#1f9160; --bad:#c2410c;
+  --n:#e0a100; --n-bg:#ffefb5; --n-pg:#fff8dc;
+  --z:#2468d8; --z-bg:#d3e3ff; --z-pg:#ecf3ff;
+  --q:#1f9160; --q-bg:#cdefdd; --q-pg:#e9f8f0;
+  --r:#7447c9; --r-bg:#e3d8fa; --r-pg:#f3eefd;
+  --a:#1c2233; --a-bg:#dfe5f0; --a-pg:#f1f3f8;
+  --k:#c93a78; --k-bg:#f9d5e4; --k-pg:#fdeef4;
+  --c:var(--n); --bg:var(--n-bg); --pg:var(--n-pg);
+}
+*{box-sizing:border-box}
+html{font-size:18px}
+body{margin:0;background:var(--pg);color:var(--ink);transition:background-color .9s;
+  font-family:Andika,"Atkinson Hyperlegible",Verdana,"DejaVu Sans",sans-serif;line-height:1.6}
+h1,h2,h3{line-height:1.2;margin:0}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,summary:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+
+/* Kopfzeile: kleines Mengendiagramm und Stationskreise */
+.top{position:sticky;top:0;z-index:6;background:rgba(255,255,255,.93);backdrop-filter:blur(6px);
+  border-bottom:4px solid var(--c);transition:border-color .9s;padding:.45rem .8rem}
+.top>div{max-width:46rem;margin:0 auto;display:flex;align-items:center;gap:1rem}
+#mini{flex:none;width:8.6rem;height:auto}
+#mini rect{stroke-width:2;transition:opacity .7s}
+#mini text{font-size:13px;font-weight:700;font-family:inherit;transition:opacity .7s}
+#mini .off{opacity:0}
+.path{display:flex;align-items:center;flex:1;min-width:0}
+.path button{flex:none;width:2.7rem;height:2.7rem;border-radius:50%;border:3px solid var(--c);background:var(--card);font-weight:700;transition:background .4s,color .4s,transform .4s}
+.path button[aria-current="true"]{background:var(--c);color:#fff;transform:scale(1.14)}
+.path i{flex:1;height:3px;background:var(--line);min-width:.3rem}
+@media (max-width:560px){#mini{width:6rem}.path button{width:2.2rem;height:2.2rem}}
+
+main{max-width:46rem;margin:0 auto;padding:0 1.1rem 6rem}
+.intro{padding:2.4rem 0 0}
+.intro h1{font-size:2.5rem;margin-bottom:.7rem}
+.intro p{font-size:1.08rem}
+
+.st{padding-top:4.5rem}
+.head{display:flex;gap:1.1rem;align-items:center}
+.letter{flex:none;width:5rem;height:5rem;border-radius:50%;background:var(--c);color:#fff;display:grid;place-items:center;font-size:2.9rem;font-weight:700;box-shadow:0 0 0 .55rem var(--bg)}
+.head h2{font-size:2.1rem}
+.head p{margin:.15rem 0 0;color:var(--soft)}
+.pre{margin:1.3rem 0 0;color:var(--soft);font-size:.95rem}
+
+.solve{display:flex;flex-wrap:wrap;align-items:center;gap:.6rem 1rem;margin-top:1.8rem}
+.solve .was,.solve .now{border-radius:1rem;padding:.5rem 1.1rem;font-size:1.5rem;font-weight:700;text-align:center;background:var(--card)}
+.solve small{display:block;font-size:.78rem;font-weight:400;color:var(--soft)}
+.solve .was{border:3px dashed var(--o)}
+.solve .now{border:3px solid var(--c)}
+.solve .arr{width:2.2rem;height:2.2rem;flex:none}
+.solve p{flex:1 1 100%;margin:0}
+
+.step{display:flex;flex-wrap:wrap;gap:.8rem 2rem;align-items:center;margin-top:2.4rem}
+.step:nth-of-type(even){flex-direction:row-reverse}
+.step p{flex:1 1 15rem;margin:0;font-size:1.1rem}
+.step .picbox{flex:1 1 16rem;text-align:center;background:var(--card);border-radius:1.2rem;padding:.9rem;box-shadow:0 2px 0 var(--bg)}
+.step.wide{display:block}
+.step.wide .picbox{margin-top:.8rem}
+
+h3{font-size:1.3rem;margin:3rem 0 .3rem}
+.task{margin:.2rem 0 .9rem}
+.rows{display:grid;gap:.6rem;grid-template-columns:repeat(auto-fill,minmax(18rem,1fr))}
+.row{background:var(--card);border-radius:1rem;padding:.6rem .8rem;display:grid;grid-template-columns:1fr auto;gap:.4rem .8rem;align-items:center;box-shadow:0 2px 0 var(--bg)}
+.row.full{grid-column:1/-1}
+.row .q{font-size:1.3rem;font-weight:700}
+.row .opts{display:flex;gap:.4rem;flex-wrap:wrap}
+.row .opts button{min-height:2.7rem;min-width:2.9rem;padding:.2rem .75rem;border-radius:1.4rem;border:2px solid var(--c);background:var(--card);font-weight:700}
+.row .opts button[aria-pressed="true"]{background:var(--c);color:#fff}
+.row .opts button.ok{background:var(--good);border-color:var(--good);color:#fff}
+.row .opts button.no{background:var(--bad);border-color:var(--bad);color:#fff}
+.row .opts button:disabled{cursor:default;opacity:.45}
+.row .opts button.ok:disabled,.row .opts button.no:disabled,.row .opts button[aria-pressed="true"]:disabled{opacity:1}
+.row .why{grid-column:1/-1;margin:0;font-size:.92rem;line-height:1.4}
+.row .why:empty{display:none}
+.row .why.good b{color:var(--good)} .row .why.bad b{color:var(--bad)}
+
+details.exp{margin-top:2.6rem;background:var(--card);border-radius:1.2rem;padding:.8rem 1.1rem;border:2px solid var(--bg)}
+details.exp summary{font-weight:700;cursor:pointer;font-size:1.1rem}
+.zus{display:grid;grid-template-columns:auto 1fr;gap:.5rem 1.3rem;margin:.9rem 0 .3rem;align-items:baseline}
+.zus dt{font-weight:700;font-size:1.05rem}
+.zus dd{margin:0;color:var(--soft)}
+@media (max-width:560px){.zus{grid-template-columns:1fr}.zus dd{margin-bottom:.4rem}}
+ol.how{padding-left:1.3rem} ol.how li{margin-bottom:.4rem}
+
+.bridge{margin-top:3.5rem;border:3px dashed var(--nc);border-radius:1.4rem;padding:1.1rem 1.3rem .5rem;text-align:center;background:var(--card)}
+.bridge h3{margin:0}
+.bridge p{text-align:left}
+.bridge .down{width:2.6rem;height:2.6rem}
+
+.pic{width:100%;height:auto;display:block}.pic.small{max-width:11rem;margin:0 auto}
+.nest text{font-family:inherit;font-size:19px;fill:var(--ink)}
+.nest text.lab{font-size:24px;font-weight:700}
+.big{font-size:1.7rem;font-weight:700;line-height:1.5}
+.dec{font-size:1.25rem;font-weight:700;overflow-wrap:anywhere}.cap{color:var(--soft);font-size:.9rem;margin-bottom:.4rem}
+.fr{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;line-height:1.1;font-size:.9em;margin:0 .1em}
+.fr span:first-child{border-bottom:2px solid currentColor;padding:0 .2em}
+.fr span:last-child{padding:0 .2em}
+.rt span{border-top:2px solid currentColor;padding:0 .1em}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header class="top"><div><svg id="mini" viewBox="0 0 150 56" role="img" aria-label="Mengendiagramm der Zahlenbereiche"></svg><nav class="path" id="nav" aria-label="Stationen"></nav></div></header>
+<main id="main"></main>
+<script>
+/* ---------- Schreibhilfen ---------- */
+const fr=(a,b)=>`<span class="fr"><span>${a}</span><span>${b}</span></span>`;
+const rt=x=>`<span class="rt">√<span>${x}</span></span>`;
+const big=t=>`<div class="big">${t}</div>`;
+const dec=(t,n,c)=>`<div class="dec" style="color:var(--${c})">${t}</div><div class="cap">${n}</div>`;
+const yes=(q,why)=>({q,a:0,why}), no=(q,why)=>({q,a:1,why});
+
+/* ---------- Bilder ---------- */
+function line(a,b,pts=[],o={}){
+  const X=v=>40+(v-a)/(b-a)*520;
+  let s=`<svg class="pic" viewBox="0 0 600 96" role="img" aria-label="Zahlengerade"><line x1="${o.ray?X(a):12}" y1="58" x2="586" y2="58" stroke="#1c2233" stroke-width="3"/><polygon points="592,58 578,50 578,66" fill="#1c2233"/>`;
+  if(!o.ray) s+=`<polygon points="8,58 22,50 22,66" fill="#1c2233"/>`;
+  for(let v=a;v<=b;v++){const c=v<0?'z':'n';
+    s+=`<line x1="${X(v)}" y1="46" x2="${X(v)}" y2="70" stroke="var(--${c})" stroke-width="5" stroke-linecap="round"/><text x="${X(v)}" y="91" text-anchor="middle" font-size="19" font-weight="700" style="fill:var(--${c})">${v<0?'−'+(-v):v}</text>`;}
+  pts.forEach(p=>{s+=`<line x1="${X(p.v)}" y1="30" x2="${X(p.v)}" y2="58" stroke="var(--${p.c})" stroke-width="2"/><circle cx="${X(p.v)}" cy="58" r="7" fill="var(--${p.c})"/><text x="${X(p.v)}" y="22" text-anchor="middle" font-size="20" font-weight="700" style="fill:var(--${p.c})">${p.l}</text>`;});
+  return s+'</svg>';
+}
+const dots=`<svg class="pic" viewBox="0 0 600 70" role="img" aria-label="Fünf Punkte zum Zählen">${[1,2,3,4,5].map(i=>`<circle cx="${i*90+30}" cy="26" r="20" fill="var(--n)"/><text x="${i*90+30}" y="66" text-anchor="middle" font-size="19" font-weight="700">${i}</text>`).join('')}</svg>`;
+const thermo=`<svg class="pic small" viewBox="0 0 220 160" role="img" aria-label="Thermometer zeigt minus 2 Grad">
+ <rect x="98" y="8" width="24" height="120" rx="12" fill="#fff" stroke="#1c2233" stroke-width="3"/><rect x="104" y="92" width="12" height="40" fill="var(--z)"/><circle cx="110" cy="138" r="18" fill="var(--z)" stroke="#1c2233" stroke-width="3"/>
+ <line x1="80" y1="42" x2="98" y2="42" stroke="#1c2233" stroke-width="2"/><text x="74" y="48" text-anchor="end" font-size="18">3 °C</text>
+ <line x1="80" y1="72" x2="98" y2="72" stroke="#1c2233" stroke-width="2"/><text x="74" y="78" text-anchor="end" font-size="18">0 °C</text>
+ <line x1="122" y1="92" x2="140" y2="92" stroke="var(--z)" stroke-width="3"/><text x="146" y="98" font-size="20" font-weight="700" style="fill:var(--z)">−2 °C</text></svg>`;
+const pizza=`<svg class="pic small" viewBox="0 0 140 140" role="img" aria-label="Drei Viertel einer Pizza"><circle cx="70" cy="70" r="58" fill="#fff" stroke="#1c2233" stroke-width="3"/><path d="M70,70 L70,12 A58,58 0 1 1 12,70 Z" fill="var(--q-bg)" stroke="var(--q)" stroke-width="3"/><line x1="12" y1="70" x2="128" y2="70" stroke="#1c2233" stroke-width="2"/><line x1="70" y1="12" x2="70" y2="128" stroke="#1c2233" stroke-width="2"/></svg>`;
+const square=`<svg class="pic small" viewBox="0 0 220 160" role="img" aria-label="Quadrat mit Flächeninhalt 2 Quadratzentimeter"><rect x="55" y="10" width="110" height="110" fill="var(--r-bg)" stroke="var(--r)" stroke-width="4"/><text x="110" y="72" text-anchor="middle" font-size="20">2 cm²</text><text x="110" y="148" text-anchor="middle" font-size="22" font-weight="700" style="fill:var(--r)">√2 cm</text></svg>`;
+function plane(pt){
+  const X=v=>70+v*46, Y=v=>165-v*40;
+  let s=`<svg class="pic" viewBox="0 0 320 215" role="img" aria-label="Zahlenebene"><line x1="14" y1="165" x2="304" y2="165" stroke="var(--r)" stroke-width="3"/><polygon points="312,165 298,157 298,173" fill="var(--r)"/><line x1="70" y1="205" x2="70" y2="18" stroke="var(--k)" stroke-width="3"/><polygon points="70,8 62,22 78,22" fill="var(--k)"/>`;
+  for(let v=-1;v<=4;v++) if(v) s+=`<line x1="${X(v)}" y1="159" x2="${X(v)}" y2="171" stroke="var(--r)" stroke-width="3"/><text x="${X(v)}" y="192" text-anchor="middle" font-size="16" style="fill:var(--r)">${v<0?'−1':v}</text>`;
+  ['i','2i','3i'].forEach((l,j)=>s+=`<line x1="64" y1="${Y(j+1)}" x2="76" y2="${Y(j+1)}" stroke="var(--k)" stroke-width="3"/><text x="56" y="${Y(j+1)+6}" text-anchor="end" font-size="16" font-weight="700" style="fill:var(--k)">${l}</text>`);
+  s+=`<text x="300" y="150" text-anchor="end" font-size="13" style="fill:var(--r)">reelle Zahlen</text><text x="84" y="20" font-size="13" style="fill:var(--k)">Zahlen mit i</text>`;
+  if(pt) s+=`<path d="M${X(pt[0])},165 V${Y(pt[1])} H70" fill="none" stroke="#1c2233" stroke-width="2" stroke-dasharray="5 5"/><circle cx="${X(pt[0])}" cy="${Y(pt[1])}" r="8" fill="#1c2233"/><text x="${X(pt[0])+12}" y="${Y(pt[1])-8}" font-size="19" font-weight="700">${pt[2]}</text>`;
+  else s+=`<circle cx="70" cy="${Y(1)}" r="8" fill="var(--k)"/>`;
+  return s+'</svg>';
+}
+/* Mengendiagramm im Text: n = Anzahl der Bereiche */
+const RK=['N','Z','Q','R','C'], RC=['n','z','q','r','k'];
+const SAMPLE=['0 \u2003 1 \u2003 2 \u2003 3 \u2003 12','−1 \u2003 −7 \u2003 −100','½ \u2003 −2,5 \u2003 0,333…','√2 \u2003 π \u2003 −√5','i \u2003 3 + 2i \u2003 −i'];
+function nest(n){
+  const m=14,top=48,right=40,W=330+(n-1)*(m+right)+8,H=110+(n-1)*(top+m)+8;
+  let s=`<svg class="pic nest" viewBox="0 0 ${W} ${H}" role="img" aria-label="Mengendiagramm">`;
+  for(let j=n-1;j>=0;j--){const d=n-1-j,x=4+d*m,y=4+d*top,w=W-8-d*(m+right),h=H-8-d*(top+m);
+    s+=`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="20" fill="var(--${RC[j]}-bg)" stroke="var(--${RC[j]})" stroke-width="${d?3:5}"/><text class="lab" x="${x+14}" y="${y+33}" style="fill:var(--${RC[j]})">${RK[j]}</text>`;
+    s+=j?`<text x="${x+58}" y="${y+32}">${SAMPLE[j]}</text>`:`<text x="${x+w/2}" y="${y+h/2+24}" text-anchor="middle">${SAMPLE[0]}</text>`;}
+  return s+'</svg>';
+}
+
+/* ---------- Inhalte ----------
+   steps: [Erklärung, Bild] oder [Erklärung, Bild, 'wide']   zusatz: [Schreibweise, Bedeutung]
+   Übungen: yes(...) und no(...) für ja/nein, sonst {q, a: Nummer der richtigen Antwort, why} */
+const KL=['N','Z','Q','R'];
+const STATIONS=[
+{id:'N',rings:1,title:'Natürliche Zahlen',sub:'Die Zahlen zum Zählen',
+ pre:'Diese Station kannst du ohne Vorwissen bearbeiten.',
+ steps:[
+  ['Mit den <b>natürlichen Zahlen</b> zählst du.',dots],
+  ['Auf dem Zahlenstrahl stehen sie in gleichen Abständen. Er beginnt bei der Null, die bei uns auch dazugehört. Zwischen zwei Nachbarn liegt keine weitere natürliche Zahl.',line(0,8,[],{ray:true})],
+  ['Alle natürlichen Zahlen zusammen bilden den <b>Zahlenbereich N</b>. So sieht er als Mengendiagramm aus. Oben in der Kopfzeile siehst du dasselbe Diagramm in klein. Es wächst mit jeder Station.',nest(1)]
+ ],
+ ex:[{type:'choice',title:'Natürliche Zahl, ja oder nein?',task:'Entscheide bei jeder Zahl, ob sie eine natürliche Zahl ist.',labels:['ja','nein'],items:[
+   yes('12','Mit 12 kannst du zählen.'),
+   no('3,5','3,5 liegt zwischen 3 und 4. Beim Zählen kommt diese Zahl nicht vor.'),
+   yes('0','Die Null gehört bei uns zu den natürlichen Zahlen.'),
+   no('−4','Zahlen mit einem Minus davor sind keine natürlichen Zahlen.'),
+   yes('1 000 000','Auch sehr große Zahlen sind natürliche Zahlen.'),
+   no(fr(1,2),'Ein Halbes liegt zwischen 0 und 1.'),
+   yes('99','Mit 99 kannst du zählen.'),
+   no('0,1','0,1 liegt zwischen 0 und 1.')]}],
+ zusatz:[['N','Der Buchstabe für den Bereich der natürlichen Zahlen'],['N = {0; 1; 2; 3; …}','Mengenschreibweise: In den geschweiften Klammern stehen die Zahlen, die dazugehören.'],['7 ∈ N','„7 ist Element von N“, also 7 gehört dazu.'],['2,5 ∉ N','„2,5 ist kein Element von N“, also 2,5 gehört nicht dazu.']],
+ bridge:{to:'z',task:'3 − 5 = ?',text:'Von 3 kannst du nicht 5 wegnehmen, ohne unter die Null zu kommen. Bei den natürlichen Zahlen gibt es dafür kein Ergebnis. Solche Aufgaben können wir hier noch nicht lösen. Deshalb wird der Zahlenbereich erweitert.'}},
+
+{id:'Z',rings:2,title:'Ganze Zahlen',sub:'Unter Null geht es weiter',
+ pre:'Wenn du schon <b>negative Zahlen</b> kennst, zum Beispiel vom Thermometer, bist du hier richtig.',
+ solve:{from:'N',was:'3 − 5 = ?',now:'3 − 5 = −2',text:'In N hatte diese Aufgabe kein Ergebnis. Mit den ganzen Zahlen lässt sie sich lösen.'},
+ steps:[
+  ['Es sind 3 °C, und in der Nacht wird es 5 Grad kälter. Auf dem Thermometer geht es unter der Null einfach weiter.',thermo],
+  ['Jede natürliche Zahl bekommt eine <b>entgegengesetzte Zahl</b>. Sie liegt gleich weit von der Null entfernt, auf der anderen Seite. Alle zusammen heißen <b>ganze Zahlen</b>.',line(-4,4)],
+  ['Der Bereich N liegt ganz im neuen <b>Bereich Z</b>. Jede natürliche Zahl ist also auch eine ganze Zahl.',nest(2)]
+ ],
+ ex:[{type:'choice',title:'Ganze Zahl, ja oder nein?',task:'Entscheide bei jeder Zahl, ob sie eine ganze Zahl ist. Denke daran, dass auch die natürlichen Zahlen dazugehören.',labels:['ja','nein'],items:[
+   yes('−7','−7 ist eine ganze Zahl.'),
+   no('2,5','2,5 liegt zwischen 2 und 3. Dort gibt es keine ganze Zahl.'),
+   yes('15','15 ist eine natürliche Zahl und damit auch eine ganze Zahl.'),
+   yes('0','Die Null gehört zu N und damit auch zu Z.'),
+   no(fr(1,4),'Ein Viertel liegt zwischen 0 und 1.'),
+   yes('−100','−100 ist eine ganze Zahl.'),
+   no('−0,5','−0,5 liegt zwischen −1 und 0.'),
+   yes('−1','−1 ist die entgegengesetzte Zahl zu 1.')]}],
+ zusatz:[['Z = {…; −2; −1; 0; 1; 2; …}','Der Bereich der ganzen Zahlen'],['−5 ∈ Z','−5 ist eine ganze Zahl.'],['−5 ∉ N','−5 ist keine natürliche Zahl.'],['N ⊂ Z','„N ist Teilmenge von Z“, also jede natürliche Zahl ist auch eine ganze Zahl.']],
+ bridge:{to:'q',task:'3 : 4 = ?',text:'Drei Pizzen sollen gerecht an vier Personen verteilt werden. Bei den ganzen Zahlen gibt es dafür kein Ergebnis, denn zwischen 0 und 1 liegt keine ganze Zahl. Solche Aufgaben können wir hier noch nicht lösen. Deshalb wird der Zahlenbereich noch einmal erweitert.'}},
+
+{id:'Q',rings:3,title:'Rationale Zahlen',sub:'Brüche und Dezimalbrüche kommen dazu',
+ pre:'Wenn du schon die Themen <b>Brüche</b> und <b>Dezimalbrüche</b> gemacht hast und negative Zahlen kennst, bist du hier richtig.',
+ solve:{from:'Z',was:'3 : 4 = ?',now:`3 : 4 = ${fr(3,4)}`,text:'In Z hatte diese Aufgabe kein Ergebnis. Mit den rationalen Zahlen lässt sie sich lösen.'},
+ steps:[
+  ['Drei Pizzen werden gerecht an vier Personen verteilt. Jede Person bekommt drei Viertel. Beim Teilen entstehen also Zahlen, die zwischen den ganzen Zahlen liegen.',pizza+`<div class="cap">${fr(3,4)} einer Pizza</div>`],
+  ['<b>Rationale Zahlen</b> sind alle Zahlen, die sich als Bruch schreiben lassen. Dezimalbrüche gehören dazu, wenn sie enden oder periodisch sind. Es gibt sie auch mit Minus.',line(-2,2,[{v:-1.5,l:'−1,5',c:'q'},{v:-.25,l:'−¼',c:'q'},{v:.5,l:'½',c:'q'},{v:1.75,l:'1,75',c:'q'}])],
+  ['Der Bereich Z liegt ganz im neuen <b>Bereich Q</b>. Jede ganze Zahl ist also auch eine rationale Zahl.',nest(3),'wide']
+ ],
+ ex:[{type:'choice',title:'In welchen Bereich gehört die Zahl?',task:'Tippe bei jeder Zahl auf den <b>kleinsten</b> Bereich, in dem sie liegt.',labels:['N','Z','Q'],items:[
+   {q:fr(3,4),a:2,why:'Ein Bruch, der zwischen 0 und 1 liegt.'},
+   {q:'6',a:0,why:'6 ist eine natürliche Zahl.'},
+   {q:'−2,5',a:2,why:'−2,5 liegt zwischen −3 und −2.'},
+   {q:'−9',a:1,why:'−9 ist eine ganze Zahl.'},
+   {q:'0,333…',a:2,why:'Ein periodischer Dezimalbruch ist eine rationale Zahl.'},
+   {q:'0',a:0,why:'Die Null gehört schon zu N.'},
+   {q:`−${fr(1,3)}`,a:2,why:'Ein negativer Bruch zwischen −1 und 0.'},
+   {q:'−40',a:1,why:'−40 ist eine ganze Zahl.'}]}],
+ zusatz:[['Q','Der Bereich der rationalen Zahlen'],[`${fr(3,4)} ∈ Q`,'Drei Viertel ist eine rationale Zahl.'],[`${fr(3,4)} ∉ Z`,'Drei Viertel ist keine ganze Zahl.'],['N ⊂ Z ⊂ Q','Jede natürliche Zahl ist eine ganze Zahl, und jede ganze Zahl ist eine rationale Zahl.'],[`−4 = ${fr('−4',1)}`,'Jede ganze Zahl lässt sich als Bruch mit dem Nenner 1 schreiben. Deshalb gehört sie zu Q.']],
+ bridge:{to:'r',task:'? · ? = 2',text:'Gesucht ist eine Zahl, die mit sich selbst multipliziert genau 2 ergibt. 1,4 · 1,4 = 1,96 ist zu klein, und 1,5 · 1,5 = 2,25 ist zu groß. Auch mit mehr Nachkommastellen oder mit Brüchen trifft man die 2 nie genau. Solche Aufgaben können wir hier noch nicht lösen. Deshalb wird der Zahlenbereich noch einmal erweitert.'}},
+
+{id:'R',rings:4,title:'Reelle Zahlen',sub:'Zahlen, die sich nicht als Bruch schreiben lassen',
+ pre:'Wenn du schon <b>Quadratwurzeln</b> kennst oder beim Thema Kreise mit der Zahl <b>π</b> gearbeitet hast, bist du hier richtig.',
+ solve:{from:'Q',was:'? · ? = 2',now:`${rt(2)} · ${rt(2)} = 2`,text:'In Q gab es keine Zahl, die mit sich selbst multipliziert genau 2 ergibt. Bei den reellen Zahlen gibt es sie. Sie heißt Wurzel 2.'},
+ steps:[
+  [`Ein Quadrat mit dem Flächeninhalt 2 cm² hat die Seitenlänge ${rt(2)} cm. Diese Zahl lässt sich nicht als Bruch schreiben.`,square],
+  ['Als Dezimalbruch hören solche Zahlen <b>nie auf</b> und haben <b>keine Periode</b>. Sie heißen <b>irrationale Zahlen</b>. Auch die Kreiszahl π gehört dazu.',dec('1,41421356237…',`${rt(2)}`,'r')+dec('3,14159265358…','π','r')],
+  ['So unterscheidest du. Wiederholt sich ein Ziffernblock immer wieder gleich, ist die Zahl rational. Gibt es keinen solchen Block, ist sie irrational.',dec('0,121212121212…','rational (Periode 12)','q')+dec('0,121121112111121…','irrational','r')],
+  ['Auf der Zahlengeraden haben die irrationalen Zahlen ihren festen Platz. Rationale und irrationale Zahlen zusammen heißen <b>reelle Zahlen</b>. Mit ihnen ist die Zahlengerade lückenlos gefüllt.',line(0,4,[{v:.5,l:'½',c:'q'},{v:1.414,l:'√2',c:'r'},{v:2.5,l:'2,5',c:'q'},{v:3.1416,l:'π',c:'r'}]),'wide'],
+  ['Der Bereich Q liegt ganz im neuen <b>Bereich R</b>. Die irrationalen Zahlen liegen in R, aber außerhalb von Q.',nest(4),'wide']
+ ],
+ ex:[{type:'choice',title:'Rational oder irrational?',task:'Entscheide bei jeder Zahl, ob sie rational oder irrational ist.',labels:['rational','irrational'],items:[
+   {q:rt(2),a:1,why:'Wurzel 2 lässt sich nicht als Bruch schreiben.'},
+   {q:'0,121212…',a:0,why:'Der Dezimalbruch hat die Periode 12.'},
+   {q:'π',a:1,why:'π endet nie und hat keine Periode.'},
+   {q:'3,14',a:0,why:'Der Dezimalbruch endet nach zwei Stellen. 3,14 ist nur ein Näherungswert für π.'},
+   {q:'0,12112111211112…',a:1,why:'Die Anzahl der Einsen wächst immer weiter. Es wiederholt sich kein fester Ziffernblock.'},
+   {q:fr(2,3),a:0,why:'Ein Bruch ist immer rational.'},
+   {q:rt(5),a:1,why:'5 ist keine Quadratzahl. Die Wurzel lässt sich nicht als Bruch schreiben.'},
+   {q:'−6',a:0,why:'Jede ganze Zahl ist auch rational.'},
+   {q:rt(9),a:0,why:'9 ist eine Quadratzahl. Die Wurzel ist 3.'},
+   {q:'−π',a:1,why:'Auch negative Zahlen können irrational sein.'}]}],
+ zusatz:[['R','Der Bereich der reellen Zahlen'],[`${rt(2)} ∈ R`,'Wurzel 2 ist eine reelle Zahl.'],[`${rt(2)} ∉ Q`,'Wurzel 2 ist keine rationale Zahl.'],['N ⊂ Z ⊂ Q ⊂ R','Jeder Bereich steckt vollständig im nächsten.'],['I','Manchmal bekommen die irrationalen Zahlen diesen eigenen Buchstaben. Q und I zusammen ergeben R.'],['π ≈ 3,14','Das Zeichen ≈ bedeutet „ungefähr gleich“. 3,14 ist ein Näherungswert für π und selbst eine rationale Zahl.'],[`${rt(9)} = 3`,'Manche Wurzeln sind ganz gewöhnliche Zahlen. Das ist der Fall, wenn unter der Wurzel eine Quadratzahl steht.']],
+ extra:`<p><b>Warum ist ${rt(2)} kein Bruch?</b> Die Idee ist, das Gegenteil anzunehmen und zu zeigen, dass dabei etwas Unmögliches herauskommt.</p>
+  <ol class="how">
+   <li>Angenommen, ${rt(2)} wäre ein Bruch ${fr('a','b')}, und dieser Bruch wäre schon vollständig gekürzt.</li>
+   <li>Dann gilt ${fr('a²','b²')} = 2, also a² = 2 · b². Damit ist a² eine gerade Zahl.</li>
+   <li>Nur gerade Zahlen haben ein gerades Quadrat. Also ist a selbst gerade und lässt sich als a = 2 · c schreiben.</li>
+   <li>Eingesetzt ergibt das 4 · c² = 2 · b², also b² = 2 · c². Damit ist auch b gerade.</li>
+   <li>Jetzt sind a und b beide gerade. Der Bruch ließe sich mit 2 kürzen. Er sollte aber schon vollständig gekürzt sein.</li>
+   <li>Die Annahme führt zu einem Widerspruch. ${rt(2)} kann also kein Bruch sein.</li>
+  </ol>`,
+ bridge:{to:'a',done:true,text:'Mit den reellen Zahlen hat jeder Punkt auf der Zahlengeraden seine Zahl. Für alles, was du bis Klasse 10 brauchst, reichen diese vier Bereiche aus. In der nächsten Station übst du sie gemischt.'}},
+
+{id:'✓',key:'all',col:'a',rings:4,title:'Alles sortieren',sub:'Die vier Bereiche gemischt',
+ pre:'Wenn du die Stationen von N bis R bearbeitet hast, kannst du hier alles gemischt üben. Die Station eignet sich auch zum Wiederholen vor einer Prüfung.',
+ steps:[
+  ['Prüfe die Bereiche <b>von innen nach außen</b>. Ist es eine Zahl zum Zählen? Dann N. Eine Zahl mit Minus, aber ohne Komma und ohne Bruch? Dann Z. Lässt sie sich als Bruch schreiben? Dann Q. Sonst liegt sie nur in R.',nest(4),'wide'],
+  ['Jede Zahl liegt auch in allen größeren Bereichen. Die Zahl −3 zum Beispiel liegt in Z, in Q und in R.',line(-4,4,[{v:-3,l:'−3',c:'z'}])]
+ ],
+ ex:[
+  {type:'choice',title:'In welchen Bereich gehört die Zahl?',task:'Tippe bei jeder Zahl auf den <b>kleinsten</b> Bereich, in dem sie liegt.',labels:KL,items:[
+   {q:'17',a:0,why:'17 ist eine natürliche Zahl.'},
+   {q:'−3',a:1,why:'−3 ist eine ganze Zahl, aber keine natürliche Zahl.'},
+   {q:fr(4,5),a:2,why:'Ein Bruch ist eine rationale Zahl.'},
+   {q:rt(3),a:3,why:'3 ist keine Quadratzahl. Die Wurzel ist irrational.'},
+   {q:'0,75',a:2,why:'Ein Dezimalbruch, der nach dem Komma endet.'},
+   {q:'π',a:3,why:'π ist ein Dezimalbruch, der nie endet und keine Periode hat.'},
+   {q:'−20',a:1,why:'−20 ist eine ganze Zahl.'},
+   {q:'1,333…',a:2,why:'Ein periodischer Dezimalbruch ist eine rationale Zahl.'},
+   {q:'0',a:0,why:'Die Null gehört schon zu N.'},
+   {q:rt(9),a:0,why:'9 ist eine Quadratzahl. Die Wurzel ist 3, also eine natürliche Zahl.'}]},
+  {type:'multi',title:'In welchen Bereichen liegt die Zahl?',task:'Tippe bei jeder Zahl <b>alle</b> Bereiche an, in denen sie liegt. Das können mehrere sein. Tippe dann auf „Prüfen“.',items:[
+   {h:'−3',sets:['Z','Q','R'],why:'−3 ist eine ganze Zahl. Sie liegt damit auch in Q und in R, aber nicht in N.'},
+   {h:'0,5',sets:['Q','R'],why:'0,5 ist rational und damit auch reell.'},
+   {h:'7',sets:['N','Z','Q','R'],why:'Eine natürliche Zahl liegt in allen vier Bereichen.'},
+   {h:rt(3),sets:['R'],why:'Die Zahl ist irrational. Sie liegt nur in R.'},
+   {h:fr(2,3),sets:['Q','R'],why:'Ein Bruch ist rational und damit auch reell.'},
+   {h:'−12',sets:['Z','Q','R'],why:'−12 ist eine ganze Zahl. Sie liegt damit auch in Q und in R.'}]}],
+ zusatz:[['N ⊂ Z ⊂ Q ⊂ R','Jeder Bereich steckt vollständig im nächsten.'],['−3 ∈ Z, −3 ∈ Q, −3 ∈ R','Eine ganze Zahl liegt in drei Bereichen.'],['−3 ∉ N','In N liegt sie nicht.']],
+ bridge:{to:'k',in:'R',task:'? · ? = −1',text:'Gesucht ist eine Zahl, die mit sich selbst multipliziert −1 ergibt. Bei den reellen Zahlen gibt es keine. Plus mal plus ergibt plus, und minus mal minus ergibt auch plus. Solche Aufgaben können wir hier noch nicht lösen. Wenn du wissen möchtest, wie es weitergeht, lies den Zusatz.'}},
+
+{id:'C',col:'k',rings:5,title:'Komplexe Zahlen',sub:'Zusatz für alle, die wissen möchten, wie es weitergeht',
+ pre:'Diese Station ist ein <b>Zusatz</b>. Komplexe Zahlen kommen in der Schule bis Klasse 10 nicht vor. Wenn du neugierig bist, was nach den reellen Zahlen kommt, bist du hier richtig.',
+ solve:{from:'R',was:'? · ? = −1',now:'i · i = −1',text:'In R gab es keine Zahl, die mit sich selbst multipliziert −1 ergibt. Deshalb hat man eine neue Zahl dazugenommen. Sie heißt i.'},
+ steps:[
+  ['Auf der Zahlengeraden ist kein Platz mehr frei, sie ist mit den reellen Zahlen lückenlos gefüllt. Die Zahl <b>i</b> bekommt deshalb eine eigene Achse. Sie steht senkrecht auf der Zahlengeraden.',plane()],
+  ['Eine <b>komplexe Zahl</b> hat einen reellen Teil und einen Teil mit i. Du findest sie wie einen Punkt im Koordinatensystem. Für 3 + 2i gehst du 3 nach rechts und 2 nach oben.',plane([3,2,'3 + 2i'])],
+  ['Der Bereich R liegt ganz im neuen <b>Bereich C</b>. Bei einer reellen Zahl ist der Teil mit i einfach null.',nest(5),'wide']
+ ],
+ ex:[{type:'choice',title:'Reelle Zahl, ja oder nein?',task:'Entscheide bei jeder Zahl, ob sie noch eine reelle Zahl ist oder nur im Bereich C liegt.',labels:['ja','nein'],items:[
+   yes('5','5 liegt auf der Zahlengeraden.'),
+   no('i','i liegt auf der eigenen Achse, außerhalb der Zahlengeraden.'),
+   yes('−2,5','−2,5 liegt auf der Zahlengeraden.'),
+   no('3 + 2i','Die Zahl hat einen Teil mit i.'),
+   yes(rt(2),'Wurzel 2 ist irrational, aber reell.'),
+   no('−i','Auch −i liegt auf der Achse von i.'),
+   yes('π','π liegt auf der Zahlengeraden.'),
+   yes('4 + 0i','Der Teil mit i ist null. Übrig bleibt die reelle Zahl 4.')]}],
+ zusatz:[['C','Der Bereich der komplexen Zahlen'],['i² = −1','So ist die Zahl i festgelegt. Sie heißt imaginäre Einheit.'],['a + b · i','So sieht jede komplexe Zahl aus. Dabei sind a und b reelle Zahlen.'],['N ⊂ Z ⊂ Q ⊂ R ⊂ C','Jeder Bereich steckt vollständig im nächsten.'],['3 + 2i ∈ C, 3 + 2i ∉ R','Die Zahl ist komplex, aber nicht reell.']],
+ extra:'<p>Komplexe Zahlen werden zum Beispiel in der Elektrotechnik und in der Physik gebraucht, etwa wenn mit Wechselstrom oder mit Schwingungen gerechnet wird.</p>',
+ bridge:{to:'k',done:true,text:'Hier endet der Lernpfad. Im Bereich C hat jede Gleichung, in der eine Zahl mit sich selbst multipliziert wird, eine Lösung.'}}
+];
+
+/* ---------- Seite bauen ---------- */
+const keyOf=s=>s.key||s.id, colOf=s=>s.col||s.id.toLowerCase();
+const ARROW='<svg class="arr" viewBox="0 0 48 48" aria-hidden="true"><path d="M6 24h30M24 10l14 14-14 14" fill="none" stroke="var(--c)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const main=document.getElementById('main'), nav=document.getElementById('nav'), mini=document.getElementById('mini');
+
+function section(s,si){
+  const c=colOf(s);
+  const steps=s.steps.map(r=>`<div class="step${r[2]?' wide':''}"><p>${r[0]}</p><div class="picbox">${r[1]}</div></div>`).join('');
+  const ex=s.ex.map((e,ei)=>`<h3>${e.title}</h3><div class="exbox" data-s="${si}" data-e="${ei}"></div>`).join('');
+  const zus=`<details class="exp"><summary>Expertenwissen: So schreibt man es in der Mathematik</summary><dl class="zus">${s.zusatz.map(z=>`<dt>${z[0]}</dt><dd>${z[1]}</dd>`).join('')}</dl>${s.extra||''}</details>`;
+  const solve=s.solve?`<div class="solve"><div class="was" style="--o:var(--${s.solve.from.toLowerCase()})"><small>In ${s.solve.from} ging das noch nicht</small>${s.solve.was}</div>${ARROW}<div class="now"><small>Jetzt geht es</small>${s.solve.now}</div><p>${s.solve.text}</p></div>`:'';
+  const b=s.bridge, bridge=!b?'':b.done?`<div class="bridge" style="--nc:var(--${b.to})"><p>${b.text}</p></div>`
+    :`<div class="bridge" style="--nc:var(--${b.to})"><h3>Das geht in ${b.in||s.id} noch nicht</h3><div class="big">${b.task}</div><p>${b.text}</p><svg class="down" viewBox="0 0 48 48" aria-hidden="true"><path d="M24 6v30M10 24l14 14 14-14" fill="none" stroke="var(--nc)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>`;
+  return `<section class="st" id="st-${keyOf(s)}" style="--c:var(--${c});--bg:var(--${c}-bg)">
+   <div class="head"><div class="letter">${s.id}</div><div><h2>${s.title}</h2><p>${s.sub}</p></div></div>
+   <p class="pre">${s.pre}</p>${solve}${steps}${ex}${zus}${bridge}</section>`;
+}
+main.innerHTML=`<section class="intro"><h1>Zahlenbereiche</h1>
+ <p>Zahlen lassen sich in Bereiche ordnen. Jeder neue Bereich ist entstanden, weil es im alten Bereich Aufgaben gab, die kein Ergebnis hatten.</p>
+ <p>Arbeite dich von oben nach unten durch. Über die Kreise in der Kopfzeile kannst du auch direkt zu einer Station springen. Am Anfang jeder Station steht, was du dafür schon kennen solltest.</p></section>`
+ +STATIONS.map(section).join('');
+nav.innerHTML=STATIONS.map((s,i)=>`${i?'<i></i>':''}<button data-go="${i}" style="--c:var(--${colOf(s)})" aria-label="Zur Station ${s.title}">${s.id}</button>`).join('');
+mini.innerHTML=[4,3,2,1,0].map(j=>{const d=4-j,x=1+3*d,r=36+j*28;
+  return `<g data-j="${j}" class="off"><rect x="${x}" y="${x}" width="${r-x}" height="${54-6*d}" rx="8" fill="var(--${RC[j]}-bg)" stroke="var(--${RC[j]})"/><text x="${j?r-13:(x+r)/2}" y="33" text-anchor="middle" style="fill:var(--${RC[j]})">${RK[j]}</text></g>`;}).join('');
+
+/* ---------- Mitlaufen beim Scrollen: Farbe, Kreise, kleines Diagramm ---------- */
+const secs=STATIONS.map(s=>document.getElementById('st-'+keyOf(s)));
+let act=-1;
+function setAct(a){
+  if(a===act) return; act=a; const s=STATIONS[a], c=colOf(s);
+  document.body.style.setProperty('--pg',`var(--${c}-pg)`);
+  document.body.style.setProperty('--c',`var(--${c})`);
+  nav.querySelectorAll('button').forEach((b,i)=>b.setAttribute('aria-current',i===a));
+  mini.querySelectorAll('g').forEach(g=>g.classList.toggle('off',+g.dataset.j>=s.rings));
+}
+function spy(){let a=0;const y=innerHeight*0.45;secs.forEach((el,i)=>{if(el.getBoundingClientRect().top<=y) a=i;});setAct(a);}
+let tick=false;
+addEventListener('scroll',()=>{if(!tick){tick=true;requestAnimationFrame(()=>{tick=false;spy();});}},{passive:true});
+addEventListener('resize',spy);
+nav.addEventListener('click',ev=>{
+  const b=ev.target.closest('[data-go]'); if(!b) return;
+  const el=secs[+b.dataset.go], off=document.querySelector('.top').offsetHeight-30;
+  scrollTo({top:el.getBoundingClientRect().top+scrollY-off,behavior:'smooth'});
+});
+
+/* ---------- Übungen ---------- */
+function initChoice(box,e){
+  box.innerHTML=`<p class="task">${e.task}</p><div class="rows">`+e.items.map((it,k)=>
+    `<div class="row" data-k="${k}"><div class="q">${it.q}</div><div class="opts">${e.labels.map((l,j)=>`<button data-j="${j}">${l}</button>`).join('')}</div><p class="why" aria-live="polite"></p></div>`).join('')+'</div>';
+  box.querySelectorAll('.row').forEach(row=>{
+    const it=e.items[+row.dataset.k],why=row.querySelector('.why');
+    row.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{
+      const ok=+b.dataset.j===it.a;
+      row.querySelectorAll('button').forEach(x=>x.disabled=true);
+      b.classList.add(ok?'ok':'no');
+      if(!ok) row.querySelector(`button[data-j="${it.a}"]`).classList.add('ok');
+      why.className='why '+(ok?'good':'bad');
+      why.innerHTML=(ok?'<b>Richtig.</b> ':`<b>Richtig wäre „${e.labels[it.a]}“.</b> `)+it.why;
+    }));
+  });
+}
+function initMulti(box,e){
+  box.innerHTML=`<p class="task">${e.task}</p><div class="rows">`+e.items.map((it,k)=>
+    `<div class="row full" data-k="${k}"><div class="q">${it.h}</div><div class="opts">${KL.map(s=>`<button class="tg" data-set="${s}" aria-pressed="false">${s}</button>`).join('')}<button class="chk">Prüfen</button></div><p class="why" aria-live="polite"></p></div>`).join('')+'</div>';
+  box.querySelectorAll('.row').forEach(row=>{
+    const it=e.items[+row.dataset.k],why=row.querySelector('.why'),tg=[...row.querySelectorAll('.tg')];let tries=0;
+    tg.forEach(b=>b.addEventListener('click',()=>b.setAttribute('aria-pressed',b.getAttribute('aria-pressed')!=='true')));
+    row.querySelector('.chk').addEventListener('click',ev=>{
+      const sel=tg.filter(b=>b.getAttribute('aria-pressed')==='true').map(b=>b.dataset.set);
+      const ok=sel.length===it.sets.length&&it.sets.every(s=>sel.includes(s));
+      if(!ok&&++tries<2){why.className='why bad';why.innerHTML='<b>Das stimmt noch nicht ganz.</b> Denke daran, dass eine Zahl auch in allen größeren Bereichen liegt. Versuche es noch einmal.';return;}
+      tg.forEach(b=>{b.setAttribute('aria-pressed',it.sets.includes(b.dataset.set));b.disabled=true;});
+      ev.target.disabled=true;
+      why.className='why '+(ok?'good':'bad');
+      why.innerHTML=(ok?'<b>Richtig.</b> ':`<b>Richtig ist ${it.sets.join(', ')}.</b> `)+it.why;
+    });
+  });
+}
+document.querySelectorAll('.exbox').forEach(box=>{
+  const e=STATIONS[+box.dataset.s].ex[+box.dataset.e];
+  ({choice:initChoice,multi:initMulti})[e.type](box,e);
+});
+spy();
+</script>
+</body>
+</html>
