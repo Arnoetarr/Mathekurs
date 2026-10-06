@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Kurse</title>
+<title>Mathe</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
 
@@ -12,14 +12,11 @@
     --grid: #e9e2d0;
     --ink: #241b3a;
     --ink-soft: #6b6280;
-    --geo: #0f8b7f;
-    --geo-bg: #d8f5ee;
-    --lgs: #e0553c;
-    --lgs-bg: #ffe4d6;
-    --frei: #7a4fd6;
-    --frei-bg: #ece2fb;
-    --sonst: #d19a12;
-    --sonst-bg: #faf0d4;
+    --zahl: #2f6fd0;   --zahl-bg: #dde9fb;
+    --raum: #e0553c;   --raum-bg: #ffe4d6;
+    --funk: #0f8b7f;   --funk-bg: #d8f5ee;
+    --daten: #d19a12;  --daten-bg: #faf0d4;
+    --sonst: #7a4fd6;  --sonst-bg: #ece2fb;
   }
 
   * { box-sizing: border-box; }
@@ -28,7 +25,7 @@
     font-family: 'Space Grotesk', system-ui, sans-serif;
     max-width: 640px;
     margin: 0 auto;
-    padding: 48px 24px 80px;
+    padding: 40px 24px 80px;
     background:
       linear-gradient(var(--grid) 1px, transparent 1px),
       linear-gradient(90deg, var(--grid) 1px, transparent 1px),
@@ -37,26 +34,59 @@
     color: var(--ink);
   }
 
-  .bereich {
-    margin-bottom: 52px;
+  /* Farbe je Thema */
+  [data-thema="zahl"]  { --c: var(--zahl);  --c-bg: var(--zahl-bg); }
+  [data-thema="raum"]  { --c: var(--raum);  --c-bg: var(--raum-bg); }
+  [data-thema="funk"]  { --c: var(--funk);  --c-bg: var(--funk-bg); }
+  [data-thema="daten"] { --c: var(--daten); --c-bg: var(--daten-bg); }
+  [data-thema="sonst"] { --c: var(--sonst); --c-bg: var(--sonst-bg); }
+
+  /* Reiter */
+  .reiter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 36px;
   }
+
+  .reiter button {
+    font: inherit;
+    font-weight: 600;
+    font-size: 0.95em;
+    padding: 9px 14px;
+    background: #fff;
+    color: var(--ink);
+    border: 2px solid var(--ink);
+    border-radius: 12px;
+    box-shadow: 3px 3px 0 var(--c);
+    cursor: pointer;
+    transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
+  }
+
+  .reiter button:hover { background: var(--c-bg); }
+
+  .reiter button[aria-selected="true"] {
+    background: var(--c);
+    color: #fff;
+    box-shadow: none;
+    transform: translate(3px, 3px);
+  }
+
+  .reiter button:focus-visible,
+  a:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+
+  /* Inhalt */
+  .bereich[hidden] { display: none; }
 
   h1 {
     font-size: 1.7em;
     font-weight: 700;
-    margin: 0 0 20px;
+    margin: 0 0 24px;
     letter-spacing: -0.01em;
-    display: inline-block;
-    padding: 2px 6px;
+    color: var(--c);
   }
 
-  .kurse h1 { color: var(--geo); }
-  .freiarbeit h1 { color: var(--frei); }
-  .sonstiges h1 { color: var(--sonst); }
-
-  .stufe {
-    margin-bottom: 28px;
-  }
+  .stufe { margin-bottom: 30px; }
   .stufe:last-child { margin-bottom: 0; }
 
   .stufe-kopf {
@@ -73,136 +103,186 @@
     border-radius: 20px;
     font-weight: 600;
     transform: rotate(-2deg);
+    background: var(--c);
+    color: #fff;
   }
-
-  .geo .stufe-nr { background: var(--geo); color: #fff; }
-  .lgs .stufe-nr { background: var(--lgs); color: #fff; }
 
   h2 {
     font-size: 1em;
     font-weight: 600;
     margin: 0;
     color: var(--ink-soft);
+    padding-left: 10px;
+    border-left: 4px solid var(--c);
   }
 
-  ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-
+  ul { list-style: none; padding: 0; margin: 0; }
   li + li { margin-top: 12px; }
 
   a {
     display: flex;
     align-items: center;
-    justify-content: space-between;
     gap: 12px;
     padding: 16px 20px;
     background: #fff;
     border: 2px solid var(--ink);
     border-radius: 12px;
+    box-shadow: 5px 5px 0 var(--c);
     text-decoration: none;
     color: var(--ink);
     font-weight: 600;
     transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
   }
 
-  .geo a { box-shadow: 5px 5px 0 var(--geo); }
-  .lgs a { box-shadow: 5px 5px 0 var(--lgs); }
-  .frei a { box-shadow: 5px 5px 0 var(--frei); }
-  .sonst a { box-shadow: 5px 5px 0 var(--sonst); }
+  a .titel { flex: 1; }
+
+  .art {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.72em;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 20px;
+    background: var(--c-bg);
+    color: var(--ink);
+    flex-shrink: 0;
+  }
 
   li:nth-child(odd) a { transform: rotate(-0.6deg); }
   li:nth-child(even) a { transform: rotate(0.6deg); }
 
-  .geo a:hover { background: var(--geo-bg); transform: translate(2px, 2px) rotate(0deg); box-shadow: 2px 2px 0 var(--geo); }
-  .lgs a:hover { background: var(--lgs-bg); transform: translate(2px, 2px) rotate(0deg); box-shadow: 2px 2px 0 var(--lgs); }
-  .frei a:hover { background: var(--frei-bg); transform: translate(2px, 2px) rotate(0deg); box-shadow: 2px 2px 0 var(--frei); }
-  .sonst a:hover { background: var(--sonst-bg); transform: translate(2px, 2px) rotate(0deg); box-shadow: 2px 2px 0 var(--sonst); }
+  a:hover {
+    background: var(--c-bg);
+    transform: translate(2px, 2px) rotate(0deg);
+    box-shadow: 2px 2px 0 var(--c);
+  }
+  a:hover .art { background: #fff; }
 
   a::after {
     content: "→";
     font-family: 'IBM Plex Mono', monospace;
+    color: var(--c);
     flex-shrink: 0;
   }
 
-  .geo a::after { color: var(--geo); }
-  .lgs a::after { color: var(--lgs); }
-  .frei a::after { color: var(--frei); }
-  .sonst a::after { color: var(--sonst); }
-
-  /* Platzhalter für noch fehlende Links */
-  .platzhalter {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
+  .leer {
     padding: 16px 20px;
-    background: transparent;
     border: 2px dashed var(--ink-soft);
     border-radius: 12px;
     color: var(--ink-soft);
     font-weight: 600;
   }
 
-  .platzhalter::after {
-    content: "";
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.8em;
-    font-weight: 500;
-    flex-shrink: 0;
-  }
-
   @media (prefers-reduced-motion: reduce) {
-    a { transition: none; }
+    a, .reiter button { transition: none; }
   }
 </style>
 </head>
 <body>
 
-<section class="bereich kurse">
-  <h1>Kurse</h1>
+<nav class="reiter" role="tablist" aria-label="Themen"></nav>
+<main id="inhalt"></main>
 
-  <div class="stufe geo">
-    <div class="stufe-kopf">
-      <span class="stufe-nr">5/6</span>
-      <h2>Ebene Geometrie</h2>
-    </div>
-    <ul>
-      <li><a href="Schatzsuche.html">Koordinatensystem-Schatzsuche</a></li>
-      <li><a href="Winkel.html">Winkel</a></li>
-      <li><a href="konstruktionen.html">Konstruktionen</a></li>  
-      <li><a href="Symmetrie_ueben.html">Symmetrie üben</a></li>
-    </ul>
-  </div>
+<script>
+/* ============================================================
+   HIER PFLEGEN
+   Neues Material = eine neue Zeile in MATERIAL.
+   thema: zahl | raum | funk | daten | sonst
+   gruppe: Unterthema als Zwischenüberschrift, darf leer sein
+   art:   "Kurs", "Freiarbeit" oder ""
+   ============================================================ */
 
-  <div class="stufe lgs">
-    <div class="stufe-kopf">
-      <span class="stufe-nr">9/10</span>
-      <h2>Lineare Gleichungssysteme</h2>
-    </div>
-    <ul>
-      <li><a href="LGS.html">Stationen zur Wiederholung</a></li>
-      <li><a href="Sachaufgaben_LGS.html">Stationen zum Üben von Sachaufgaben</a></li>
-    </ul>
-  </div>
-</section>
+const THEMEN = [
+  { id: "zahl",  name: "Zahlen und Größen" },
+  { id: "raum",  name: "Raum und Form" },
+  { id: "funk",  name: "Zuordnungen und Funktionen" },
+  { id: "daten", name: "Daten und Zufall" },
+  { id: "sonst", name: "Sonstiges" }
+];
 
-<section class="bereich freiarbeit frei">
-  <h1>Freiarbeit</h1>
-  <ul>
-    <li><a href="einmaleins.html">Einmaleins üben</a></li>
-    <li><a href="Einheiten-Werkstatt.html">Einheiten üben</a></li>
-  </ul>
-</section>
+const MATERIAL = [
+  { thema: "zahl", gruppe: "Zahlen und Rechnen", art: "Freiarbeit", titel: "Einmaleins üben", datei: "einmaleins.html" },
+  { thema: "zahl", gruppe: "Zahlen und Rechnen", art: "Freiarbeit", titel: "Zahlenbereiche",  datei: "zahlenbereiche-lernpfad.html" },
+  { thema: "zahl", gruppe: "Größen",             art: "Freiarbeit", titel: "Einheiten üben",  datei: "Einheiten-Werkstatt.html" },
+  { thema: "zahl", gruppe: "Lineare Gleichungssysteme", art: "Kurs", titel: "Stationen zur Wiederholung",          datei: "LGS.html" },
+  { thema: "zahl", gruppe: "Lineare Gleichungssysteme", art: "Kurs", titel: "Stationen zum Üben von Sachaufgaben", datei: "Sachaufgaben_LGS.html" },
 
-<section class="bereich sonstiges sonst">
-  <h1>Sonstiges</h1>
-  <ul>
-    <li><a href="Raetselheft.html">Logikrätsel</a></li>
-  </ul>
-</section>
+  { thema: "raum", gruppe: "Ebene Geometrie", art: "Kurs", titel: "Koordinatensystem-Schatzsuche", datei: "Schatzsuche.html" },
+  { thema: "raum", gruppe: "Ebene Geometrie", art: "Kurs", titel: "Winkel",         datei: "Winkel.html" },
+  { thema: "raum", gruppe: "Ebene Geometrie", art: "Kurs", titel: "Konstruktionen", datei: "konstruktionen.html" },
+  { thema: "raum", gruppe: "Ebene Geometrie", art: "Kurs", titel: "Symmetrie üben", datei: "Symmetrie_ueben.html" },
+
+  { thema: "daten", gruppe: "Daten und Statistik",          art: "Freiarbeit", titel: "Statistik", datei: "Statistik.html" },
+  { thema: "daten", gruppe: "Zufall und Wahrscheinlichkeit", art: "",           titel: "Würfeln",   datei: "Wuerfeln.html" },
+
+  { thema: "sonst", gruppe: "", art: "", titel: "Logikrätsel", datei: "Raetselheft.html" }
+];
+
+/* ===================== ab hier nichts ändern ===================== */
+
+const nav = document.querySelector(".reiter");
+const inhalt = document.getElementById("inhalt");
+
+function el(tag, attrs, text) {
+  const e = document.createElement(tag);
+  for (const k in attrs || {}) e.setAttribute(k, attrs[k]);
+  if (text != null) e.textContent = text;
+  return e;
+}
+
+THEMEN.forEach(t => {
+  const knopf = el("button", { role: "tab", id: "tab-" + t.id, "data-thema": t.id, "aria-controls": "p-" + t.id }, t.name);
+  knopf.addEventListener("click", () => zeige(t.id, true));
+  nav.appendChild(knopf);
+
+  const sec = el("section", { class: "bereich", id: "p-" + t.id, role: "tabpanel", "data-thema": t.id, "aria-labelledby": "tab-" + t.id });
+  sec.appendChild(el("h1", null, t.name));
+
+  const eintraege = MATERIAL.filter(m => m.thema === t.id);
+  if (!eintraege.length) sec.appendChild(el("div", { class: "leer" }, "Hier entsteht noch Material."));
+
+  // Gruppen in der Reihenfolge der Liste bilden (Unterthema)
+  const gruppen = [];
+  eintraege.forEach(m => {
+    const key = m.gruppe;
+    let g = gruppen.find(x => x.key === key);
+    if (!g) { g = { key, name: m.gruppe, items: [] }; gruppen.push(g); }
+    g.items.push(m);
+  });
+
+  gruppen.forEach(g => {
+    const stufe = el("div", { class: "stufe" });
+    if (g.name) {
+      const kopf = el("div", { class: "stufe-kopf" });
+      kopf.appendChild(el("h2", null, g.name));
+      stufe.appendChild(kopf);
+    }
+    const ul = el("ul");
+    g.items.forEach(m => {
+      const li = el("li");
+      const a = el("a", { href: m.datei });
+      a.appendChild(el("span", { class: "titel" }, m.titel));
+      if (m.art) a.appendChild(el("span", { class: "art" }, m.art));
+      li.appendChild(a);
+      ul.appendChild(li);
+    });
+    stufe.appendChild(ul);
+    sec.appendChild(stufe);
+  });
+
+  inhalt.appendChild(sec);
+});
+
+function zeige(id, merken) {
+  if (!THEMEN.some(t => t.id === id)) id = THEMEN[0].id;
+  nav.querySelectorAll("button").forEach(b => b.setAttribute("aria-selected", b.dataset.thema === id));
+  inhalt.querySelectorAll(".bereich").forEach(s => s.hidden = s.dataset.thema !== id);
+  if (merken) history.replaceState(null, "", "#" + id);
+}
+
+// Reiter steht in der Adresse (#raum), bleibt also beim Zurückgehen erhalten
+zeige(location.hash.slice(1));
+window.addEventListener("hashchange", () => zeige(location.hash.slice(1)));
+</script>
 
 </body>
 </html>
