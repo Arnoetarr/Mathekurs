@@ -166,19 +166,20 @@ const STATIONS=[
  pre:'Diese Station kannst du ohne Vorwissen bearbeiten.',
  steps:[
   ['Mit den <b>natürlichen Zahlen</b> zählst du.',dots],
-  ['Auf dem Zahlenstrahl stehen sie in gleichen Abständen. Er beginnt bei der Null, die bei uns auch dazugehört. Zwischen zwei Nachbarn liegt keine weitere natürliche Zahl.',line(0,8,[],{ray:true})],
+  ['Auf dem Zahlenstrahl stehen sie in gleichen Abständen. Er beginnt bei der Null. Zwischen zwei Nachbarn liegt keine weitere natürliche Zahl.',line(0,8,[],{ray:true})],
+  ['<b>Gehört die Null dazu?</b> Dafür gibt es zwei Festlegungen. Manche fangen bei 1 an, weil man beim Zählen mit 1 beginnt. Andere nehmen die Null dazu. In diesem Lernpfad zählen wir die Null dazu. Wenn du woanders etwas anderes liest, ist das kein Fehler.',dec('1, 2, 3, 4, …','Festlegung ohne Null','soft')+dec('0, 1, 2, 3, 4, …','Festlegung mit Null, so machen wir es hier','n')],
   ['Alle natürlichen Zahlen zusammen bilden den <b>Zahlenbereich N</b>. So sieht er als Mengendiagramm aus. Oben in der Kopfzeile siehst du dasselbe Diagramm in klein. Es wächst mit jeder Station.',nest(1)]
  ],
  ex:[{type:'choice',title:'Natürliche Zahl, ja oder nein?',task:'Entscheide bei jeder Zahl, ob sie eine natürliche Zahl ist.',labels:['ja','nein'],items:[
    yes('12','Mit 12 kannst du zählen.'),
    no('3,5','3,5 liegt zwischen 3 und 4. Beim Zählen kommt diese Zahl nicht vor.'),
-   yes('0','Die Null gehört bei uns zu den natürlichen Zahlen.'),
+   yes('0','In diesem Lernpfad gehört die Null zu den natürlichen Zahlen. Das ist eine Festlegung.'),
    no('−4','Zahlen mit einem Minus davor sind keine natürlichen Zahlen.'),
    yes('1 000 000','Auch sehr große Zahlen sind natürliche Zahlen.'),
    no(fr(1,2),'Ein Halbes liegt zwischen 0 und 1.'),
    yes('99','Mit 99 kannst du zählen.'),
    no('0,1','0,1 liegt zwischen 0 und 1.')]}],
- zusatz:[['N','Der Buchstabe für den Bereich der natürlichen Zahlen'],['N = {0; 1; 2; 3; …}','Mengenschreibweise: In den geschweiften Klammern stehen die Zahlen, die dazugehören.'],['7 ∈ N','„7 ist Element von N“, also 7 gehört dazu.'],['2,5 ∉ N','„2,5 ist kein Element von N“, also 2,5 gehört nicht dazu.']],
+ zusatz:[['N','Der Buchstabe für den Bereich der natürlichen Zahlen'],['N = {0; 1; 2; 3; …}','Mengenschreibweise: In den geschweiften Klammern stehen die Zahlen, die dazugehören.'],['N* = {1; 2; 3; …}','Die natürlichen Zahlen ohne die Null. Das Sternchen zeigt an, dass die Null fehlt.'],['7 ∈ N','„7 ist Element von N“, also 7 gehört dazu.'],['2,5 ∉ N','„2,5 ist kein Element von N“, also 2,5 gehört nicht dazu.']],
  bridge:{to:'z',task:'3 − 5 = ?',text:'Von 3 kannst du nicht 5 wegnehmen, ohne unter die Null zu kommen. Bei den natürlichen Zahlen gibt es dafür kein Ergebnis. Solche Aufgaben können wir hier noch nicht lösen. Deshalb wird der Zahlenbereich erweitert.'}},
 
 {id:'Z',rings:2,title:'Ganze Zahlen',sub:'Unter Null geht es weiter',
